@@ -1,0 +1,32 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/logo_tsunami_tiny.ico</file>
+        <file>images/add.png</file>
+        <file>images/archive_off.png</file>
+        <file>images/archive_on.png</file>
+        <file>images/button_bkg.png</file>
+        <file>images/chat.png</file>
+        <file>images/download_off.png</file>
+        <file>images/download_on.png</file>
+        <file>images/power.png</file>
+        <file>images/search_off.png</file>
+        <file>images/search_on.png</file>
+        <file>images/selected.png</file>
+        <file>images/settings_off.png</file>
+        <file>images/settings_on.png</file>
+        <file>images/statistics_off.png</file>
+        <file>images/statistics_on.png</file>
+        <file>images/streaming_off.png</file>
+        <file>images/streaming_on.png</file>
+        <file>images/user_off.png</file>
+        <file>images/user_on.png</file>
+        <file>images/settings_hover.png</file>
+        <file>images/user_hover.png</file>
+        <file>images/search_hover.png</file>
+        <file>images/download_hover.png</file>
+        <file>images/archive_hover.png</file>
+        <file>images/streaming_hover.png</file>
+        <file>images/statistics_hover.png</file>
+        <file>images/logo_tsunami_big.ico</file>
+    </qresource>
+</RCC>
