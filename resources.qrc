@@ -28,5 +28,18 @@
         <file>images/streaming_hover.png</file>
         <file>images/statistics_hover.png</file>
         <file>images/logo_tsunami_big.ico</file>
+        <file>images/bkg1.png</file>
+        <file>images/bkg2.png</file>
+        <file>images/finished.png</file>
+        <file>images/pause.png</file>
+        <file>images/pb3.png</file>
+        <file>images/resume.png</file>
+        <file>images/state_download.png</file>
+        <file>images/state_loading.png</file>
+        <file>images/state_pause.png</file>
+        <file>images/state_warning.png</file>
+        <file>images/tsu_streaming_off.png</file>
+        <file>images/tsu_streaming_on.png</file>
+        <file>images/x.png</file>
     </qresource>
 </RCC>

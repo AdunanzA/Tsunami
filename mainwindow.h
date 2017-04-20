@@ -6,6 +6,11 @@
 #include <QPointer>
 #include <QtGui>
 #include <QWidget>
+#include <QScrollArea>
+
+#include "downloadwindow.h"
+#include "searchwindow.h"
+#include "settingswindow.h"
 
 namespace Ui
 {
@@ -24,14 +29,19 @@ public:
 
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
+    void balloonClicked();
     void btnMenuClick();
+
+    void btnAddClick();
 
 private:
     Ui::MainWindow *ui;
-    QWidget *settingsPage;
-    QWidget *searchPage;
-    QWidget *downloadPage;
-    QVector<QWidget*> *fakeList;
+    settingswindow *settingsPage;
+    searchwindow *searchPage;
+    downloadwindow *downloadPage;
+    QScrollArea *qsa;
+
+    int count;
 
     void createTrayIcon();
     void initializeScreen();
