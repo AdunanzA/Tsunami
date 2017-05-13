@@ -41,5 +41,6 @@
         <file>images/tsu_streaming_off.png</file>
         <file>images/tsu_streaming_on.png</file>
         <file>images/x.png</file>
+        <file>images/adunanza.jpg</file>
     </qresource>
 </RCC>

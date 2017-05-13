@@ -126,7 +126,7 @@ background-color:transparent;</string>
          <number>0</number>
         </property>
         <property name="text">
-         <string>ShortName</string>
+         <string/>
         </property>
         <property name="textFormat">
          <enum>Qt::PlainText</enum>
@@ -140,7 +140,7 @@ background-color:transparent;</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="btnCancel" native="true">
+       <widget class="QPushButton" name="btnCancel">
         <property name="minimumSize">
          <size>
           <width>18</width>
@@ -276,28 +276,32 @@ padding-right:5px</string>
             <property name="font">
              <font>
               <family>MS Shell Dlg 2</family>
-              <pointsize>8</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
               <stylestrategy>PreferAntialias</stylestrategy>
               <kerning>true</kerning>
              </font>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(3, 215, 19);
-background-color:transparent;</string>
+background-color:transparent;
+padding-top:2px;</string>
             </property>
             <property name="lineWidth">
              <number>0</number>
             </property>
             <property name="text">
-             <string>729</string>
+             <string/>
             </property>
             <property name="scaledContents">
              <bool>false</bool>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
+            </property>
+            <property name="margin">
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -332,7 +336,7 @@ padding-top:3px</string>
              <number>0</number>
             </property>
             <property name="text">
-             <string>MB</string>
+             <string/>
             </property>
             <property name="margin">
              <number>0</number>
@@ -395,22 +399,23 @@ background-color:transparent;padding-top:3px;padding-right:5px</string>
             </property>
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
               <strikeout>false</strikeout>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
             <property name="styleSheet">
              <string notr="true">color: rgb(253, 194, 1);
-background-color:transparent;</string>
+background-color:transparent;
+padding-top:2px;</string>
             </property>
             <property name="lineWidth">
              <number>0</number>
             </property>
             <property name="text">
-             <string>521</string>
+             <string/>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -448,7 +453,7 @@ padding-top:3px</string>
              <number>0</number>
             </property>
             <property name="text">
-             <string>MB</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -511,21 +516,22 @@ background-color:transparent;padding-top:2px;padding-right:5px;</string>
             </property>
             <property name="font">
              <font>
-              <pointsize>8</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
+              <pointsize>7</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
               <stylestrategy>PreferAntialias</stylestrategy>
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(11, 129, 225);
-background-color:transparent;</string>
+             <string notr="true">color: rgb(31, 159, 255);
+background-color:transparent;
+padding-top:2px;</string>
             </property>
             <property name="lineWidth">
              <number>0</number>
             </property>
             <property name="text">
-             <string>208</string>
+             <string/>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -562,7 +568,7 @@ padding-top:3px</string>
              <number>0</number>
             </property>
             <property name="text">
-             <string>MB</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -578,14 +584,8 @@ padding-top:3px</string>
        <number>0</number>
       </property>
       <item row="0" column="0">
-       <widget class="QWidget" name="bkgContainet" native="true">
+       <widget class="QWidget" name="bkgCircle" native="true">
         <property name="minimumSize">
-         <size>
-          <width>132</width>
-          <height>60</height>
-         </size>
-        </property>
-        <property name="maximumSize">
          <size>
           <width>132</width>
           <height>60</height>
@@ -595,56 +595,96 @@ padding-top:3px</string>
          <string notr="true">border:none;
 padding:0px;
 background-repeat: no-repeat;
+background-position: center center;
+background-image: url(:/images/pb3.png);
 background-color:transparent;</string>
         </property>
-        <widget class="QWidget" name="bkgArrow" native="true">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>12</y>
-           <width>132</width>
-           <height>37</height>
-          </rect>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border:none;
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QWidget" name="bkgArrow" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border:none;
 padding:0px;
 background-repeat: no-repeat;
 background-position: center center;
 background-color:transparent;
-background-image: url(:/images/bkg1.png);</string>
-         </property>
-        </widget>
-        <widget class="QWidget" name="bkgCircle" native="true">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>132</width>
-           <height>60</height>
-          </rect>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>132</width>
-           <height>60</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>132</width>
-           <height>60</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">border:none;
-padding:0px;
-background-repeat: no-repeat;
-background-position: center center;
-background-image: url(:/images/pb3.png);
-background-color:transparent;</string>
-         </property>
-        </widget>
+background-image: url(:/images/bkg1.png);
+</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="TsuProgress" name="progress" native="true"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="txtDownloadRateUnit">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(31, 159, 255);
+background-color:transparent;
+padding-bottom:18px;
+padding-left:110px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="txtUploadRateUnit">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(31, 159, 255);
+background-color:transparent;
+padding-bottom:18px;
+padding-left:-109px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="txtDownloadRate">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(253, 194, 1);
+background-color:transparent;
+padding-top:10px;
+padding-left:100px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="txtUploadRate">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(140, 140, 140);
+background-color:transparent;
+padding-top:10px;
+padding-left:-100px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
        </widget>
       </item>
      </layout>
@@ -654,6 +694,33 @@ background-color:transparent;</string>
       <property name="spacing">
        <number>0</number>
       </property>
+      <item>
+       <widget class="QLabel" name="txtState">
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127);
+background-color: rgba(0, 0, 0, 0);</string>
+        </property>
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
       <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
@@ -751,6 +818,28 @@ background-color:transparent;
           </size>
          </property>
         </widget>
+        <widget class="QLabel" name="iconState">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>29</width>
+           <height>29</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-image: url(:/images/state_pause.png);</string>
+         </property>
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -758,6 +847,13 @@ background-color:transparent;
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TsuProgress</class>
+   <extends>QWidget</extends>
+   <header>tsuprogress.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

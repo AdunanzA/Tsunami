@@ -7,10 +7,14 @@
 #include <QtGui>
 #include <QWidget>
 #include <QScrollArea>
+#include <QLabel>
 
 #include "downloadwindow.h"
 #include "searchwindow.h"
 #include "settingswindow.h"
+#include "statisticswindow.h"
+
+#include "QScale/qscale.h"
 
 namespace Ui
 {
@@ -22,10 +26,17 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    typedef boost::shared_ptr<libtorrent::torrent_info> NativePtr;
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
     QPointer<QSystemTrayIcon> m_systrayIcon;
+
+public slots:
+    void updateStatusBar(const QString & msg);
+    void updateGauge(const double & value);
+    void popupInfo(const QString & msg);
 
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
@@ -34,14 +45,22 @@ private slots:
 
     void btnAddClick();
 
+//    void timerTick();
+
 private:
     Ui::MainWindow *ui;
     settingswindow *settingsPage;
     searchwindow *searchPage;
     downloadwindow *downloadPage;
+    statisticswindow *statisticsPage;
     QScrollArea *qsa;
+    QLabel *statusLabel;
 
-    int count;
+    QScale *p_scaleGauge;
+
+//    int count = 0;
+//    TsuProgress *tp;
+//    QTimer *timer;
 
     void createTrayIcon();
     void initializeScreen();
