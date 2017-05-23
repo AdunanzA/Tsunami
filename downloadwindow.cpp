@@ -27,7 +27,10 @@ downloadwindow::downloadwindow(QWidget *parent) :
     ui->setupUi(this);
     setLayout(flowLayout);
 
-//    p_session = lt::session();
+    lt::settings_pack settings;
+    settings.set_str(lt::settings_pack::listen_interfaces, "0.0.0.0:6881");
+
+    p_session = lt::session(settings);
     p_session.pause();
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTick()));
@@ -35,63 +38,63 @@ downloadwindow::downloadwindow(QWidget *parent) :
 //    p_session.set_alert_mask(lt::alert::error_notification
 //                             | lt::alert::storage_notification
 //                             | lt::alert::status_notification);
-    p_session.set_alert_mask(lt::alert::status_notification);
+//    p_session.set_alert_mask(lt::alert::status_notification);
 
-    lt::session_settings ss = p_session.settings();
-    ss.user_agent = "Tsunami/0";
-    // from qbit torrent
-    ss.upnp_ignore_nonrouters = true;
-    ss.use_dht_as_fallback = false;
-    ss.ssl_listen = 0; // Disable support for SSL torrents for now
-    ss.lazy_bitfields = true; // To prevent ISPs from blocking seeding
-    ss.stop_tracker_timeout = 1; // Speed up exit
-    ss.auto_scrape_interval = 1200; // 20 minutes
-    ss.announce_to_all_trackers = true; // from pref->announceToAllTrackers();
-    ss.announce_to_all_tiers = true; // from pref->announceToAllTrackers();
-    ss.auto_scrape_min_interval = 900; // 15 minutes
-    ss.cache_size = -1;
-    ss.cache_expiry = 60;
-    ss.disk_io_read_mode = 0; // enable_os_cache
-    ss.anonymous_mode = false;
-    ss.active_seeds = 3; // MaxActiveUploads
-    ss.dont_count_slow_torrents = false;
-//    ss.active_downloads = 3; // MaxActiveDownloads + m_extraLimit
-//    ss.active_limit = 5; // MaxActiveTorrents + m_extraLimit
-    ss.active_tracker_limit = -1;
-    ss.active_dht_limit = -1;
-    ss.active_lsd_limit = -1;
-    ss.ignore_limits_on_local_network = true; // Ignore limits on LAN
-    ss.rate_limit_ip_overhead = false; // Include overhead in transfer limits
-    //ss.announce_ip = Utils::String::toStdString(pref->getNetworkAddress()); // IP address to announce to trackers
-    ss.strict_super_seeding = false; // Super seeding
-    ss.half_open_limit = 20; // * Max Half-open connections
-    ss.connections_limit = 500; // * Max connections limit
-    ss.unchoke_slots_limit = -1; // * Global max upload slots
-    ss.enable_incoming_utp = true; // uTP
-    ss.enable_outgoing_utp = true; // uTP
-    ss.rate_limit_utp = true; // uTP rate limiting
-    ss.mixed_mode_algorithm = 0; // prefer_tcp
-    ss.connection_speed = 20; //default is 10
-    ss.no_connect_privileged_ports = false;
-    ss.seed_choking_algorithm = 1; // fastest_upload
-    ss.apply_ip_filter_to_trackers = false; // FilterTracker
+//    lt::session_settings ss = p_session.settings();
+//    ss.user_agent = "Tsunami/0";
+//    // from qbit torrent
+//    ss.upnp_ignore_nonrouters = true;
+//    ss.use_dht_as_fallback = false;
+//    ss.ssl_listen = 0; // Disable support for SSL torrents for now
+//    ss.lazy_bitfields = true; // To prevent ISPs from blocking seeding
+//    ss.stop_tracker_timeout = 1; // Speed up exit
+//    ss.auto_scrape_interval = 1200; // 20 minutes
+//    ss.announce_to_all_trackers = true; // from pref->announceToAllTrackers();
+//    ss.announce_to_all_tiers = true; // from pref->announceToAllTrackers();
+//    ss.auto_scrape_min_interval = 900; // 15 minutes
+//    ss.cache_size = -1;
+//    ss.cache_expiry = 60;
+//    ss.disk_io_read_mode = 0; // enable_os_cache
+//    ss.anonymous_mode = false;
+//    ss.active_seeds = 3; // MaxActiveUploads
+//    ss.dont_count_slow_torrents = false;
+//    /*ss.active_downloads = 3; // MaxActiveDownloads + m_extraLimit
+//    ss.active_limit = 5; // MaxActiveTorrents + m_extraLimit*/
+//    ss.active_tracker_limit = -1;
+//    ss.active_dht_limit = -1;
+//    ss.active_lsd_limit = -1;
+//    ss.ignore_limits_on_local_network = true; // Ignore limits on LAN
+//    ss.rate_limit_ip_overhead = false; // Include overhead in transfer limits
+//    //ss.announce_ip = Utils::String::toStdString(pref->getNetworkAddress()); // IP address to announce to trackers
+//    ss.strict_super_seeding = false; // Super seeding
+//    ss.half_open_limit = 20; // * Max Half-open connections
+//    ss.connections_limit = 500; // * Max connections limit
+//    ss.unchoke_slots_limit = -1; // * Global max upload slots
+//    ss.enable_incoming_utp = true; // uTP
+//    ss.enable_outgoing_utp = true; // uTP
+//    ss.rate_limit_utp = true; // uTP rate limiting
+//    ss.mixed_mode_algorithm = 0; // prefer_tcp
+//    ss.connection_speed = 20; //default is 10
+//    ss.no_connect_privileged_ports = false;
+//    ss.seed_choking_algorithm = 1; // fastest_upload
+//    ss.apply_ip_filter_to_trackers = false; // FilterTracker
 
 
-    ss.tick_interval = TICKER_TIME;
+//    ss.tick_interval = TICKER_TIME;
 
-    p_session.set_settings(ss);
+//    p_session.set_settings(ss);
 
     timer->start(TICKER_TIME);
 
-    p_session.add_dht_router(std::make_pair(std::string("router.bittorrent.com"), 6881));
-    p_session.add_dht_router(std::make_pair(std::string("router.utorrent.com"), 6881));
-    p_session.add_dht_router(std::make_pair(std::string("dht.transmissionbt.com"), 6881));
-    p_session.add_dht_router(std::make_pair(std::string("dht.aelitis.com"), 6881));
+//    p_session.add_dht_router(std::make_pair(std::string("router.bittorrent.com"), 6881));
+//    p_session.add_dht_router(std::make_pair(std::string("router.utorrent.com"), 6881));
+//    p_session.add_dht_router(std::make_pair(std::string("dht.transmissionbt.com"), 6881));
+//    p_session.add_dht_router(std::make_pair(std::string("dht.aelitis.com"), 6881));
 
-    p_session.start_natpmp();
-    p_session.start_upnp();
-    p_session.start_dht();
-    p_session.start_lsd();
+//    p_session.start_natpmp();
+//    p_session.start_upnp();
+//    p_session.start_dht();
+//    p_session.start_lsd();
     p_session.resume();
 }
 
@@ -143,7 +146,7 @@ void downloadwindow::timerTick()
         if (auto st = lt::alert_cast<lt::state_update_alert>(a)) {
             if (st == nullptr) continue;
             if (st->status.empty()) continue;
-            for (lt::torrent_status & s : st->status) {
+            for (lt::torrent_status s : st->status) {
                 lt::sha1_hash ch = s.info_hash;
                 try {
                     foreach (tsucard* item, tsulist) {
@@ -176,13 +179,14 @@ void downloadwindow::timerTick()
 
 //      }
 
-        if (auto aa = lt::alert_cast<lt::torrent_added_alert>(a)) {
+        if (auto aa = lt::alert_cast<lt::add_torrent_alert>(a)) {
             lt::torrent_handle th = aa->handle;
-            qDebug() << QString("torrent_added_alert(%1) called from %2").arg(QString::fromStdString(th.name())).arg(this->objectName());
+            lt::torrent_status st = th.status(lt::torrent_handle::query_name);
+            qDebug() << QString("torrent_added_alert(%1) called from %2").arg(QString::fromStdString(st.name)).arg(this->objectName());
             tsucard *ts = new tsucard(this);
-            ts->set_Hash(th.info_hash());
-            ts->set_Name(QString::fromStdString(th.name()));
-            ts->set_Total(th.status().total_wanted / 1000);
+            ts->set_Hash(st.info_hash);// th.info_hash());
+            ts->set_Name(QString::fromStdString(st.name));
+            ts->set_Total(st.total_wanted / 1000);
             connect(ts, SIGNAL(cancelRequested(tsucard*)), this, SLOT(requestedCancel(tsucard*)));
             tsulist.append(ts);
             flowLayout->addWidget(ts);
@@ -190,7 +194,8 @@ void downloadwindow::timerTick()
 
         if (auto aa = lt::alert_cast<lt::torrent_finished_alert>(a)) {
             lt::torrent_handle th = aa->handle;
-            emit sendPopupInfo(QString("%1 finished!").arg(QString::fromStdString(th.name())));
+            lt::torrent_status st = th.status(lt::torrent_handle::query_name);
+            emit sendPopupInfo(QString("%1 finished!").arg(QString::fromStdString(st.name)));
         }
 
         if (auto aa = lt::alert_cast<lt::tracker_error_alert>(a)) {
@@ -245,7 +250,7 @@ void downloadwindow::timerTick()
     emit sendStatisticsUpdate(QPair<int, int>(downRate, upRate));
 //    }
 
-    p_session.post_torrent_updates();
+    p_session.post_torrent_updates(lt::alert::status_notification);
 //    p_session.post_session_stats();
 //    p_session.post_dht_stats();
 }

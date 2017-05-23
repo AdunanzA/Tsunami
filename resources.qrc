@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>icons/logo_tsunami_tiny.ico</file>
         <file>images/add.png</file>
         <file>images/archive_off.png</file>
         <file>images/archive_on.png</file>

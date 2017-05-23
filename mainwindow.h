@@ -26,7 +26,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    typedef boost::shared_ptr<libtorrent::torrent_info> NativePtr;
+    typedef std::shared_ptr<libtorrent::torrent_info> NativePtr;
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();

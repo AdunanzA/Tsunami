@@ -16,11 +16,12 @@ TEMPLATE = app
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += TORRENT_NO_DEPRECATE
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Needed to avoid inclusion error with WinSock2.h (when using libtorrent)
 # http://stackoverflow.com/a/8294669
@@ -57,6 +58,10 @@ FORMS    += \
 OBJECTS_DIR = tmp
 MOC_DIR = tmp
 
+# icon for exe file (for win)
+# here for other os: http://doc.qt.io/qt-4.8/appicon.html
+RC_FILE = ico.qrc
+
 QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 5
 RESOURCES += \
     resources.qrc
@@ -64,12 +69,12 @@ RESOURCES += \
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -llibtorrent
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -llibtorrent
 else:unix: LIBS += -L$$PWD/lib/ -llibtorrent
-unix: LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_60
+unix: LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_64
 
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
 
-win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_60
-else:win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -lboost_system-vc140-mt-1_60
+win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_64
+else:win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -lboost_system-vc140-mt-1_64
 
-DISTFILES +=
+#DISTFILES +=
