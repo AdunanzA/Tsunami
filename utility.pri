@@ -1,7 +1,5 @@
 HEADERS += \
     $$PWD/logger.h \
-    $$PWD/preferences.h \
-    $$PWD/flowlayout.h \
     $$PWD/QSegment/qsegmentwidget.h \
     $$PWD/tsuprogress.h \
     $$PWD/QScale/qscale.h \
@@ -15,12 +13,12 @@ HEADERS += \
     $$PWD/chartxy/chartxylimitaxis.h \
     $$PWD/chartxy/chartxyrender.h \
     $$PWD/chartxy/chartxyscale.h \
-    $$PWD/chartxy/chartxysetting.h
+    $$PWD/chartxy/chartxysetting.h \
+    $$PWD/tsumanager.h \
+    $$PWD/tsuitem.h
 
 SOURCES += \
     $$PWD/logger.cpp \
-    $$PWD/preferences.cpp \
-    $$PWD/flowlayout.cpp \
     $$PWD/QSegment/qsegmentwidget.cpp \
     $$PWD/tsuprogress.cpp \
     $$PWD/QScale/qscale.cpp \
@@ -34,5 +32,7 @@ SOURCES += \
     $$PWD/chartxy/chartxylimitaxis.cpp \
     $$PWD/chartxy/chartxyrender.cpp \
     $$PWD/chartxy/chartxyscale.cpp \
-    $$PWD/chartxy/chartxysetting.cpp
+    $$PWD/chartxy/chartxysetting.cpp \
+    $$PWD/tsumanager.cpp \
+    $$PWD/tsuitem.cpp
 

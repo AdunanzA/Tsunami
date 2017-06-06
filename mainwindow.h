@@ -6,13 +6,22 @@
 #include <QPointer>
 #include <QtGui>
 #include <QWidget>
-#include <QScrollArea>
 #include <QLabel>
+#include <QtGlobal>
+#include <QDebug>
+#include <QCoreApplication>
+#include <QFileDialog>
 
+#include "tsumanager.h"
 #include "downloadwindow.h"
 #include "searchwindow.h"
 #include "settingswindow.h"
 #include "statisticswindow.h"
+
+#include "libtorrent/add_torrent_params.hpp"
+#include "libtorrent/torrent_handle.hpp"
+#include "libtorrent/bencode.hpp"
+#include "libtorrent/torrent_info.hpp"
 
 #include "QScale/qscale.h"
 
@@ -26,8 +35,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    typedef std::shared_ptr<libtorrent::torrent_info> NativePtr;
-
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -45,25 +52,28 @@ private slots:
 
     void btnAddClick();
 
-//    void timerTick();
-
 private:
     Ui::MainWindow *ui;
     settingswindow *settingsPage;
     searchwindow *searchPage;
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
-    QScrollArea *qsa;
     QLabel *statusLabel;
+
+    tsuManager *sessionManager;
 
     QScale *p_scaleGauge;
 
-//    int count = 0;
-//    TsuProgress *tp;
-//    QTimer *timer;
-
     void createTrayIcon();
     void initializeScreen();
+
+    QString p_settingsFile = "";
+    void readSettings();
+    void writeSettings();
+
+    // QWidget interface
+protected:
+    void closeEvent(QCloseEvent *event) override;
 };
 
 

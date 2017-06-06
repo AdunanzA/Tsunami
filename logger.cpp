@@ -1,5 +1,5 @@
 #include "logger.h"
-#include "preferences.h"
+//#include "preferences.h"
 
 logger::logger(QObject *parent) : QObject(parent)
 {

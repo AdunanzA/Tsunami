@@ -1,20 +1,5 @@
-#include <QtGlobal>
-#include <QDebug>
-#include <QCoreApplication>
-#include <QTableWidget>
-#include <QScrollArea>
-#include <QFileDialog>
-
-#include <libtorrent/add_torrent_params.hpp>
-#include <libtorrent/torrent_handle.hpp>
-#include <libtorrent/bencode.hpp>
-#include <libtorrent/torrent_info.hpp>
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "settingswindow.h"
-#include "searchwindow.h"
-#include "downloadwindow.h"
 
 #define TIME_TRAY_BALLOON 5000
 #define PROJECT "Tsunami++"
@@ -27,14 +12,25 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLabel(new QLabel),
     downloadPage(new downloadwindow),
     statisticsPage(new statisticswindow),
-    qsa(new QScrollArea)
+    sessionManager(new tsuManager)
 {
     ui->setupUi(this);
 
     initializeScreen();
+    readSettings();
 
     statusBar()->addPermanentWidget(statusLabel, 0);
     statusBar()->showMessage("Welcome!");
+
+    // update from sessionManager (torrent add and update) goes to downloadPage to manage tsuCard and session values
+    connect(sessionManager, SIGNAL(updateFromItem(const tsuEvents::tsuEvent &)), downloadPage, SLOT(updateFromSession(const tsuEvents::tsuEvent &)), Qt::QueuedConnection);
+
+    // deleted torrent from sessionManager goes to downloadPage to remove it from list
+    connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)), Qt::QueuedConnection);
+
+
+    // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
+    connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));
 
     // update from downloadpage to statusbar text
     connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)));
@@ -44,6 +40,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // popup message from downloadPage
     connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)));
+
+    // update from downloadpafe to gauge
+    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)));
+
 }
 
 MainWindow::~MainWindow()
@@ -62,10 +62,12 @@ void MainWindow::updateGauge(const double &value)
 }
 
 void MainWindow::initializeScreen() {
-    setWindowIcon(QIcon(":/icons/logo_tsunami_tiny.ico"));
+    setWindowIcon(QIcon(":/images/logo_tsunami_tiny.ico"));
     setWindowTitle(PROJECT " " VERSION);
     //setWindowFlags(Qt::FramelessWindowHint);
     createTrayIcon();
+
+    QFontDatabase::addApplicationFont(":/font/BEBAS___.TTF");
 
     connect(ui->btnSettings, SIGNAL(released()), this, SLOT(btnMenuClick()));
     connect(ui->btnUser, SIGNAL(released()), this, SLOT(btnMenuClick()));
@@ -97,40 +99,46 @@ void MainWindow::initializeScreen() {
     searchPage->hide();
     downloadPage->hide();
     statisticsPage->hide();
-    qsa->hide();
 
     ui->content->addWidget(settingsPage);
     ui->content->addWidget(searchPage);
     ui->content->addWidget(statisticsPage);
-
-    qsa->setFrameShape(QFrame::NoFrame);
-    qsa->setWidgetResizable(true);
-    qsa->setWidget(downloadPage);
-    ui->content->addWidget(qsa);
-
-//    tp = new TsuProgress(this);
-//    timer = new QTimer(this);
-//    ui->content->addWidget(tp);
-//    connect(timer, SIGNAL(timeout()), this, SLOT(timerTick()));
-//    timer->start(250);
-
-    /*QWidget *defaultPage = new QWidget(this);
-    defaultPage->setWindowOpacity(0.5);
-    defaultPage->setStyleSheet("background-image: url(:/images/logo_tsunami_big.ico); background-repeat: no-repeat; background-position:center;");
-    ui->content->addWidget(defaultPage);*/
+    ui->content->addWidget(downloadPage);
 
     p_scaleGauge = new QScale(this);
     p_scaleGauge->setInvertedAppearance(true);
     ui->contentGauge->addWidget(p_scaleGauge);
 
-    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)));
+}
+
+void MainWindow::readSettings()
+{
+    if (p_settingsFile == "")
+        p_settingsFile = QString("%0:/%1.ini").arg(QApplication::applicationDirPath().left(1)).arg("tsunami");
+    QSettings settings(p_settingsFile, QSettings::IniFormat);
+
+    settings.beginGroup("MainWindow");
+    resize(settings.value("size", QSize(840, 670)).toSize());
+    move(settings.value("pos", QPoint(200, 200)).toPoint());
+    settings.endGroup();
+}
+
+void MainWindow::writeSettings()
+{
+    if (p_settingsFile == "")
+        p_settingsFile = QString("%0:/%1.ini").arg(QApplication::applicationDirPath().left(1)).arg("tsunami");
+    QSettings settings(p_settingsFile, QSettings::IniFormat);
+    settings.beginGroup("MainWindow");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+    settings.endGroup();
 }
 
 
 void MainWindow::createTrayIcon()
 {
     // Tray icon
-    m_systrayIcon = new QSystemTrayIcon(QIcon(":/icons/logo_tsunami_tiny.ico"), this);
+    m_systrayIcon = new QSystemTrayIcon(QIcon(":/images/logo_tsunami_tiny.ico"), this);
 
     //m_systrayIcon->setContextMenu(trayIconMenu());
     connect(m_systrayIcon, SIGNAL(messageClicked()), this, SLOT(balloonClicked()));
@@ -206,25 +214,25 @@ void MainWindow::btnMenuClick() {
     settingsPage->setHidden(btn != ui->btnSettings->objectName());
     searchPage->setHidden(btn != ui->btnSearch->objectName());
     statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
-    qsa->setHidden(btn != ui->btnDownload->objectName());
+//    qsa->setHidden(btn != ui->btnDownload->objectName());
+    downloadPage->setHidden(btn != ui->btnDownload->objectName());
 }
 
 void MainWindow::btnAddClick()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select torrent"), ".", tr("Torrents (*.torrent)"));
     foreach (const QString &str, fileNames) {
-        lt::add_torrent_params atp;
+        libtorrent::add_torrent_params atp;
 
-        NativePtr np(new lt::torrent_info(str.toStdString()));
-        atp.ti = np;
+        atp.ti = std::make_shared<libtorrent::torrent_info>(libtorrent::torrent_info(str.toStdString()));
         atp.save_path = ".";
 
-        atp.flags &= ~lt::add_torrent_params::flag_paused; // Start in pause
-        atp.flags &= ~lt::add_torrent_params::flag_auto_managed; // Because it is added in paused state
-        atp.flags &= ~lt::add_torrent_params::flag_duplicate_is_error; // Already checked
+        atp.flags &= ~libtorrent::add_torrent_params::flag_paused; // Start in pause
+        atp.flags &= ~libtorrent::add_torrent_params::flag_auto_managed; // Because it is added in paused state
+        atp.flags &= ~libtorrent::add_torrent_params::flag_duplicate_is_error; // Already checked
 
-        downloadPage->addTorrent(atp);
-        ui->btnDownload->released();
+        sessionManager->addTorrent(atp);
+        ui->btnDownload->released(); // switch to downloadpage
     }
 }
 
@@ -233,14 +241,9 @@ void MainWindow::popupInfo(const QString &msg)
     m_systrayIcon->showMessage(PROJECT, msg, QSystemTrayIcon::Information, TIME_TRAY_BALLOON);
 }
 
-//void MainWindow::timerTick()
-//{
-//    if(count==100) {
-//        timer->stop();
-//        return;
-//    }
-//    count = count + 1; // %
-//    tp->setValue(count);
-//    //QCoreApplication::processEvents();
-//    //qDebug() << QString("tick %1").arg(count);
-//}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    writeSettings();
+    event->accept();
+}

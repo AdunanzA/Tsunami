@@ -1,13 +1,6 @@
 #include "tsucard.h"
 #include "ui_tsucard.h"
 
-#include <QDebug>
-#include <QTextDocument>
-#include <QTextCursor>
-#include <QTextCharFormat>
-
-#include "libtorrent/torrent_info.hpp"
-
 tsucard::tsucard(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::tsucard)
@@ -34,12 +27,12 @@ QString tsucard::get_Name() const
     return ui->lblTitle->text();
 }
 
-lt::sha1_hash tsucard::get_Hash() const
+libtorrent::sha1_hash tsucard::get_Hash() const
 {
     return p_hash;
 }
 
-void tsucard::set_Hash(const lt::sha1_hash &value)
+void tsucard::set_Hash(const libtorrent::sha1_hash &value)
 {
     p_hash = value;
 }

@@ -5,24 +5,16 @@
 #include <QWidget>
 #include <QTimer>
 #include <QVector>
+#include <QGraphicsScene>
 
-#include "flowlayout.h"
-#include "tsucard.h"
+#include "tsumanager.h"
+#include "tsuitem.h"
 
-#include <libtorrent/session.hpp>
-#include <libtorrent/torrent_status.hpp>
-#include <libtorrent/alert_types.hpp>
-#include "libtorrent/torrent_handle.hpp"
-#include "libtorrent/torrent_info.hpp"
-#include <libtorrent/session_status.hpp>
-
-//struct my_lt libtorrent;
+#include <cmath> // floor
 
 namespace Ui {
     class downloadwindow;
 }
-
-namespace lt = libtorrent;
 
 class downloadwindow : public QWidget
 {
@@ -32,28 +24,36 @@ public:
     explicit downloadwindow(QWidget *parent = 0);
     ~downloadwindow();
 
-    void addTorrent(lt::add_torrent_params atp);
+public slots:
+    void updateFromSession(const tsuEvents::tsuEvent &event);
+    void torrentDeletedFromSession(const std::string &hash);
 
 private:
+    void redrawItemsPosition();
+
     Ui::downloadwindow *ui;
-    FlowLayout *flowLayout;
-    QTimer *timer;
-    lt::session p_session;
-    QVector<tsucard *> tsulist;
-    int downRate = 0;
-    int upRate = 0;
-    int totalDownload = 0;
-    int totalUpload = 0;
+    QGraphicsScene *p_scene;
+    QVector<tsuItem *> p_tsulist;
+    int p_downRate = 0;
+    int p_upRate = 0;
+    int p_totalDownload = 0;
+    int p_totalUpload = 0;
+
+    int p_itemsPerRow = 0;
 
 private slots:
-    void requestedCancel(tsucard *sender);
-    void timerTick();
+    void requestedCancel(const std::string &hash, const bool &deleteFilesToo);
 
 signals:
-    void sendUpdateToStatusBar(const QString & msg);
-    void sendUpdateGauge(const double & value);
-    void sendStatisticsUpdate(const QPair<int, int> & values);
-    void sendPopupInfo(const QString & msg);
+    void sendUpdateToStatusBar(const QString &msg);
+    void sendUpdateGauge(const double &value);
+    void sendStatisticsUpdate(const QPair<int, int> &values);
+    void sendPopupInfo(const QString &msg);
+    void sendRequestedCancelToSession(const std::string &hash, const bool &deleteFilesToo);
+
+    // QWidget interface
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // DOWNLOADWINDOW_H

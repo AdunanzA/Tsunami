@@ -2,13 +2,17 @@
 #define TSUCARD_H
 
 #include <QWidget>
+#include <QDebug>
+#include <QTextDocument>
+#include <QTextCursor>
+#include <QTextCharFormat>
 
-#include "tsucard.h"
 #include "libtorrent/hasher.hpp"
+#include "libtorrent/torrent_info.hpp"
 #include "libtorrent/torrent_handle.hpp"
-#include <libtorrent/torrent_status.hpp>
+#include "libtorrent/torrent_status.hpp"
 
-namespace lt = libtorrent;
+//namespace lt = libtorrent;
 
 namespace Ui {
     class tsucard;
@@ -26,8 +30,8 @@ public:
     QString get_Name() const;
     void set_Name(const QString name);
 
-    lt::sha1_hash get_Hash() const;
-    void set_Hash(const lt::sha1_hash &value);
+    libtorrent::sha1_hash get_Hash() const;
+    void set_Hash(const libtorrent::sha1_hash &value);
 
     void set_State(const QString actual_state);
     void set_Total(const int qty);
@@ -47,7 +51,7 @@ public:
 
 private:
     Ui::tsucard *ui;
-    lt::sha1_hash p_hash;
+    libtorrent::sha1_hash p_hash;
 
     int p_downloaded = 0;
     int p_uploaded = 0;

@@ -41,5 +41,17 @@
         <file>images/tsu_streaming_on.png</file>
         <file>images/x.png</file>
         <file>images/adunanza.jpg</file>
+        <file>images/logo_tsunami_tiny.ico</file>
+        <file>font/BEBAS___.TTF</file>
+        <file>images/tsuitem/bkg.png</file>
+        <file>images/tsuitem/bkg2.png</file>
+        <file>images/tsuitem/finished.png</file>
+        <file>images/tsuitem/pause.png</file>
+        <file>images/tsuitem/resume.png</file>
+        <file>images/tsuitem/state_download.png</file>
+        <file>images/tsuitem/state_loading.png</file>
+        <file>images/tsuitem/state_pause.png</file>
+        <file>images/tsuitem/state_warning.png</file>
+        <file>images/tsuitem/X.png</file>
     </qresource>
 </RCC>
