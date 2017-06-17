@@ -67,7 +67,6 @@ private:
     void createTrayIcon();
     void initializeScreen();
 
-    QString p_settingsFile = "";
     void readSettings();
     void writeSettings();
 

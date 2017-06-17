@@ -157,7 +157,7 @@ QPushButton#btnStatistics_on { background-image: url(:/images/statistics_on.png)
            <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="toolTip">
-           <string>Chat</string>
+           <string>Open Chat</string>
           </property>
           <property name="text">
            <string/>

@@ -6,10 +6,11 @@
 #include <QtWidgets>
 #include <QGraphicsItem>
 #include <QMessageBox>
+#include <qmath.h>
 
-#include "libtorrent/session.hpp"
+//#include "libtorrent/session.hpp"
 
-#include "tsumanager.h"
+#include "tsuevents.h"
 
 #include <cmath>       /* fmod */
 
@@ -45,7 +46,8 @@ public:
     int get_Uploaded();
 
     statusEnum get_Status() const;
-    void set_Status(const statusEnum &value);
+//    void set_Status(const statusEnum &value);
+    void set_Status(const int &value);
 
     int get_RateDownload() const;
     void set_RateDownload(int value);
@@ -80,7 +82,7 @@ private:
     QPixmap p_imageExit = QPixmap(":/images/tsuitem/X.png");
     QPointF p_imageExitPosition = QPointF(122, 4);
     QPixmap p_imagePause = QPixmap(":/images/tsuitem/pause.png");
-    QPointF p_imagePuasePosition = QPointF(31, 167);
+    QPointF p_imagePausePosition = QPointF(31, 167);
     QPixmap p_imageResume = QPixmap(":/images/tsuitem/resume.png");
     QPointF p_imageResumePosition = QPointF(46, 167);
 

@@ -15,7 +15,8 @@ HEADERS += \
     $$PWD/chartxy/chartxyscale.h \
     $$PWD/chartxy/chartxysetting.h \
     $$PWD/tsumanager.h \
-    $$PWD/tsuitem.h
+    $$PWD/tsuitem.h \
+    $$PWD/tsuevents.h
 
 SOURCES += \
     $$PWD/logger.cpp \

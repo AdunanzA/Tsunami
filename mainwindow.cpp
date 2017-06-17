@@ -23,31 +23,39 @@ MainWindow::MainWindow(QWidget *parent) :
     statusBar()->showMessage("Welcome!");
 
     // update from sessionManager (torrent add and update) goes to downloadPage to manage tsuCard and session values
-    connect(sessionManager, SIGNAL(updateFromItem(const tsuEvents::tsuEvent &)), downloadPage, SLOT(updateFromSession(const tsuEvents::tsuEvent &)), Qt::QueuedConnection);
+    connect(sessionManager, SIGNAL(updateFromItem(const QVector<tsuEvents::tsuEvent> &)), downloadPage, SLOT(updateFromSession(const QVector<tsuEvents::tsuEvent> &)), Qt::QueuedConnection);
 
     // deleted torrent from sessionManager goes to downloadPage to remove it from list
     connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)), Qt::QueuedConnection);
 
 
     // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
-    connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));
+    connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)), Qt::QueuedConnection);
 
-    // update from downloadpage to statusbar text
-    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)));
+    // requested pause from downloadPage (emitted from a tsucard) goes to sessionManager to pause torrent
+    connect(downloadPage, SIGNAL(sendRequestedPauseToSession(std::string)), sessionManager, SLOT(getPauseRequest(std::string)), Qt::QueuedConnection);
 
-    // update from downloadpage to statistics page
-    connect(downloadPage, SIGNAL(sendStatisticsUpdate(const QPair<int,int> &)), statisticsPage, SLOT(updateStats(const QPair<int,int> &)));
+    // requested resume from downloadPage (emitted from a tsucard) goes to sessionManager to resume torrent
+    connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)), Qt::QueuedConnection);
+
+
+    // update from downloadPage to statusbar text
+    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)), Qt::QueuedConnection);
+
+    // update from downloadPage to statistics page
+    connect(downloadPage, SIGNAL(sendStatisticsUpdate(const QPair<int,int> &)), statisticsPage, SLOT(updateStats(const QPair<int,int> &)), Qt::QueuedConnection);
 
     // popup message from downloadPage
-    connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)));
+    connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)), Qt::QueuedConnection);
 
-    // update from downloadpafe to gauge
-    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)));
+    // update from downloadPage to gauge
+    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)), Qt::QueuedConnection);
 
 }
 
 MainWindow::~MainWindow()
 {
+    delete sessionManager;
     delete ui;
 }
 
@@ -64,7 +72,7 @@ void MainWindow::updateGauge(const double &value)
 void MainWindow::initializeScreen() {
     setWindowIcon(QIcon(":/images/logo_tsunami_tiny.ico"));
     setWindowTitle(PROJECT " " VERSION);
-    //setWindowFlags(Qt::FramelessWindowHint);
+//    setWindowFlags(Qt::FramelessWindowHint);
     createTrayIcon();
 
     QFontDatabase::addApplicationFont(":/font/BEBAS___.TTF");
@@ -76,6 +84,7 @@ void MainWindow::initializeScreen() {
     connect(ui->btnArchive, SIGNAL(released()), this, SLOT(btnMenuClick()));
     connect(ui->btnStreaming, SIGNAL(released()), this, SLOT(btnMenuClick()));
     connect(ui->btnStatistics, SIGNAL(released()), this, SLOT(btnMenuClick()));
+    connect(ui->btnChat, SIGNAL(released()), this, SLOT(btnMenuClick()));
 
     connect(ui->btnAdd, SIGNAL(released()), this, SLOT(btnAddClick()));
 
@@ -113,24 +122,22 @@ void MainWindow::initializeScreen() {
 
 void MainWindow::readSettings()
 {
-    if (p_settingsFile == "")
-        p_settingsFile = QString("%0:/%1.ini").arg(QApplication::applicationDirPath().left(1)).arg("tsunami");
-    QSettings settings(p_settingsFile, QSettings::IniFormat);
+    QSettings settings(settingsPage->settingsFileName, QSettings::IniFormat);
 
     settings.beginGroup("MainWindow");
     resize(settings.value("size", QSize(840, 670)).toSize());
     move(settings.value("pos", QPoint(200, 200)).toPoint());
+    if ( settings.value("fullScreen", false).toBool() ) setWindowState(Qt::WindowFullScreen);
     settings.endGroup();
 }
 
 void MainWindow::writeSettings()
 {
-    if (p_settingsFile == "")
-        p_settingsFile = QString("%0:/%1.ini").arg(QApplication::applicationDirPath().left(1)).arg("tsunami");
-    QSettings settings(p_settingsFile, QSettings::IniFormat);
+    QSettings settings(settingsPage->settingsFileName, QSettings::IniFormat);
     settings.beginGroup("MainWindow");
     settings.setValue("size", size());
     settings.setValue("pos", pos());
+    settings.setValue("fullScreen", isFullScreen());
     settings.endGroup();
 }
 
@@ -214,26 +221,22 @@ void MainWindow::btnMenuClick() {
     settingsPage->setHidden(btn != ui->btnSettings->objectName());
     searchPage->setHidden(btn != ui->btnSearch->objectName());
     statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
-//    qsa->setHidden(btn != ui->btnDownload->objectName());
     downloadPage->setHidden(btn != ui->btnDownload->objectName());
+
+    if (btn == ui->btnChat->objectName()) {
+        QString link = "https://discordapp.com/invite/0pfzTOXuEjt9ifvF";
+        QDesktopServices::openUrl(QUrl(link));
+    }
 }
 
 void MainWindow::btnAddClick()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select torrent"), ".", tr("Torrents (*.torrent)"));
-    foreach (const QString &str, fileNames) {
-        libtorrent::add_torrent_params atp;
-
-        atp.ti = std::make_shared<libtorrent::torrent_info>(libtorrent::torrent_info(str.toStdString()));
-        atp.save_path = ".";
-
-        atp.flags &= ~libtorrent::add_torrent_params::flag_paused; // Start in pause
-        atp.flags &= ~libtorrent::add_torrent_params::flag_auto_managed; // Because it is added in paused state
-        atp.flags &= ~libtorrent::add_torrent_params::flag_duplicate_is_error; // Already checked
-
-        sessionManager->addTorrent(atp);
-        ui->btnDownload->released(); // switch to downloadpage
-    }
+    QFileDialog fd(this, tr("Select torrent"), settingsPage->getLastBrowsedDir(), tr("Torrents (*.torrent)"));
+    QStringList fileNames = fd.getOpenFileNames();
+    if (fileNames.isEmpty()) return;
+    settingsPage->setLastBrowsedDir(QFileInfo(fileNames.first()).absolutePath());
+    sessionManager->addItems(std::move(fileNames), settingsPage->getDownloadPath());
+    ui->btnDownload->released(); // switch to downloadpage
 }
 
 void MainWindow::popupInfo(const QString &msg)

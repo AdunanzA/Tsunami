@@ -1,10 +1,55 @@
 #ifndef TSUMANAGER_H
 #define TSUMANAGER_H
 
+#include <QSharedPointer>
+#include <QObject>
+#include <QDebug>
+#include <QTimer>
+
+#include "libtorrent/session.hpp"
+#include "libtorrent/torrent_info.hpp"
+#include "libtorrent/torrent_handle.hpp"
+#include "libtorrent/alert_types.hpp"
+#include "libtorrent/bencode.hpp"
+#include "libtorrent/write_resume_data.hpp"
+#include "libtorrent/read_resume_data.hpp"
+
+#include "tsuitem.h"
+#include "tsuevents.h"
+
+#include <fstream>      // std::ofstream
+
+class tsuManager :public QObject
+{
+    Q_OBJECT
+public:
+    tsuManager();
+    explicit tsuManager(const libtorrent::settings_pack & sp);
+    ~tsuManager();
+    static int outstanding_resume_data;
+
+    void addItems(const QStringList &&items, const QString &path);
+
+signals:
+    void updateFromItem(const QVector<tsuEvents::tsuEvent> event);
+    void torrentDeleted(const std::string &hash);
+
+public slots:
+    void alertsHandler();
+    void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
+    void getPauseRequest(const std::string &hash);
+    void getResumeRequest(const std::string &hash);
+
+private:
+    QSharedPointer<libtorrent::session> p_session;
+
+};
+
+/*
 #include <QObject>
 #include <QTimer>
 #include <QDebug>
-#include <QThread>
+
 
 #include "libtorrent/session.hpp"
 #include "libtorrent/session_status.hpp"
@@ -104,42 +149,11 @@ public slots:
 //        p_session.get()->post_torrent_updates(libtorrent::alert::status_notification);
     }
 
-signals:
-    void eventFromLibtorrent(const tsuEvents::tsuEvent event);
-    void torrentDeletedFromLibtorrent(const std::string &hash);
+
 };
 
 
-class tsuManager : public QObject
-{
-    Q_OBJECT
-    QThread workerThread;
-
-public:
-    tsuManager(QObject *parent = 0);
-    ~tsuManager();
-
-    void addTorrent(libtorrent::add_torrent_params atp);
-
-signals:
-    void updateFromItem(const tsuEvents::tsuEvent &event);
-    void torrentDeleted(const std::string &hash);
-
-public slots:
-    void handleWorkerResults(const tsuEvents::tsuEvent event);
-    void handleWorkerDeleteTorrent(const std::string hash);
-    void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
-
-private:
-    QTimer *p_timer;
-    std::shared_ptr<libtorrent::session> p_session;
-    Worker *p_worker;
-
-    int p_timerTick = 1000;
-
-private slots:
-    void timerTick();
-};
+*/
 
 Q_DECLARE_METATYPE(tsuEvents::tsuEvent)
 Q_DECLARE_METATYPE(std::string)

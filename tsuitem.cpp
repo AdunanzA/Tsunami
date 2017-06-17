@@ -74,12 +74,11 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 
     if (this->p_status != statusEnum::finished) {
         painter->drawPixmap(p_imageBkg2Position, p_imageBkg2);
-        painter->drawPixmap(p_imagePuasePosition, p_imagePause);
+        painter->drawPixmap(p_imagePausePosition, p_imagePause);
         painter->drawPixmap(p_imageResumePosition, p_imageResume);
     }
 
     switch (p_status) {
-    case undefined:
     case checking_files:
     case checking_resume_data:
         painter->drawPixmap(p_imageStatePosition, p_imageStateW);
@@ -308,18 +307,19 @@ void tsuItem::setValue(const tsuEvents::tsuEvent &event)
 {
 //    qDebug() << QString("setValue event.percentage %1").arg(event.percentage);
     p_progressValue = event.percentage/10000;
-    p_downloaded = (event.downloaded > 0) ? event.downloaded : 0;
-    p_rateDownload = (event.downloadRate > 0) ? event.downloadRate : 0;
+    p_downloaded = (event.downloaded != 0) ? qFabs(event.downloaded) : 0;
+    p_rateDownload = (event.downloadRate != 0) ? qFabs(event.downloadRate) : 0;
     p_head = event.name;
 //    p_status = event.state;
-    p_size = (event.total_size > 0) ? event.total_size : 0;
-    p_uploaded = (event.uploaded > 0) ? event.uploaded : 0;
-    p_rateUpload = (event.uploadRate > 0) ? event.uploadRate : 0;
-    if (p_progressValue == 100) {
-        set_Status(statusEnum::finished);
-    } else {
-        set_Status(statusEnum::downloading);
-    }
+    p_size = (event.total_size != 0) ? qFabs(event.total_size) : 0;
+    p_uploaded = (event.uploaded != 0) ? qFabs(event.uploaded) : 0;
+    p_rateUpload = (event.uploadRate != 0) ? qFabs(event.uploadRate) : 0;
+//    if (p_progressValue == 100) {
+//        set_Status(statusEnum::finished);
+//    } else {
+//        set_Status(statusEnum::downloading);
+//    }
+    set_Status(event.state);
     update();
 }
 
@@ -363,9 +363,14 @@ statusEnum tsuItem::get_Status() const
     return p_status;
 }
 
-void tsuItem::set_Status(const statusEnum &value)
+//void tsuItem::set_Status(const statusEnum &value)
+//{
+//    p_status = value;
+//}
+
+void tsuItem::set_Status(const int &value)
 {
-    p_status = value;
+    p_status = static_cast<statusEnum>(value);
 }
 
 void tsuItem::fadeInFinished()
@@ -445,17 +450,15 @@ void tsuItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         if (p_status != statusEnum::finished) {
             // PAUSE BUTTON
-            if ( (x >= p_imagePuasePosition.x() && x <= (p_imagePuasePosition.x() + p_imagePause.width())) &&
-                 (y >= p_imagePuasePosition.y() && y <= (p_imagePuasePosition.y() + p_imagePause.height()) ) ) {
+            if ( (x >= p_imagePausePosition.x() && x <= (p_imagePausePosition.x() + p_imagePause.width())) &&
+                 (y >= p_imagePausePosition.y() && y <= (p_imagePausePosition.y() + p_imagePause.height()) ) ) {
                 emit pauseRequested(this->p_hash);
-                set_Status(statusEnum::paused);
                 update();
             } else
             // RESUME BUTTON
             if ( (x >= p_imageResumePosition.x() && x <= (p_imageResumePosition.x() + p_imageResume.width())) &&
                  (y >= p_imageResumePosition.y() && y <= (p_imageResumePosition.y() + p_imageResume.height()) ) ) {
                 emit resumeRequested(this->p_hash);
-                set_Status(statusEnum::downloading);
                 update();
             }
         }
@@ -523,8 +526,8 @@ void tsuItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
                 setToolTip("Finished, YAY!");
             }
         } else {
-            if ( (x >= p_imagePuasePosition.x() && x <= (p_imagePuasePosition.x() + p_imagePause.width())) &&
-                 (y >= p_imagePuasePosition.y() && y <= (p_imagePuasePosition.y() + p_imagePause.height()) ) ) {
+            if ( (x >= p_imagePausePosition.x() && x <= (p_imagePausePosition.x() + p_imagePause.width())) &&
+                 (y >= p_imagePausePosition.y() && y <= (p_imagePausePosition.y() + p_imagePause.height()) ) ) {
                 setToolTip("Pause");
                 setCursor(Qt::PointingHandCursor);
             } else
@@ -601,8 +604,9 @@ QString tsuItem::convertSizeUnit(const int &size)
 
 QString tsuItem::remainingTime()
 {
-    if (p_rateDownload == 0) return "∞";
+    if (p_rateDownload <= 0) return "∞";
     double remaining = (p_size-p_downloaded)/p_rateDownload;
+    if (remaining <= 0) return "∞";
 
     double seconds = std::fmod(remaining, 60);
     remaining /= 60;

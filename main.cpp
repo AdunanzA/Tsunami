@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     qRegisterMetaType<tsuEvents::tsuEvent>();
     qRegisterMetaType<std::string>();
+    qRegisterMetaType<QVector<tsuEvents::tsuEvent>>();
+    qRegisterMetaType<QPair<int,int>>();
+
     MainWindow w;
 
     QApplication::setOrganizationName(ORGANIZATION_NAME);
