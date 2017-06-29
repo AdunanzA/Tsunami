@@ -1,0 +1,26 @@
+version: 0.3.2.{build}
+build:
+  verbosity: minimal
+  
+  
+image: Visual Studio 2015
+
+platform: x64
+
+configuration: Release
+
+environment:
+    REPO_DIR: &REPO_DIR c:\tsunami
+    TSU_LIB_URL: https://tsunami.adunanza.net/devs/libraries.7z
+
+# project directory
+clone_folder: *REPO_DIR
+
+install:
+  - set QTDIR=C:\Qt\5.8\msvc2015_64
+  - set PATH=%PATH%;%QTDIR%\bin
+  
+build_script:
+  - appveyor DownloadFile "%TSU_LIB_URL%" -FileName "c:\libraries.7z" && 7z x "c:\libraries.7z" -o"%REPO_DIR%"
+  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
+  - qmake Tsunami.pro
