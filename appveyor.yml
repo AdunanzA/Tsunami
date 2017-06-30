@@ -20,12 +20,14 @@ clone_folder: *REPO_DIR
 install:
   - set QTDIR=C:\Qt\5.8\msvc2015_64
   - set PATH=%PATH%;%QTDIR%\bin
+
+before_build:
+  - for /f "tokens=3" %i in ('findstr /B VER_MAJOR = Version.pri') do set major=%i
+  - for /f "tokens=3" %i in ('findstr /B VER_MINOR = Version.pri') do set minor=%i
+  - for /f "tokens=3" %i in ('findstr /B VER_BUGFIX = Version.pri') do set bugfix=%i
+  - Update-AppveyorBuild -Version "%major%.%minor%.%bugfix%.{build}"
   
 build_script:
   - appveyor DownloadFile "%TSU_LIB_URL%" -FileName "c:\libraries.7z" && 7z x "c:\libraries.7z" -o"%REPO_DIR%"
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
-  - 'for /f "tokens=3" %i in ('findstr /B VER_MAJOR = Version.pri') do set major=%i'
-  - 'for /f "tokens=3" %i in ('findstr /B VER_MINOR = Version.pri') do set minor=%i'
-  - 'for /f "tokens=3" %i in ('findstr /B VER_BUGFIX = Version.pri') do set bugfix=%i'
-  - Update-AppveyorBuild -Version "%major%.%minor%.%bugfix%.{build}"
   - qmake Tsunami.pro
