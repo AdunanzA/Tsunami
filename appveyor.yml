@@ -31,7 +31,7 @@ before_build:
   - ps: $V_BUG=select-string -Path ".\version.pri" -Pattern "VER_BUGFIX ="
   - ps: $V_BUG="$V_BUG"
   - ps: $V_BUG=$V_BUG.split()[-1]
-  - ps: Update-AppveyorBuild -Version "$V_MAR.$V_MIN.$V_BUG.{build}"
+  - ps: Update-AppveyorBuild -Version "$V_MAR.$V_MIN.$V_BUG.$APPVEYOR_BUILD_NUMBER"
   
 build_script:
   - appveyor DownloadFile "%TSU_LIB_URL%" -FileName "c:\libraries.7z" && 7z x "c:\libraries.7z" -o"%REPO_DIR%"
