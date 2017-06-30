@@ -30,4 +30,4 @@ build_script:
   - set version=%major%.%minor%.%bugfix%
   - qmake Tsunami.pro
   
-version: %version%.{build}
+version: '%version%.{build}'
