@@ -24,10 +24,10 @@ install:
 before_build:
   - ps: $V_MAJ=select-string -Path ".\version.pri" -Pattern "VER_MAJOR ="
   - ps: $V_MAJ="$V_MAJ"
-  - ps: $V_MAJ=$V_MAK.split()[-1]
-  - ps: $V_MAJ=select-string -Path ".\version.pri" -Pattern "VER_MINOR ="
-  - ps: $V_MAJ="$V_MAJ"
   - ps: $V_MAJ=$V_MAJ.split()[-1]
+  - ps: $V_MIN=select-string -Path ".\version.pri" -Pattern "VER_MINOR ="
+  - ps: $V_MIN="$V_MIN"
+  - ps: $V_MIN=$V_MIN.split()[-1]
   - ps: $V_BUG=select-string -Path ".\version.pri" -Pattern "VER_BUGFIX ="
   - ps: $V_BUG="$V_BUG"
   - ps: $V_BUG=$V_BUG.split()[-1]
