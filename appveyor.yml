@@ -29,7 +29,9 @@ before_build:
   - ps: $V_BUG=select-string -Path ".\version.pri" -Pattern "VER_BUGFIX ="
   - ps: $V_BUG="$V_BUG"
   - ps: $V_BUG=$V_BUG.split()[-1]
-  - ps: Update-AppveyorBuild -Version '"0.$V_MIN.$V_BUG".{build}'
+  - ps: $V_BUILD={build}
+  - ps: $V_BUILD="$V_BUILD"
+  - ps: Update-AppveyorBuild -Version "0.$V_MIN.$V_BUG.$V_BUILD"
   #- ps: Update-AppveyorBuild -Version "0.$V_MIN.$V_BUG"
   
 build_script:
