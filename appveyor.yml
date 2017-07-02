@@ -36,6 +36,6 @@ build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - qmake Tsunami.pro
   - nmake release
-  - cp win_rel\*.* release
+  #- cp win_rel\*.* release
   - cd release
   - windeployqt --release Tsunami.exe
