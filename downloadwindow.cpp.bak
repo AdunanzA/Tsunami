@@ -1,7 +1,7 @@
 #include "downloadwindow.h"
 #include "ui_downloadwindow.h"
 
-//#include "mainwindow.h"
+#include "mainwindow.h"
 
 #define TICKER_TIME 1000
 
@@ -20,15 +20,12 @@
 //  }
 //}
 
-//MainWindow *p_mw;
-
 downloadwindow::downloadwindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::downloadwindow)
 {
     ui->setupUi(this);
     p_scene = new QGraphicsScene(this);
-    p_itemDetails = new itemDetails(this);
 
     ui->graphicsView->setBackgroundBrush(QColor(23,23,23));
     ui->graphicsView->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -42,10 +39,6 @@ downloadwindow::downloadwindow(QWidget *parent) :
     p_sessionStatisticTimer = new QTimer(this);
     connect(p_sessionStatisticTimer, SIGNAL(timeout()), this, SLOT(updateSessionStatistics()));
     p_sessionStatisticTimer->start(TICKER_TIME);
-
-//    p_mw = reinterpret_cast<MainWindow*>(parent);
-//    p_mw = (MainWindow*)parent;
-
 }
 
 downloadwindow::~downloadwindow()
@@ -68,30 +61,16 @@ void downloadwindow::requestedResume(const std::string &hash)
     emit sendRequestedResumeToSession(hash);
 }
 
-void downloadwindow::requestedDetails(const std::string &hash)
-{
-//    lt::sha1_hash sh(hash);
-//    lt::session *ses = p_mw->sessionManager->p_session.data();
-//    lt::torrent_handle th = ses->find_torrent(sh);
-
-//    if (th.is_valid()) {
-//        p_itemDetails->setValues(th);
-//        p_itemDetails->exec();
-//    }
-    p_itemDetails->setHash(hash);
-    p_itemDetails->exec();
-}
-
 void downloadwindow::updateSessionStatistics()
 {
     try {
         p_downRate = 0;
         p_upRate = 0;
         foreach (tsuItem* item, p_tsulist) {
-            p_totalDownload += qFabs(item->get_Downloaded());
-            p_totalUpload += qFabs(item->get_Uploaded());
-            p_downRate += qFabs(item->get_RateDownload());
-            p_upRate += qFabs(item->get_RateUpload());
+            p_totalDownload += item->get_Downloaded();
+            p_totalUpload += item->get_Uploaded();
+            p_downRate = (p_downRate + item->get_RateDownload()) / 2;
+            p_upRate = (p_upRate + item->get_RateUpload()) / 2;
         }
 
         // update mainwindow statusbar message
@@ -122,30 +101,29 @@ void downloadwindow::updateFromSession(const QVector<tsuEvents::tsuEvent> &event
     try {
         for (tsuEvents::tsuEvent event : events) {
 //            qDebug() << QString("updateFromSession received for %0, size %1").arg(event.name).arg(event.total_size);
+            bool itemFound = false;
             foreach (tsuItem* item, p_tsulist) {
                 if ( item->get_Hash() == event.hash ) {
+                    itemFound = true;
                     item->setValue(event);
                     continue;
                 }
             }
+            if (!itemFound) {
+                tsuItem *ts = new tsuItem(event.hash);
+                connect(ts, SIGNAL(cancelRequested(std::string,bool)), this, SLOT(requestedCancel(std::string,bool)), Qt::QueuedConnection);
+                connect(ts, SIGNAL(pauseRequested(std::string)), this, SLOT(requestedPause(std::string)), Qt::QueuedConnection);
+                connect(ts, SIGNAL(resumeRequested(std::string)), this, SLOT(requestedResume(std::string)), Qt::QueuedConnection);
+                ts->setValue(event);
+                p_tsulist.append(ts);
+                p_scene->addItem(ts);
+                redrawItemsPosition();
+            }
         }
+
     } catch (std::exception &exc) {
         qDebug() << QString("updateFromSession throws %0").arg(exc.what());
     }
-}
-
-void downloadwindow::addFromSession(const tsuEvents::tsuEvent &event)
-{
-//    qDebug() << QString("received add for '%0' - '%1'").arg(event.name).arg(QString::fromStdString(event.hash));
-    tsuItem *ts = new tsuItem(event.hash);
-    connect(ts, SIGNAL(cancelRequested(std::string,bool)), this, SLOT(requestedCancel(std::string,bool)), Qt::QueuedConnection);
-    connect(ts, SIGNAL(pauseRequested(std::string)), this, SLOT(requestedPause(std::string)), Qt::QueuedConnection);
-    connect(ts, SIGNAL(resumeRequested(std::string)), this, SLOT(requestedResume(std::string)), Qt::QueuedConnection);
-    connect(ts, SIGNAL(detailsRequested(std::string)), this, SLOT(requestedDetails(std::string)), Qt::QueuedConnection);
-    ts->setValue(event);
-    p_tsulist.append(ts);
-    p_scene->addItem(ts);
-    redrawItemsPosition();
 }
 
 void downloadwindow::torrentDeletedFromSession(const std::string &hash)

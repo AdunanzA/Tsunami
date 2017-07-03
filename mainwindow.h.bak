@@ -38,11 +38,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    tsuManager *sessionManager;
     QPointer<QSystemTrayIcon> m_systrayIcon;
-
-signals:
-    void stopSessionManager();
 
 public slots:
     void updateStatusBar(const QString & msg);
@@ -52,8 +48,8 @@ public slots:
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
     void balloonClicked();
-
     void btnMenuClick();
+
     void btnAddClick();
 
 private:
@@ -64,7 +60,7 @@ private:
     statisticswindow *statisticsPage;
     QLabel *statusLabel;
 
-    QThread *p_session_thread;
+    tsuManager *sessionManager;
 
     QScale *p_scaleGauge;
 
@@ -77,7 +73,6 @@ private:
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
-
 };
 
 

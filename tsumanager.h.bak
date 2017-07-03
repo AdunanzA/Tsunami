@@ -24,35 +24,25 @@ class tsuManager :public QObject
     Q_OBJECT
 public:
     tsuManager();
-    explicit tsuManager(const lt::settings_pack & sp);
+    explicit tsuManager(const libtorrent::settings_pack & sp);
     ~tsuManager();
     static int outstanding_resume_data;
 
     void addItems(const QStringList &&items, const QString &path);
 
-    QSharedPointer<lt::session> p_session;
-
 signals:
-    void updateFromSessionManager(const QVector<tsuEvents::tsuEvent> events);
-    void addFromSessionManager(const tsuEvents::tsuEvent &event);
+    void updateFromItem(const QVector<tsuEvents::tsuEvent> event);
     void torrentDeleted(const std::string &hash);
-//    void stopTimer();
-    void finished();
 
 public slots:
+    void alertsHandler();
     void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
     void getPauseRequest(const std::string &hash);
     void getResumeRequest(const std::string &hash);
-    void startManager();
-    void stopManager();
 
 private:
-    void setupManager();
-//    QTimer *timerUpdate;
+    QSharedPointer<libtorrent::session> p_session;
 
-private slots:
-    void alertsHandler();
-//    void postUpdates();
 };
 
 /*

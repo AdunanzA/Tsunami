@@ -59,24 +59,21 @@ SOURCES += main.cpp\
     settingswindow.cpp \
     searchwindow.cpp \
     downloadwindow.cpp \
-    statisticswindow.cpp \
-    itemdetails.cpp
+    statisticswindow.cpp
 
 HEADERS  += \
     mainwindow.h \
     settingswindow.h \
     searchwindow.h \
     downloadwindow.h \
-    statisticswindow.h \
-    itemdetails.h
+    statisticswindow.h
 
 FORMS    += \
     mainwindow.ui \
     settingswindow.ui \
     searchwindow.ui \
     downloadwindow.ui \
-    statisticswindow.ui \
-    itemdetails.ui
+    statisticswindow.ui
 
 OBJECTS_DIR = tmp
 MOC_DIR = tmp

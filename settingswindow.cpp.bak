@@ -1,9 +1,6 @@
 #include "settingswindow.h"
 #include "ui_settingswindow.h"
 
-QString settingswindow::settingsFileName = "tsunami.ini";
-QSettings::Format settingswindow::settingsFileFormat = QSettings::IniFormat;
-
 settingswindow::settingswindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::settingswindow)
@@ -40,9 +37,7 @@ void settingswindow::loadSettings()
 //    }
     QSettings settings(settingsFileName, settingsFileFormat);
     QString downloadPath = settings.value("Download/downloadPath", QCoreApplication::applicationDirPath()).toString();
-    QString debugLevel = settings.value("Debug/Level", "Info").toString();
     setDownloadPath(downloadPath);
-    setDebugLevel(debugLevel);
 }
 
 void settingswindow::saveSettings()
@@ -51,7 +46,6 @@ void settingswindow::saveSettings()
     settings.beginGroup("Download");
     settings.setValue("downloadPath", getDownloadPath());
     settings.endGroup();
-    settings.setValue("Debug/Level", getDebugLevel());
 }
 
 void settingswindow::setLastBrowsedDir(const QString &path)
@@ -99,15 +93,4 @@ void settingswindow::on_btnSave_released()
 void settingswindow::on_btnCancel_released()
 {
     loadSettings();
-}
-
-QString settingswindow::getDebugLevel() const
-{
-    return p_debugLevel;
-}
-
-void settingswindow::setDebugLevel(const QString &value)
-{
-    ui->cmbDebugLevel->setCurrentText(value);
-    p_debugLevel = value;
 }

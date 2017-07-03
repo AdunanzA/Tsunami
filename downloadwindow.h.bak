@@ -7,11 +7,9 @@
 #include <QVector>
 #include <QGraphicsScene>
 #include <QDateTime>
-#include <qmath.h> // qFabs
 
 #include "tsumanager.h"
 #include "tsuitem.h"
-#include "itemdetails.h"
 
 #include <cmath> // floor
 
@@ -29,7 +27,6 @@ public:
 
 public slots:
     void updateFromSession(const QVector<tsuEvents::tsuEvent> &events);
-    void addFromSession(const tsuEvents::tsuEvent &event);
     void torrentDeletedFromSession(const std::string &hash);
 
 private:
@@ -42,19 +39,16 @@ private:
     int p_upRate = 0;
     int p_totalDownload = 0;
     int p_totalUpload = 0;
-//    QDateTime p_lastStatisticsSent = QDateTime::currentDateTime();
+    QDateTime p_lastStatisticsSent = QDateTime::currentDateTime();
 
     int p_itemsPerRow = 0;
 
     QTimer *p_sessionStatisticTimer;
 
-    itemDetails *p_itemDetails;
-
 private slots:
     void requestedCancel(const std::string &hash, const bool &deleteFilesToo);
     void requestedPause(const std::string &hash);
     void requestedResume(const std::string &hash);
-    void requestedDetails(const std::string &hash);
     void updateSessionStatistics();
 
 signals:

@@ -24,14 +24,11 @@ public:
     void setLastBrowsedDir(const QString &path);
     QString getLastBrowsedDir();
 
-    static QString settingsFileName;
-    static QSettings::Format settingsFileFormat;
+    const QString settingsFileName = "tsunami.ini";
+    const QSettings::Format settingsFileFormat = QSettings::IniFormat;
 
     QString getDownloadPath() const;
     void setDownloadPath(const QString &value);
-
-    QString getDebugLevel() const;
-    void setDebugLevel(const QString &value);
 
 private slots:
     void on_btnSave_released();
@@ -40,7 +37,6 @@ private slots:
 private:
     Ui::settingswindow *ui;
     QString p_downloadPath;
-    QString p_debugLevel;
 
     bool eventFilter(QObject* object, QEvent* event);
 };

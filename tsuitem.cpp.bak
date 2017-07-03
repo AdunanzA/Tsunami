@@ -40,6 +40,7 @@ void tsuItem::createItem()
 
     // will be populated with first date during fast resume
     p_eta = QDateTime::currentDateTime();
+
 }
 
 QRectF tsuItem::boundingRect() const
@@ -78,7 +79,6 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     }
 
     switch (p_status) {
-    case undefined:
     case checking_files:
     case checking_resume_data:
         painter->drawPixmap(p_imageStatePosition, p_imageStateW);
@@ -310,9 +310,15 @@ void tsuItem::setValue(const tsuEvents::tsuEvent &event)
     p_downloaded = (event.downloaded != 0) ? qFabs(event.downloaded) : 0;
     p_rateDownload = (event.downloadRate != 0) ? qFabs(event.downloadRate) : 0;
     p_head = event.name;
+//    p_status = event.state;
     p_size = (event.total_size != 0) ? qFabs(event.total_size) : 0;
     p_uploaded = (event.uploaded != 0) ? qFabs(event.uploaded) : 0;
     p_rateUpload = (event.uploadRate != 0) ? qFabs(event.uploadRate) : 0;
+//    if (p_progressValue == 100) {
+//        set_Status(statusEnum::finished);
+//    } else {
+//        set_Status(statusEnum::downloading);
+//    }
     set_Status(event.state);
     update();
 }
@@ -356,6 +362,11 @@ statusEnum tsuItem::get_Status() const
 {
     return p_status;
 }
+
+//void tsuItem::set_Status(const statusEnum &value)
+//{
+//    p_status = value;
+//}
 
 void tsuItem::set_Status(const int &value)
 {
@@ -451,10 +462,7 @@ void tsuItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 update();
             }
         }
-
-        if ( (x >= 8 && x <= 120) && (y >= 6 && y <= 17) ) {
-            emit detailsRequested(this->get_Hash());
-        }
+//        setOpacity(0.8);
     }
 }
 
@@ -528,10 +536,6 @@ void tsuItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
                 setToolTip("Resume");
                 setCursor(Qt::PointingHandCursor);
             }
-        }
-        if ( (x >= 8 && x <= 120) && (y >= 6 && y <= 17) ) {
-             setToolTip("Click for torrent details");
-             setCursor(Qt::PointingHandCursor);
         }
     }
 }

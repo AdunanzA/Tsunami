@@ -5,11 +5,10 @@
 
 statisticswindow::statisticswindow(QWidget *parent) :
     QWidget(parent),
-//    chart(new ChartXY),
+    chart(new ChartXY),
     ui(new Ui::statisticswindow)
 {
     ui->setupUi(this);
-    chart = new ChartXY(this);
     setupModel();
     setupChart();
 }

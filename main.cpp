@@ -2,8 +2,13 @@
 
 #include <QApplication>
 #include <QSplashScreen>
+#include <QtDebug>
+#include <QFile>
+#include <QTextStream>
+#include <QSettings>
 
-#include "tsumanager.h"
+#include <tsumanager.h>
+#include <settingswindow.h>
 
 #define SPLASH_DURATION 3000
 #define ORGANIZATION_NAME "adunanza"
@@ -12,6 +17,40 @@
 
 void showSplashScreen(const MainWindow & w);
 
+void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
+{
+    QString txt;
+    QString txtContext = QString("%0::%2::%3").arg(context.file).arg(context.function).arg(context.line);
+    QString date = QDateTime::currentDateTime().toString(Qt::SystemLocaleDate);
+
+    QSettings settings(settingswindow::settingsFileName, settingswindow::settingsFileFormat);
+    QString debugLevel = settings.value("Debug/Level", "Info").toString();
+
+    switch (type) {
+    case QtDebugMsg:
+        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg(debugLevel).arg(txtContext).arg(msg);
+        break;
+    case QtInfoMsg:
+        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("I").arg(txtContext).arg(msg);
+        break;
+    case QtWarningMsg:
+        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("W").arg(txtContext).arg(msg);
+        break;
+    case QtCriticalMsg:
+        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("C").arg(txtContext).arg(msg);
+        break;
+    case QtFatalMsg:
+        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("F").arg(txtContext).arg(msg);
+        break;
+    }
+    QFile outFile("Tsunami.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+    QTextStream ts(&outFile);
+    ts << txt << endl;
+    QTextStream out(stdout);
+    out << txt << endl;
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -19,6 +58,9 @@ int main(int argc, char *argv[])
     qRegisterMetaType<std::string>();
     qRegisterMetaType<QVector<tsuEvents::tsuEvent>>();
     qRegisterMetaType<QPair<int,int>>();
+
+    // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
+    qInstallMessageHandler(logMessageHandler);
 
     MainWindow w;
 
