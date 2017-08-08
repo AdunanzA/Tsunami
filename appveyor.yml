@@ -51,7 +51,7 @@ build_script:
   - appveyor DownloadFile "%SQUIRREL_URL%" -FIleName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   - nuget pack c:\tsunami\Tsunami.nuspec -Version %APPVEYOR_BUILD_VERSION% -Properties Configuration=Release -BasePath .
   - move .\Tsunami.%APPVEYOR_BUILD_VERSION%.nupkg "%SQUIRREL_DIR%" && cd "%SQUIRREL_DIR%"
-  - Squirrel.exe --no-msi -r .\Releases\ --releasify .\Tsunami.%APPVEYOR_BUILD_VERSION%.nupkg && cd .\Releases\
+  - ps: .\Squirrel.exe --no-msi -r .\Releases\ --releasify .\Tsunami.%APPVEYOR_BUILD_VERSION%.nupkg && cd .\Releases\
   # - c:\squirrel\Squirrel.exe -r c:\Releases\ --releasify ..\Tsunami.%APPVEYOR_BUILD_NUMBER%.nupkg
   - dir
  #artifacts:
