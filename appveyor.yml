@@ -48,8 +48,6 @@ build_script:
   - cp lib_rel/*.* release
   - cd release
   - windeployqt --release Tsunami.exe
-
- after_build:
   - appveyor DownloadFile "%SQUIRREL_URL%" -FIleName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   - nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - squirrel --no-msi --releasify Tsunami."0.$V_MIN.$V_BUG".nupkg
