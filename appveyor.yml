@@ -49,9 +49,9 @@ build_script:
   - cd release
   - windeployqt --release Tsunami.exe
   - appveyor DownloadFile "%SQUIRREL_URL%" -FIleName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
-  - nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
-  - squirrel --no-msi --releasify Tsunami."0.$V_MIN.$V_BUG".nupkg
-  - c:\squirrel\Squirrel.exe -r c:\Releases\ --releasify ..\Tsunami."0.$V_MIN.$V_BUG".nupkg
+  - nuget pack c:\tsunami\Tsunami.nuspec -Version %APPVEYOR_BUILD_NUMBER% -Properties Configuration=Release -BasePath .
+  - squirrel --no-msi --releasify Tsunami.%APPVEYOR_BUILD_NUMBER%.nupkg
+  - c:\squirrel\Squirrel.exe -r c:\Releases\ --releasify ..\Tsunami.%APPVEYOR_BUILD_NUMBER%.nupkg
   - dir
  #artifacts:
  #  **\*.nupkg
