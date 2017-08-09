@@ -52,8 +52,8 @@ build_script:
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - ps: move .\Tsunami."0.$V_MIN.$V_BUG".nupkg "%SQUIRREL_DIR%" 
   - cd "%SQUIRREL_DIR%"
-  - ps: .\Squirrel.exe --no-msi -r c:\Releases\ --releasify .\Tsunami."0.$V_MIN.$V_BUG".nupkg 
-  - cd c:\Releases
+  - ps: .\Squirrel.exe --no-msi -r "%SQUIRREL_DIR%"\Releases\ --releasify .\Tsunami."0.$V_MIN.$V_BUG".nupkg 
+  - cd "%SQUIRREL_DIR%"\Releases\
   # - c:\squirrel\Squirrel.exe -r c:\Releases\ --releasify ..\Tsunami.%APPVEYOR_BUILD_NUMBER%.nupkg
   - dir
  #artifacts:
