@@ -55,5 +55,5 @@ build_script:
   - ps: .\Squirrel.exe -r "%REPO_DIR%"\Releases\ --releasify .\Tsunami."0.$V_MIN.$V_BUG".nupkg 
  
  artifacts:
- - path: Releases
+ - path: "%REPO_DIR%"\Releases\
  #  **\*.nupkg
