@@ -55,5 +55,4 @@ build_script:
   - ps: ls 
   
   artifacts:
-   - path: tsunami\Releases
  #  **\*.nupkg
