@@ -56,7 +56,3 @@ build_script:
 artifacts:
   - path: Releases
     name: Tsunami
-    on:
-      branch: master
-      platform: x64
- #  **\*.nupkg
