@@ -54,6 +54,6 @@ build_script:
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
   
 artifacts:
-  - path: tsunami\Releases
+  - path: Releases
     name: Tsunami."0.$V_MIN.$V_BUG"
  #  **\*.nupkg
