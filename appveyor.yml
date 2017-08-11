@@ -52,6 +52,6 @@ build_script:
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   #- ps: move .\Tsunami."0.$V_MIN.$V_BUG".nupkg "%SQUIRREL_DIR%" 
   - cd "%SQUIRREL_DIR%"
-  - ps: .\Squirrel.com -r .\ --no-msi --releasify C:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
+  - ps: .\Squirrel.com --no-msi --releasify "%TSU_LIB_URL%"\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
   - ps: ls 
  #  **\*.nupkg
