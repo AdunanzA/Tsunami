@@ -52,7 +52,7 @@ build_script:
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
-  - ps: ls 
   
-  artifacts:
+artifacts:
+  - tsunami\Releases
  #  **\*.nupkg
