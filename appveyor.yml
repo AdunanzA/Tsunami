@@ -53,5 +53,5 @@ build_script:
   #- ps: move .\Tsunami."0.$V_MIN.$V_BUG".nupkg "%SQUIRREL_DIR%" 
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.exe -r "%REPO_DIR%"\Releases\ --releasify C:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
-  - dir
+  - dir "%REPO_DIR%"\Releases\
  #  **\*.nupkg
