@@ -56,5 +56,4 @@ build_script:
   
   artifacts:
    - path: Releases
-   - name: Tsunami."0.$V_MIN.$V_BUG"
  #  **\*.nupkg
