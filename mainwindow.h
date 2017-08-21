@@ -73,6 +73,7 @@ private:
 
     void readSettings();
     void writeSettings();
+    void updateTsunami();
 
     // QWidget interface
 protected:

@@ -159,7 +159,24 @@ void MainWindow::writeSettings()
     settings.setValue("fullScreen", isFullScreen());
     settings.endGroup();
 }
+//gobne
+void MainWindow::updateTsunami()
+{
+    QProcess process;
+    QString dir = QCoreApplication::applicationDirPath() + "/../";
+    //qDebug() << dir + "Update.exe";
+    process.start(dir+"/"+"Update.exe --checkForUpdate=C:/eseguibili/Releases/");
 
+    process.waitForFinished();
+    if(process.error() != QProcess::UnknownError)
+    {
+        qDebug() << "Error checking for updates";
+        return;
+    }
+
+    bool success = QProcess::startDetached(dir+"Update.exe --update=C:/eseguibili/Releases/");
+    //qDebug() << success;
+}
 
 void MainWindow::createTrayIcon()
 {
@@ -268,6 +285,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     qDebug("closing");
     statusLabel->setText("Saving resume data. Please wait.");
     writeSettings();
+    updateTsunami();
     emit stopSessionManager();
     event->accept();
 }
