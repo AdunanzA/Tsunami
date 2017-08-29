@@ -66,6 +66,4 @@ deploy:
     secure: priv_key
   folder: releases
   #artifact: /.*\.nupkg/          # upload all NuGet packages to release assets
-  artifacts:
-    - path: Releases
-      name: Tsunami
+  artifacts: Releases
