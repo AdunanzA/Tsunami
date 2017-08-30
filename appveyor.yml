@@ -62,6 +62,6 @@ deploy:
   protocol: sftp
   host: tsunami.adunanza.net
   username: appveyorBot
-  password:
+  #password:
   folder: releases
   artifacts: Releases
