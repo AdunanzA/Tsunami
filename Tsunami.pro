@@ -87,7 +87,8 @@ RC_FILE = ico.qrc
 
 QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 5
 RESOURCES += \
-    resources.qrc
+    resources.qrc \
+    translations.qrc
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -llibtorrent
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -llibtorrent
