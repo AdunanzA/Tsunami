@@ -46,9 +46,9 @@ build_script:
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
   
-#artifacts:
-#  - path: Releases
-#    name: Tsunami
+artifacts:
+  - path: Releases
+    name: Tsunami
 
 deploy:
   provider: FTP
