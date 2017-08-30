@@ -168,6 +168,54 @@ border-style: solid;</string>
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="groupLanguage">
+       <property name="minimumSize">
+        <size>
+         <width>649</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QFormLayout" name="formLayout">
+        <property name="horizontalSpacing">
+         <number>20</number>
+        </property>
+        <property name="verticalSpacing">
+         <number>10</number>
+        </property>
+        <property name="leftMargin">
+         <number>20</number>
+        </property>
+        <property name="rightMargin">
+         <number>40</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="lblLanguage">
+          <property name="text">
+           <string>Select Language (reboot equired)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="cmbLanguage">
+          <item>
+           <property name="text">
+            <string>English</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Italian</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
