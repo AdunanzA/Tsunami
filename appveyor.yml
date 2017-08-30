@@ -61,7 +61,8 @@ deploy:
   provider: FTP
   protocol: sftp
   host: tsunami.adunanza.net
-  username: appveyorBot
-  #password:
+  username: appveyorBotPlus
+  password:
+    secure: +fV6g+Kru0PyuwoViugcnmwUCYsgYuxVNo5/zQE2t6zjf1xDv3dDcWe3KJ+0R+3u7bmhC7ISWJVr+g5P1YjMqjeohuDIiFQzXxEPxMqXGcisEkHmli4sTxKoCIvPOsqxXb+YQIQRe9KfbBzNqaXYVg==
   folder: releases
   artifacts: Releases
