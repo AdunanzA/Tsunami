@@ -50,7 +50,7 @@ build_script:
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
-  #- ps: rm c:\tsunami\Releases\Setup.exe 
+  - ps: rm c:\tsunami\Releases\Setup.exe 
   
 artifacts:
   - path: Releases/RELEASES
@@ -59,8 +59,8 @@ artifacts:
   - path: Releases/*.nupkg
     name: TsuNugets
 
-  - path: Releases/Setup.exe 
-    name: TsuSetup
+  #- path: Releases/Setup.exe 
+  #  name: TsuSetup
     
   - path: Releases
     name: Tsunami
