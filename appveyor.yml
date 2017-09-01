@@ -64,4 +64,4 @@ deploy:
   password:
     secure: fudAgfl/410v1jYsi+GqgyPL7mgTEbmAnCBcX+5vlY0ZMF7dFDTJIdbWoYSRCH9m76+jCzjdarkICZpZFz5VipKuRuSAjfzDHAQO1/EMbHDbilPQVIqgf0vqoTfRNYAU79fbcb4w/Ez6je55SUwC6Q==
   folder: releases
-  artifacts: Releases
+  #artifacts: Releases
