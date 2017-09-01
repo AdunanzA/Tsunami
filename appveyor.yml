@@ -12,7 +12,6 @@ environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
     TSU_LIB_URL: https://tsunami.adunanza.net/devs/libraries.7z
-    TSU_REL_URL: https://tsunami.adunanza.net/releases
     SQUIRREL_URL: https://github.com/Squirrel/Squirrel.Windows/releases/download/1.7.8/Squirrel.Windows-1.7.8.zip
 
 # project directory
@@ -48,9 +47,15 @@ build_script:
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
   
 artifacts:
-  - path: Releases/*.*
-    name: Tsunami
+  - path: Releases/RELEASES
+    name: TsuRelFile
+   
+  - path: Releases/*.nupkg
+    name: TsuNugets
 
+  - path: Releases/Setup.exe
+    name: TsuSetup
+    
 deploy:
   provider: FTP
   protocol: sftp
@@ -59,4 +64,4 @@ deploy:
   password:
     secure: fudAgfl/410v1jYsi+GqgyPL7mgTEbmAnCBcX+5vlY0ZMF7dFDTJIdbWoYSRCH9m76+jCzjdarkICZpZFz5VipKuRuSAjfzDHAQO1/EMbHDbilPQVIqgf0vqoTfRNYAU79fbcb4w/Ez6je55SUwC6Q==
   folder: releases
-  #artifacts: Releases
+  artifacts: Releases
