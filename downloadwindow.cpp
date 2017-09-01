@@ -184,3 +184,11 @@ void downloadwindow::resizeEvent(QResizeEvent *event)
     p_itemsPerRow = floor(event->size().width()/(tsuItem::ItemWidth + tsuItem::ItemGlowRadius));
     redrawItemsPosition();
 }
+
+void downloadwindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+    }
+}

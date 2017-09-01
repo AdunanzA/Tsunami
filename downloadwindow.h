@@ -50,6 +50,8 @@ private:
 
     itemDetails *p_itemDetails;
 
+    void changeEvent(QEvent *e);
+
 private slots:
     void requestedCancel(const std::string &hash, const bool &deleteFilesToo);
     void requestedPause(const std::string &hash);

@@ -104,3 +104,11 @@ void statisticswindow::setupChart()
     chart->setting().scale().setNominalAutoLimit(true);
     chart->updateChart();
 }
+
+void statisticswindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+    }
+}

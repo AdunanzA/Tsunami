@@ -30,6 +30,7 @@ private:
 
     void setupModel(void);
     void setupChart(void);
+    void changeEvent(QEvent *e);
 
 };
 

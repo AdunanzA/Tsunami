@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include <QFileDialog>
+#include <QTranslator>
 
 #include "tsumanager.h"
 #include "downloadwindow.h"
@@ -55,6 +56,7 @@ private slots:
 
     void btnMenuClick();
     void btnAddClick();
+    void loadLanguage(QString l);
 
 private:
     Ui::MainWindow *ui;
@@ -63,6 +65,8 @@ private:
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
     QLabel *statusLabel;
+    QString language;
+    QTranslator t;
 
     QThread *p_session_thread;
 
@@ -78,8 +82,8 @@ private:
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
+    void changeEvent(QEvent *e) override;
 
 };
-
 
 #endif // MAINWINDOW_H

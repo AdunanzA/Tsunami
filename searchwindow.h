@@ -17,6 +17,8 @@ public:
 
 private:
     Ui::searchwindow *ui;
+    void changeEvent(QEvent *e);
+
 };
 
 #endif // SEARCHWINDOW_H

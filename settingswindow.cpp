@@ -13,6 +13,8 @@ settingswindow::settingswindow(QWidget *parent) :
     ui->txtDownloadPath->installEventFilter(this);
 
     loadSettings();
+
+    connect(ui->cmbLanguage, SIGNAL(activated(int)), this, SLOT(setCurrentLanguage(int)));
 }
 
 settingswindow::~settingswindow()
@@ -41,6 +43,11 @@ void settingswindow::loadSettings()
     QSettings settings(settingsFileName, settingsFileFormat);
     QString downloadPath = settings.value("Download/downloadPath", QCoreApplication::applicationDirPath()).toString();
     QString debugLevel = settings.value("Debug/Level", "Info").toString();
+    QString currentLanguage = settings.value("Language").toString();
+
+    // Find Combobox Index from Language string on ini file
+    int index = ui->cmbLanguage->findText(currentLanguage, Qt::MatchFlag::MatchFixedString);
+    setCurrentLanguage(index);
     setDownloadPath(downloadPath);
     setDebugLevel(debugLevel);
 }
@@ -110,4 +117,25 @@ void settingswindow::setDebugLevel(const QString &value)
 {
     ui->cmbDebugLevel->setCurrentText(value);
     p_debugLevel = value;
+}
+
+void settingswindow::setCurrentLanguage(int value)
+{
+    QSettings settings(settingsFileName, settingsFileFormat);
+    p_appLanguage = ui->cmbLanguage->itemText(value);
+    ui->cmbLanguage->setCurrentIndex(value);
+    settings.setValue("Language", p_appLanguage);
+}
+
+QString settingswindow::getCurrentLanguage() const
+{
+    return p_appLanguage;
+}
+
+void settingswindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+    }
 }

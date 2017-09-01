@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initializeScreen();
     readSettings();
+    loadLanguage(language);
 
     statusBar()->addPermanentWidget(statusLabel, 0);
     statusBar()->showMessage("Welcome!");
@@ -35,7 +36,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // deleted torrent from sessionManager goes to downloadPage to remove it from list
     connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)));//, Qt::QueuedConnection);
 
-
     // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
     connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));//, Qt::QueuedConnection);
 
@@ -44,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // requested resume from downloadPage (emitted from a tsucard) goes to sessionManager to resume torrent
     connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)));//, Qt::QueuedConnection);
-
 
     // update from downloadPage to statusbar text
     connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)));//, Qt::QueuedConnection);
@@ -148,6 +147,7 @@ void MainWindow::readSettings()
     move(settings.value("pos", QPoint(200, 200)).toPoint());
     if ( settings.value("fullScreen", false).toBool() ) setWindowState(Qt::WindowFullScreen);
     settings.endGroup();
+    language = settings.value("Language").toString();
 }
 
 void MainWindow::writeSettings()
@@ -165,7 +165,7 @@ void MainWindow::updateTsunami()
     QProcess process;
     QString dir = QCoreApplication::applicationDirPath() + "/../";
     //qDebug() << dir + "Update.exe";
-    process.start(dir+"/"+"Update.exe --checkForUpdate=C:/eseguibili/Releases/");
+    process.start(dir+"/"+"Update.exe --checkForUpdate=tsunami.adunanza.net/releases/");
 
     process.waitForFinished();
     if(process.error() != QProcess::UnknownError)
@@ -174,10 +174,27 @@ void MainWindow::updateTsunami()
         return;
     }
 
-    bool success = QProcess::startDetached(dir+"Update.exe --update=C:/eseguibili/Releases/");
-    //qDebug() << success;
+    QProcess::startDetached(dir+"Update.exe --update=tsunami.adunanza.net/releases/");
+
 }
 
+void MainWindow::loadLanguage(QString l)
+{
+    //QTranslator t;
+    QString cDir = QApplication::applicationDirPath();
+
+    if(l == "Italian")
+    {
+        bool load = t.load(cDir + "/languages/italian.qm");
+        qDebug() << "Load: " << load;
+    }
+    if(l != "English")
+    {
+        bool response = QCoreApplication::installTranslator(&t);
+        //ui->retranslateUi(this);
+        qDebug() << "Response: " << response;
+    }
+}
 void MainWindow::createTrayIcon()
 {
     // Tray icon
@@ -288,4 +305,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
     updateTsunami();
     emit stopSessionManager();
     event->accept();
+}
+
+void MainWindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        qDebug() << "Intercepted LanguageChange event by MainWindow";
+        ui->retranslateUi(this);
+    }
+
+    QMainWindow::changeEvent(e);
 }

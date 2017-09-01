@@ -33,16 +33,21 @@ public:
     QString getDebugLevel() const;
     void setDebugLevel(const QString &value);
 
+    QString getCurrentLanguage() const;
+
 private slots:
     void on_btnSave_released();
     void on_btnCancel_released();
+    void setCurrentLanguage(int value);
 
 private:
     Ui::settingswindow *ui;
     QString p_downloadPath;
     QString p_debugLevel;
+    QString p_appLanguage;
 
     bool eventFilter(QObject* object, QEvent* event);
+    void changeEvent(QEvent *e);
 };
 
 #endif // SETTINGSWINDOW_H

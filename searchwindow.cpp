@@ -12,3 +12,11 @@ searchwindow::~searchwindow()
 {
     delete ui;
 }
+
+void searchwindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+    }
+}
