@@ -40,16 +40,17 @@ build_script:
   - qmake Tsunami.pro
   - nmake release
   - cp lib_rel/*.* release
-  - cp languages/*.* release/languages
+  - ps: cp languages/*.* release/languages
   - cd release
   - dir
-  - windeployqt --release --no-translations Tsunami.exe
+  - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
   - appveyor DownloadFile "%SQUIRREL_URL%" -FIleName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   - appveyor DownloadFile "%TSU_ZIP_URL%" -FIleName "C:\Tsunami.zip" && 7z x "C:\Tsunami.zip" -o"c:\tsunami\Releases"
   - dir c:\tsunami\Releases
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
+  #- ps: rm c:\tsunami\Releases\Setup.exe 
   
 artifacts:
   - path: Releases/RELEASES
@@ -58,7 +59,7 @@ artifacts:
   - path: Releases/*.nupkg
     name: TsuNugets
 
-  - path: Releases/Setup.exe
+  - path: Releases/Setup.exe 
     name: TsuSetup
     
   - path: Releases
