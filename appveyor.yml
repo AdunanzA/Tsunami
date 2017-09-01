@@ -12,8 +12,8 @@ environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
     TSU_LIB_URL: https://tsunami.adunanza.net/devs/libraries.7z
-    TSU_REL_URL: https://tsunami.adunanza.net/releases/Releases/RELEASES
-    TSU_NPKG_URL: https://tsunami.adunanza.net/releases/Releases/*.nupkg
+    TSU_REL_URL: tsunami.adunanza.net/releases/Releases/RELEASES
+    TSU_NPKG_URL: tsunami.adunanza.net/releases/Releases/*.nupkg
     SQUIRREL_URL: https://github.com/Squirrel/Squirrel.Windows/releases/download/1.7.8/Squirrel.Windows-1.7.8.zip
 
 # project directory
