@@ -46,7 +46,8 @@ build_script:
   - dir
   - windeployqt --release --no-translations Tsunami.exe
   - appveyor DownloadFile "%SQUIRREL_URL%" -FIleName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
-  - appveyor DownloadFile "%TSU_LIB_URL%" -FileName "C:\tsunami\Relesaes\RELEASES"
+  - mkdir c:\tsunami\Releases
+  - appveyor DownloadFile "%TSU_REL_URL%" -FileName "C:\tsunami\Relesaes\RELEASES"
   - appveyor DownloadFile "%TSU_NPKG_URL%" -FileName "C:\tsunami\Relesaes\*.nupkg"
   - dir c:\tsunami\Releases
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
