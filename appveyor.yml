@@ -39,8 +39,10 @@ build_script:
   - qmake Tsunami.pro
   - nmake release
   - cp lib_rel/*.* release
+  - cp languages release
   - cd release
-  - windeployqt --release Tsunami.exe
+  - dir
+  - windeployqt --release --no-translations Tsunami.exe
   - appveyor DownloadFile "%SQUIRREL_URL%" -FIleName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"

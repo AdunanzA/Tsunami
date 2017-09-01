@@ -159,13 +159,13 @@ void MainWindow::writeSettings()
     settings.setValue("fullScreen", isFullScreen());
     settings.endGroup();
 }
-//gobne
+
 void MainWindow::updateTsunami()
 {
     QProcess process;
     QString dir = QCoreApplication::applicationDirPath() + "/../";
     //qDebug() << dir + "Update.exe";
-    process.start(dir+"/"+"Update.exe --checkForUpdate=tsunami.adunanza.net/releases/");
+    process.start(dir+"/"+"Update.exe --checkForUpdate=tsunami.adunanza.net/releases/Releases/");
 
     process.waitForFinished();
     if(process.error() != QProcess::UnknownError)
@@ -174,7 +174,7 @@ void MainWindow::updateTsunami()
         return;
     }
 
-    QProcess::startDetached(dir+"Update.exe --update=tsunami.adunanza.net/releases/");
+    QProcess::startDetached(dir+"Update.exe --update=tsunami.adunanza.net/releases/Releases/");
 
 }
 
