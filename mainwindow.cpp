@@ -180,21 +180,18 @@ void MainWindow::updateTsunami()
 
 void MainWindow::loadLanguage(QString l)
 {
-    //QTranslator t;
-    QString cDir = QApplication::applicationDirPath();
-
     if(l == "Italian")
     {
-        bool load = t.load(cDir + "/languages/italian.qm");
+        bool load = t.load(":/languages/italian.qm");
         qDebug() << "Load: " << load;
     }
     if(l != "English")
     {
         bool response = QCoreApplication::installTranslator(&t);
-        //ui->retranslateUi(this);
         qDebug() << "Response: " << response;
     }
 }
+
 void MainWindow::createTrayIcon()
 {
     // Tray icon
