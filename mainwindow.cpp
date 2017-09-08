@@ -164,7 +164,7 @@ void MainWindow::updateTsunami()
 {
     QProcess process;
     QString dir = QCoreApplication::applicationDirPath() + "/../";
-    process.start(dir+"/"+"Update.exe --checkForUpdate=https://tsunami.adunanza.net/releases/Releases/");
+    process.start(dir+"Update.exe --checkForUpdate=https://tsunami.adunanza.net/releases/Releases/");
 
     process.waitForFinished();
     if(process.error() != QProcess::UnknownError)
