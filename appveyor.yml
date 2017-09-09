@@ -32,7 +32,6 @@ before_build:
   - ps: $V_BUG=select-string -Path ".\version.pri" -Pattern "VER_BUGFIX ="
   - ps: $V_BUG="$V_BUG"
   - ps: $V_BUG=$V_BUG.split()[-1]
-  # - ps: Update-AppveyorBuild -Version "0.$V_MIN.$V_BUG.$env:appveyor_build_number"
   - ps: Update-AppveyorBuild -Version "0.$V_MIN.$V_BUG"
   
 build_script:
@@ -50,7 +49,7 @@ build_script:
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
-  - ps: rm c:\tsunami\Releases\Setup.exe 
+  #- ps: rm c:\tsunami\Releases\Setup.exe 
   
 artifacts:
   - path: Releases/RELEASES
@@ -59,8 +58,8 @@ artifacts:
   - path: Releases/*.nupkg
     name: TsuNugets
 
-  #- path: Releases/Setup.exe 
-  #  name: TsuSetup
+  - path: Releases/Setup.exe 
+    name: TsuSetup
     
   - path: Releases
     name: Tsunami
