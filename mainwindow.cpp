@@ -4,6 +4,23 @@
 #define TIME_TRAY_BALLOON 5000
 #define PROJECT "Tsunami++"
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+QString shortPathName(const QString & file) // returns 8.3 file format from long path
+{
+    wchar_t* input=new wchar_t[file.size()+1];
+    file.toWCharArray(input);
+    input[file.size()]=L'\0'; // terminate string
+    long length = GetShortPathName(input, NULL, 0);
+    wchar_t* output=new wchar_t[length];
+    GetShortPathName(input,output,length);
+    QString ret=QString::fromWCharArray(output,length-1); // discard
+    delete [] input;
+    delete [] output;
+    return ret;
+}
+#endif
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -163,7 +180,11 @@ void MainWindow::writeSettings()
 void MainWindow::updateTsunami()
 {
     QProcess process;
-    QString dir = QCoreApplication::applicationDirPath() + "/../";
+#ifdef Q_OS_WIN
+    const QString dir = shortPathName(QCoreApplication::applicationDirPath() + "/../");
+#else
+    dir = QCoreApplication::applicationDirPath() + "/../");
+#endif
     process.start(dir+"Update.exe --checkForUpdate=https://tsunami.adunanza.net/releases/Releases/");
 
     process.waitForFinished();
