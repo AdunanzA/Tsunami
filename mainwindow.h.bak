@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include <QFileDialog>
+#include <QTranslator>
 
 #include "tsumanager.h"
 #include "downloadwindow.h"
@@ -38,7 +39,11 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    tsuManager *sessionManager;
     QPointer<QSystemTrayIcon> m_systrayIcon;
+
+signals:
+    void stopSessionManager();
 
 public slots:
     void updateStatusBar(const QString & msg);
@@ -48,9 +53,10 @@ public slots:
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
     void balloonClicked();
-    void btnMenuClick();
 
+    void btnMenuClick();
     void btnAddClick();
+    void loadLanguage(QString l);
 
 private:
     Ui::MainWindow *ui;
@@ -59,8 +65,10 @@ private:
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
     QLabel *statusLabel;
+    QString language;
+    QTranslator t;
 
-    tsuManager *sessionManager;
+    QThread *p_session_thread;
 
     QScale *p_scaleGauge;
 
@@ -69,11 +77,13 @@ private:
 
     void readSettings();
     void writeSettings();
+    void updateTsunami();
 
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
-};
+    void changeEvent(QEvent *e) override;
 
+};
 
 #endif // MAINWINDOW_H

@@ -53,5 +53,7 @@
         <file>images/tsuitem/state_pause.png</file>
         <file>images/tsuitem/state_warning.png</file>
         <file>images/tsuitem/X.png</file>
+        <file>images/htmlOff.png</file>
+        <file>images/htmlOn.png</file>
     </qresource>
 </RCC>

@@ -10,7 +10,7 @@
 #include <libtorrent/bitfield.hpp>
 
 namespace Ui {
-    class itemDetails;
+class itemDetails;
 }
 
 class itemDetails : public QDialog
@@ -22,11 +22,7 @@ public:
     ~itemDetails();
 
     void setHash(const std::string &hash);
-    std::string  getHash() const;
     void update();
-
-public slots:
-
 
 private:
     Ui::itemDetails *ui;
@@ -38,7 +34,7 @@ private slots:
     void timerTick();
 
     // QWidget interface
-    void on_chkSequential_toggled(bool checked);
+    void on_checkBox_toggled(bool checked);
 
 protected:
     void closeEvent(QCloseEvent *event) override;

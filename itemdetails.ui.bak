@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string notr="true"/>
   </property>
   <property name="styleSheet">
    <string notr="true">* {
@@ -44,7 +44,6 @@ QHeaderView::section {
                                       stop: 0.6 #434343, stop:1 #656565);
     border-style: none;
 	padding-bottom:4px;
-    border-right: 1px solid #999999;
 }
 
 QHeaderView::section:horizontal
@@ -412,9 +411,6 @@ QHeaderView::section:vertical
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
-          <attribute name="verticalHeaderShowSortIndicator" stdset="0">
-           <bool>false</bool>
-          </attribute>
           <column>
            <property name="text">
             <string>Name</string>
@@ -438,16 +434,36 @@ QHeaderView::section:vertical
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="chkSequential">
+         <widget class="QCheckBox" name="checkBox">
           <property name="text">
            <string>Sequential download</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="listWidget">
-          <property name="viewMode">
-           <enum>QListView::IconMode</enum>
+         <widget class="QTextEdit" name="lblPieces">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">span {
+	border-bottom:2px solid #FF0000;
+}</string>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QAbstractScrollArea::AdjustIgnored</enum>
+          </property>
+          <property name="undoRedoEnabled">
+           <bool>false</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::NoTextInteraction</set>
           </property>
          </widget>
         </item>

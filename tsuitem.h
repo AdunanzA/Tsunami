@@ -59,6 +59,10 @@ public:
     std::string get_Hash() const;
     void set_Hash(const std::string &value);
 
+    void executeItemRemove(bool const &filesToo);
+    void executePause();
+    void executeResume();
+
     QString convertSize(const int &size);
     QString convertSizeUnit(const int &size);
 
@@ -72,6 +76,8 @@ private:
     qreal p_factorTransform = 1;
     bool p_isFadingOut = false;
     bool p_isFadingIn = false;
+
+    bool p_isMoving = false;
 
     QPixmap p_imageBkg = QPixmap(":/images/tsuitem/bkg.png");
     QPixmap p_imageBkg2 = QPixmap(":/images/tsuitem/bkg2.png");
@@ -88,8 +94,11 @@ private:
     QPixmap p_imageStateP = QPixmap(":/images/tsuitem/state_pause.png");
     QPixmap p_imageStateW = QPixmap(":/images/tsuitem/state_warning.png");
     QPixmap p_imageStateF = QPixmap(":/images/tsuitem/finished.png");
+    QPixmap p_imageSelected = QPixmap(":/images/tsuitem/selected.png");
+
     QPointF p_imageStatePosition = QPointF(1, 158);
     QPointF p_imageStateFinishedPosition = QPointF(16, 140);
+    QPointF p_imageSelectedPosition = QPointF(99, 148);
 
     int p_textFontHeight = 12;
     int p_symbolFontHeight = 7;

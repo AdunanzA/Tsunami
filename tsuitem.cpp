@@ -40,6 +40,7 @@ void tsuItem::createItem()
 
     // will be populated with first date during fast resume
     p_eta = QDateTime::currentDateTime();
+
 }
 
 QRectF tsuItem::boundingRect() const
@@ -67,6 +68,12 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 
     // BACKGROUND IMAGE
     painter->drawPixmap(0, 0, tsuItem::ItemWidth, tsuItem::ItemHeight, p_imageBkg);
+
+    // SELECTED
+    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving && this->isSelected() ) {
+        painter->drawPixmap(p_imageSelectedPosition, p_imageSelected);
+    } else {
+    }
 
     // CANCEL IMAGE
     painter->drawPixmap(p_imageExitPosition, p_imageExit);
@@ -96,6 +103,7 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
         break;
     case finished:
         painter->drawPixmap(p_imageStateFinishedPosition, p_imageStateF);
+//        painter->drawPixmap(p_imageStatePosition, p_imageStateL);
         break;
     default:
         break;
@@ -259,6 +267,7 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
         pathEta.addText(70-(etaSize/2), 158, etaFont, p_eta.toString("dd/MM/yyyy hh:mm"));
         painter->drawPath(pathEta);
     }
+
 }
 
 void tsuItem::set_FactorTransform(const qreal &value)
@@ -332,6 +341,37 @@ void tsuItem::set_Hash(const std::string &value)
     p_hash = value;
 }
 
+void tsuItem::executeItemRemove(const bool &filesToo)
+{
+    p_cancelFilesOnDelete = filesToo;
+    p_isFadingOut = true;
+    QGraphicsOpacityEffect *eff = new QGraphicsOpacityEffect(this);
+    this->setGraphicsEffect(eff);
+    QPropertyAnimation *a = new QPropertyAnimation(eff,"opacity");
+    a->setDuration(500);
+    a->setStartValue(1);
+    a->setEndValue(0.5);
+    a->setEasingCurve(QEasingCurve::OutBack);
+    a->start(QPropertyAnimation::DeleteWhenStopped);
+    connect(a,SIGNAL(finished()),this,SLOT(emitCancel()));
+}
+
+void tsuItem::executePause()
+{
+    if (p_status != statusEnum::finished) {
+        emit pauseRequested(this->p_hash);
+        update();
+    }
+}
+
+void tsuItem::executeResume()
+{
+    if (p_status != statusEnum::finished) {
+        emit resumeRequested(this->p_hash);
+        update();
+    }
+}
+
 int tsuItem::get_RateUpload() const
 {
     return p_rateUpload;
@@ -368,7 +408,6 @@ void tsuItem::fadeInFinished()
     p_itemShadow = new QGraphicsDropShadowEffect(this);
     p_itemShadow->setBlurRadius(tsuItem::ItemGlowRadius);
     p_itemShadow->setOffset(0,0);
-//    p_itemShadow->setColor(QColor(255, 162, 0));
     p_itemShadow->setColor(QColor(0, 0, 0));
     this->setGraphicsEffect(p_itemShadow);
 
@@ -386,15 +425,40 @@ void tsuItem::fadeInFinished()
 
 void tsuItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    QGraphicsItem::mousePressEvent(event);
+    // bypass this event to let mouseReleaseEvent choose
+    Q_UNUSED(event);
+//    QGraphicsItem::mousePressEvent(event);
+}
+
+void tsuItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    // shift + mouse click and move
+//    if (event->modifiers() & Qt::ShiftModifier) {
+//        update();
+//        return;
+//    }
+//    p_isMoving = true;
+//    setOpacity(0.8);
+    QGraphicsItem::mouseMoveEvent(event);
+}
+
+void tsuItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+//    qDebug() << QString("release y %0").arg(QString::number(event->lastScenePos().y()));
+//    p_isMoving = false;
+//    if (event->lastScenePos().x() < 0) this->setX(0);
+//    if (event->lastScenePos().y() < 0) this->setY(0);
+//    setOpacity(1);
+
     if (p_isFadingOut || p_isFadingIn) return;
+
     int x = event->lastPos().x();
     int y = event->lastPos().y();
 
-    // CANCEL BUTTON
     if ( (x >= p_imageExitPosition.x() && x <= (p_imageExitPosition.x() + p_imageExit.width()) ) &&
          (y >= p_imageExitPosition.y() && y <= (p_imageExitPosition.y() + p_imageExit.height()) ) ) {
 
+        // CANCEL BUTTON
         QMessageBox mbox;
         QString msg = QString("<center>Do you really want to cancel<br/><b>%0</b><br/>from download?</center>").arg(this->get_Head());
         mbox.setText(msg);
@@ -418,18 +482,30 @@ void tsuItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
 
         if (proceedWithCancel) {
-            p_isFadingOut = true;
-            QGraphicsOpacityEffect *eff = new QGraphicsOpacityEffect(this);
-            this->setGraphicsEffect(eff);
-            QPropertyAnimation *a = new QPropertyAnimation(eff,"opacity");
-            a->setDuration(500);
-            a->setStartValue(1);
-            a->setEndValue(0.5);
-            a->setEasingCurve(QEasingCurve::OutBack);
-            a->start(QPropertyAnimation::DeleteWhenStopped);
-            connect(a,SIGNAL(finished()),this,SLOT(emitCancel()));
+            executeItemRemove(p_cancelFilesOnDelete);
         }
+
+    } else  if ( (x >= 8 && x <= 120) && (y >= 6 && y <= 17) ) {
+
+        // TSUCARD TITLE
+        emit detailsRequested(this->get_Hash());
+
+    } else if ( (x >= p_imagePausePosition.x() && x <= (p_imagePausePosition.x() + p_imagePause.width())) &&
+                (y >= p_imagePausePosition.y() && y <= (p_imagePausePosition.y() + p_imagePause.height()) ) ) {
+
+        // PAUSE BUTTON
+        executePause();
+
+    } else if ( (x >= p_imageResumePosition.x() && x <= (p_imageResumePosition.x() + p_imageResume.width())) &&
+                (y >= p_imageResumePosition.y() && y <= (p_imageResumePosition.y() + p_imageResume.height()) ) ) {
+
+        // RESUME BUTTON
+        executeResume();
+
     } else {
+        // moving?
+//        p_isMoving = true;
+//        setOpacity(0.8);
 
         // WHEN MOVE ITEM IS ACTIVATED, THIS BRING THE CLICKED ITEM ON TOP OF OVERLAPPED ITEM
 //        int z =0;
@@ -437,50 +513,19 @@ void tsuItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 //            item->topLevelItem()->setZValue(--z);
 //        this->setZValue(0);
 
-        if (p_status != statusEnum::finished) {
-            // PAUSE BUTTON
-            if ( (x >= p_imagePausePosition.x() && x <= (p_imagePausePosition.x() + p_imagePause.width())) &&
-                 (y >= p_imagePausePosition.y() && y <= (p_imagePausePosition.y() + p_imagePause.height()) ) ) {
-                emit pauseRequested(this->p_hash);
-                update();
-            } else
-            // RESUME BUTTON
-            if ( (x >= p_imageResumePosition.x() && x <= (p_imageResumePosition.x() + p_imageResume.width())) &&
-                 (y >= p_imageResumePosition.y() && y <= (p_imageResumePosition.y() + p_imageResume.height()) ) ) {
-                emit resumeRequested(this->p_hash);
-                update();
-            }
-        }
-
-        if ( (x >= 8 && x <= 120) && (y >= 6 && y <= 17) ) {
-            emit detailsRequested(this->get_Hash());
+        // deselect if selected (not done oob by qt) else let qt manage event
+        if (this->isSelected()) {
+            this->setSelected(false);
+        } else {
+            QGraphicsItem::mouseReleaseEvent(event);
         }
     }
-}
-
-void tsuItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    // shift + mouse click and move
-//    if (event->modifiers() & Qt::ShiftModifier) {
-//        update();
-//        return;
-//    }
-    QGraphicsItem::mouseMoveEvent(event);
-}
-
-void tsuItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
-//    qDebug() << QString("release y %0").arg(QString::number(event->lastScenePos().y()));
-//    if (event->lastScenePos().x() < 0) this->setX(0);
-//    if (event->lastScenePos().y() < 0) this->setY(0);
-//    setOpacity(1);
-    QGraphicsItem::mouseReleaseEvent(event);
 }
 
 void tsuItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsItem::hoverEnterEvent(event);
-    if (!p_isFadingOut && !p_isFadingIn) {
+    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving ) {
         p_itemShadowAnimation->stop();
         p_itemShadowAnimation->setDirection(QAbstractAnimation::Forward);
         p_itemShadowAnimation->start();
@@ -490,7 +535,7 @@ void tsuItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void tsuItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsItem::hoverLeaveEvent(event);
-    if (!p_isFadingOut && !p_isFadingIn) {
+    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving ) {
         p_itemShadowAnimation->stop();
         p_itemShadowAnimation->setDirection(QAbstractAnimation::Backward);
         p_itemShadowAnimation->start();
@@ -541,8 +586,8 @@ QVariant tsuItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVa
     // SNAP TO GRID
 //    if (change == ItemPositionChange && scene()) {
 //        QPointF newPos = value.toPointF();
-//            int gridSizeX = this->boundingRect().width() + p_itemGlowRadius;
-//            int gridSizeY = this->boundingRect().height() + p_itemGlowRadius;
+//            int gridSizeX = this->boundingRect().width() + ItemGlowRadius;
+//            int gridSizeY = this->boundingRect().height() + ItemGlowRadius;
 //            qreal xV = round(newPos.x()/gridSizeX)*gridSizeX;
 //            qreal yV = round(newPos.y()/gridSizeY)*gridSizeY;
 //            return QPointF(xV, yV);

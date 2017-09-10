@@ -5,10 +5,11 @@
 
 statisticswindow::statisticswindow(QWidget *parent) :
     QWidget(parent),
-    chart(new ChartXY),
+//    chart(new ChartXY),
     ui(new Ui::statisticswindow)
 {
     ui->setupUi(this);
+    chart = new ChartXY(this);
     setupModel();
     setupChart();
 }
@@ -102,4 +103,12 @@ void statisticswindow::setupChart()
     chart->setting().scale().setAutoCurrentLimit(true);
     chart->setting().scale().setNominalAutoLimit(true);
     chart->updateChart();
+}
+
+void statisticswindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+    }
 }

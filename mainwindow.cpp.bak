@@ -4,59 +4,94 @@
 #define TIME_TRAY_BALLOON 5000
 #define PROJECT "Tsunami++"
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+QString shortPathName(const QString & file) // returns 8.3 file format from long path
+{
+    wchar_t* input=new wchar_t[file.size()+1];
+    file.toWCharArray(input);
+    input[file.size()]=L'\0'; // terminate string
+    long length = GetShortPathName(input, NULL, 0);
+    wchar_t* output=new wchar_t[length];
+    GetShortPathName(input,output,length);
+    QString ret=QString::fromWCharArray(output,length-1); // discard
+    delete [] input;
+    delete [] output;
+    return ret;
+}
+#endif
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    settingsPage(new settingswindow),
-    searchPage(new searchwindow),
-    statusLabel(new QLabel),
-    downloadPage(new downloadwindow),
-    statisticsPage(new statisticswindow),
-    sessionManager(new tsuManager)
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
+    p_session_thread = new QThread();
+    sessionManager = new tsuManager();
+    sessionManager->moveToThread(p_session_thread);
+
+    settingsPage = new settingswindow(this);
+    searchPage = new searchwindow(this);
+    statusLabel = new QLabel(this);
+    statisticsPage = new statisticswindow(this);
+    downloadPage = new downloadwindow(this);
+
     initializeScreen();
     readSettings();
+    loadLanguage(language);
 
     statusBar()->addPermanentWidget(statusLabel, 0);
     statusBar()->showMessage("Welcome!");
 
-    // update from sessionManager (torrent add and update) goes to downloadPage to manage tsuCard and session values
-    connect(sessionManager, SIGNAL(updateFromItem(const QVector<tsuEvents::tsuEvent> &)), downloadPage, SLOT(updateFromSession(const QVector<tsuEvents::tsuEvent> &)), Qt::QueuedConnection);
+    // add from SessionManager goes to downloadPage to add tsuCard
+    connect(sessionManager, SIGNAL(addFromSessionManager(const tsuEvents::tsuEvent &)), downloadPage, SLOT(addFromSession(const tsuEvents::tsuEvent &)));//, Qt::QueuedConnection);
+
+    // update from sessionManager goes to downloadPage to manage tsuCard values
+    connect(sessionManager, SIGNAL(updateFromSessionManager(const QVector<tsuEvents::tsuEvent> &)), downloadPage, SLOT(updateFromSession(const QVector<tsuEvents::tsuEvent> &)));//, Qt::DirectConnection);
 
     // deleted torrent from sessionManager goes to downloadPage to remove it from list
-    connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)), Qt::QueuedConnection);
-
+    connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)));//, Qt::QueuedConnection);
 
     // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
-    connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)), Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));//, Qt::QueuedConnection);
 
     // requested pause from downloadPage (emitted from a tsucard) goes to sessionManager to pause torrent
-    connect(downloadPage, SIGNAL(sendRequestedPauseToSession(std::string)), sessionManager, SLOT(getPauseRequest(std::string)), Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendRequestedPauseToSession(std::string)), sessionManager, SLOT(getPauseRequest(std::string)));//, Qt::QueuedConnection);
 
     // requested resume from downloadPage (emitted from a tsucard) goes to sessionManager to resume torrent
-    connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)), Qt::QueuedConnection);
-
+    connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)));//, Qt::QueuedConnection);
 
     // update from downloadPage to statusbar text
-    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)), Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)));//, Qt::QueuedConnection);
 
     // update from downloadPage to statistics page
-    connect(downloadPage, SIGNAL(sendStatisticsUpdate(const QPair<int,int> &)), statisticsPage, SLOT(updateStats(const QPair<int,int> &)), Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendStatisticsUpdate(const QPair<int,int> &)), statisticsPage, SLOT(updateStats(const QPair<int,int> &)));//, Qt::QueuedConnection);
 
     // popup message from downloadPage
-    connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)), Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)));//, Qt::QueuedConnection);
 
     // update from downloadPage to gauge
-    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)), Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)));//, Qt::QueuedConnection);
 
+    connect(p_session_thread, SIGNAL(started()), sessionManager, SLOT(startManager()));
+    connect(this, SIGNAL(stopSessionManager()), sessionManager, SLOT(stopManager()), Qt::BlockingQueuedConnection);
+    connect(sessionManager, SIGNAL(finished()), p_session_thread, SLOT(quit()));
+    connect(sessionManager, SIGNAL(finished()), sessionManager, SLOT(deleteLater()));
+//    connect(p_session_thread, SIGNAL(finished()), p_session_thread, SLOT(deleteLater()));
+
+    p_session_thread->start();
 }
 
 MainWindow::~MainWindow()
 {
-    delete sessionManager;
+    qDebug("starting destroy");
+//    p_session_thread->wait();
+//    qDebug("session thread waited");
+    p_session_thread->deleteLater();
+    qDebug("session thread executed deleteLater");
     delete ui;
+    qDebug("ui deleted");
 }
 
 void MainWindow::updateStatusBar(const QString &msg)
@@ -129,6 +164,7 @@ void MainWindow::readSettings()
     move(settings.value("pos", QPoint(200, 200)).toPoint());
     if ( settings.value("fullScreen", false).toBool() ) setWindowState(Qt::WindowFullScreen);
     settings.endGroup();
+    language = settings.value("Language").toString();
 }
 
 void MainWindow::writeSettings()
@@ -141,6 +177,40 @@ void MainWindow::writeSettings()
     settings.endGroup();
 }
 
+void MainWindow::updateTsunami()
+{
+    QProcess process;
+#ifdef Q_OS_WIN
+    const QString dir = shortPathName(QCoreApplication::applicationDirPath() + "/../");
+#else
+    dir = QCoreApplication::applicationDirPath() + "/../");
+#endif
+    process.start(dir+"Update.exe --checkForUpdate=https://tsunami.adunanza.net/releases/Releases/");
+
+    process.waitForFinished();
+    if(process.error() != QProcess::UnknownError)
+    {
+        qDebug() << "Error checking for updates";
+        return;
+    }
+
+    QProcess::startDetached(dir+"Update.exe --update=https://tsunami.adunanza.net/releases/Releases/");
+
+}
+
+void MainWindow::loadLanguage(QString l)
+{
+    if(l == "Italian")
+    {
+        bool load = t.load(":/languages/italian.qm");
+        qDebug() << "Load: " << load;
+    }
+    if(l != "English")
+    {
+        bool response = QCoreApplication::installTranslator(&t);
+        qDebug() << "Response: " << response;
+    }
+}
 
 void MainWindow::createTrayIcon()
 {
@@ -158,7 +228,6 @@ void MainWindow::createTrayIcon()
     qDebug("started");
 }
 
-// Toggle Main window visibility
 void MainWindow::toggleVisibility(QSystemTrayIcon::ActivationReason e)
 {
     qDebug("entered toggleVisibility");
@@ -198,6 +267,7 @@ void MainWindow::balloonClicked()
     raise();
     activateWindow();
 }
+
 
 void MainWindow::btnMenuClick() {
     QString btn = sender()->objectName();
@@ -244,9 +314,23 @@ void MainWindow::popupInfo(const QString &msg)
     m_systrayIcon->showMessage(PROJECT, msg, QSystemTrayIcon::Information, TIME_TRAY_BALLOON);
 }
 
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    qDebug("closing");
+    statusLabel->setText("Saving resume data. Please wait.");
     writeSettings();
+    updateTsunami();
+    emit stopSessionManager();
     event->accept();
+}
+
+void MainWindow::changeEvent(QEvent *e)
+{
+    if(e->type() == QEvent::LanguageChange)
+    {
+        qDebug() << "Intercepted LanguageChange event by MainWindow";
+        ui->retranslateUi(this);
+    }
+
+    QMainWindow::changeEvent(e);
 }

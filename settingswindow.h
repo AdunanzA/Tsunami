@@ -5,6 +5,11 @@
 #include <QSettings>
 #include <QDebug>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QtWidgets>
+
+#include <QApplication>
+#include <QProcess>
 
 namespace Ui {
 class settingswindow;
@@ -28,26 +33,27 @@ public:
     static QSettings::Format settingsFileFormat;
 
     QString getDownloadPath() const;
-    void setDownloadPath(const QString &value);
 
-    QString getDebugLevel() const;
-    void setDebugLevel(const QString &value);
+    int getDebugLevelIndex() const;
+    int getCurrentLanguageIndex() const;
 
-    QString getCurrentLanguage() const;
+signals:
+    void sendMessageToStatusBar(const QString & msg);
+    void sendRefreshSettings();
 
 private slots:
     void on_btnSave_released();
     void on_btnCancel_released();
-    void setCurrentLanguage(int value);
+    void on_btnFolder_released();
 
 private:
     Ui::settingswindow *ui;
-    QString p_downloadPath;
-    QString p_debugLevel;
-    QString p_appLanguage;
 
-    bool eventFilter(QObject* object, QEvent* event);
+    QSettings settings;
+
     void changeEvent(QEvent *e);
+
+//    bool needRestart = false;
 };
 
 #endif // SETTINGSWINDOW_H

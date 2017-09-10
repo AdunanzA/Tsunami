@@ -39,7 +39,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initializeScreen();
     readSettings();
-    loadLanguage(language);
+//    loadLanguage(p_currentLanguage);
+    loadLanguage();
 
     statusBar()->addPermanentWidget(statusLabel, 0);
     statusBar()->showMessage("Welcome!");
@@ -63,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)));//, Qt::QueuedConnection);
 
     // update from downloadPage to statusbar text
-    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBar(const QString &)));//, Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBarStatistics(const QString &)));//, Qt::QueuedConnection);
 
     // update from downloadPage to statistics page
     connect(downloadPage, SIGNAL(sendStatisticsUpdate(const QPair<int,int> &)), statisticsPage, SLOT(updateStats(const QPair<int,int> &)));//, Qt::QueuedConnection);
@@ -74,13 +75,26 @@ MainWindow::MainWindow(QWidget *parent) :
     // update from downloadPage to gauge
     connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)));//, Qt::QueuedConnection);
 
+    // update statusBar from downloadPage
+    connect(downloadPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
+
+    // update statusBar from settings
+    connect(settingsPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
+
+    // update libtorrent settings from settingsWindow
+    connect(settingsPage, SIGNAL(sendRefreshSettings()), sessionManager, SLOT(refreshSettings()));
+
+    // Constructions events
     connect(p_session_thread, SIGNAL(started()), sessionManager, SLOT(startManager()));
+
+    // Destructions events
     connect(this, SIGNAL(stopSessionManager()), sessionManager, SLOT(stopManager()), Qt::BlockingQueuedConnection);
     connect(sessionManager, SIGNAL(finished()), p_session_thread, SLOT(quit()));
     connect(sessionManager, SIGNAL(finished()), sessionManager, SLOT(deleteLater()));
 //    connect(p_session_thread, SIGNAL(finished()), p_session_thread, SLOT(deleteLater()));
 
     p_session_thread->start();
+    qDebug("MainWindow started");
 }
 
 MainWindow::~MainWindow()
@@ -94,9 +108,14 @@ MainWindow::~MainWindow()
     qDebug("ui deleted");
 }
 
-void MainWindow::updateStatusBar(const QString &msg)
+void MainWindow::updateStatusBarStatistics(const QString &msg)
 {
     statusLabel->setText(msg);
+}
+
+void MainWindow::updateStatusBarLabel(const QString &msg)
+{
+    statusBar()->showMessage(msg);
 }
 
 void MainWindow::updateGauge(const double &value)
@@ -157,24 +176,28 @@ void MainWindow::initializeScreen() {
 
 void MainWindow::readSettings()
 {
-    QSettings settings(settingsPage->settingsFileName, QSettings::IniFormat);
+    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
 
     settings.beginGroup("MainWindow");
     resize(settings.value("size", QSize(840, 670)).toSize());
     move(settings.value("pos", QPoint(200, 200)).toPoint());
     if ( settings.value("fullScreen", false).toBool() ) setWindowState(Qt::WindowFullScreen);
     settings.endGroup();
-    language = settings.value("Language").toString();
+//    p_currentLanguage = settings.value("Language", 0).toInt();
+    qDebug() << "Settings read";
 }
 
 void MainWindow::writeSettings()
 {
-    QSettings settings(settingsPage->settingsFileName, QSettings::IniFormat);
+//    QSettings settings(settingsPage->settingsFileName, settingsPage->settingsFileFormat);
+    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
+
     settings.beginGroup("MainWindow");
     settings.setValue("size", size());
     settings.setValue("pos", pos());
     settings.setValue("fullScreen", isFullScreen());
     settings.endGroup();
+    qDebug() << "Settings wrote";
 }
 
 void MainWindow::updateTsunami()
@@ -198,17 +221,27 @@ void MainWindow::updateTsunami()
 
 }
 
-void MainWindow::loadLanguage(QString l)
+void MainWindow::loadLanguage()
 {
-    if(l == "Italian")
+//    if (languageIndex.isNull()) {
+//        qDebug() << "MainWindow received empty language, ignoring.";
+//        return;
+//    }
+    int languageIndex = settingsPage->getCurrentLanguageIndex();
+    qDebug() << QString("Requested language index %0").arg(languageIndex);
+
+    bool response = false;
+    if(languageIndex == 1)
     {
-        bool load = t.load(":/languages/italian.qm");
-        qDebug() << "Load: " << load;
+        response = p_translator.load(":/languages/italian.qm");
+        qDebug() << QString("Requested language index %0 loaded %1").arg(languageIndex).arg((response) ? "true" : "false");
     }
-    if(l != "English")
+    if(languageIndex != 0)
     {
-        bool response = QCoreApplication::installTranslator(&t);
-        qDebug() << "Response: " << response;
+        response = QCoreApplication::installTranslator(&p_translator);
+        qDebug() << QString("Requested language index %0 applied %1").arg(languageIndex).arg((response) ? "true" : "false");
+    } else {
+        qDebug("Default language applied");
     }
 }
 
@@ -225,7 +258,7 @@ void MainWindow::createTrayIcon()
     m_systrayIcon->show();
 //    m_systrayIcon->showMessage(PROJECT, "Welcome to the future!", QSystemTrayIcon::Information, TIME_TRAY_BALLOON);
     popupInfo("Welcome to the future!");
-    qDebug("started");
+    qInfo("started");
 }
 
 void MainWindow::toggleVisibility(QSystemTrayIcon::ActivationReason e)
@@ -267,7 +300,6 @@ void MainWindow::balloonClicked()
     raise();
     activateWindow();
 }
-
 
 void MainWindow::btnMenuClick() {
     QString btn = sender()->objectName();

@@ -12,6 +12,7 @@
 #include "tsumanager.h"
 #include "tsuitem.h"
 #include "itemdetails.h"
+#include "tsugraphicsscene.h"
 
 #include <cmath> // floor
 
@@ -36,7 +37,7 @@ private:
     void redrawItemsPosition();
 
     Ui::downloadwindow *ui;
-    QGraphicsScene *p_scene;
+    tsugraphicsscene *p_scene;
     QVector<tsuItem *> p_tsulist;
     int p_downRate = 0;
     int p_upRate = 0;
@@ -57,6 +58,12 @@ private slots:
     void requestedPause(const std::string &hash);
     void requestedResume(const std::string &hash);
     void requestedDetails(const std::string &hash);
+    void showContextMenu(const QPoint &pos);
+    void selectAll();
+    void deselectAll();
+    void pauseSelected();
+    void resumeSelected();
+    void deleteSelected();
     void updateSessionStatistics();
 
 signals:
@@ -64,6 +71,7 @@ signals:
     void sendUpdateGauge(const double &value);
     void sendStatisticsUpdate(const QPair<int, int> &values);
     void sendPopupInfo(const QString &msg);
+    void sendMessageToStatusBar(const QString & msg);
     void sendRequestedCancelToSession(const std::string &hash, const bool &deleteFilesToo);
     void sendRequestedPauseToSession(const std::string &hash);
     void sendRequestedResumeToSession(const std::string &hash);

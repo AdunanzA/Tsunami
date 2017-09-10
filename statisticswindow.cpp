@@ -62,9 +62,9 @@ void statisticswindow::setupModel()
     model->setHeaderData(2,Qt::Horizontal,tr("K"));
 
     model->setData(model->index(0,0),QVariant(QDateTime::currentDateTime()));
-    model->setData(model->index(0,1),QColor(255,0,0),Qt::DecorationRole);
+    model->setData(model->index(0,1),QColor(0,255,0),Qt::DecorationRole);
     model->setData(model->index(0,1), 1);
-    model->setData(model->index(0,2),QColor(0,255,0),Qt::DecorationRole);
+    model->setData(model->index(0,2),QColor(255,0,0),Qt::DecorationRole);
     model->setData(model->index(0,2), 1);
 
 

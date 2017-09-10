@@ -8,8 +8,6 @@
 #include <QMessageBox>
 #include <qmath.h>
 
-//#include "libtorrent/session.hpp"
-
 #include "tsuevents.h"
 
 #include <cmath>       /* fmod */
@@ -46,7 +44,6 @@ public:
     int get_Uploaded();
 
     statusEnum get_Status() const;
-//    void set_Status(const statusEnum &value);
     void set_Status(const int &value);
 
     int get_RateDownload() const;
@@ -146,6 +143,7 @@ signals:
     void cancelRequested(const std::string &hash, const bool &canelFiles);
     void pauseRequested(const std::string &hash);
     void resumeRequested(const std::string &hash);
+    void detailsRequested(const std::string &hash);
 
 };
 

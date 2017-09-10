@@ -59,21 +59,24 @@ SOURCES += main.cpp\
     settingswindow.cpp \
     searchwindow.cpp \
     downloadwindow.cpp \
-    statisticswindow.cpp
+    statisticswindow.cpp \
+    itemdetails.cpp
 
 HEADERS  += \
     mainwindow.h \
     settingswindow.h \
     searchwindow.h \
     downloadwindow.h \
-    statisticswindow.h
+    statisticswindow.h \
+    itemdetails.h
 
 FORMS    += \
     mainwindow.ui \
     settingswindow.ui \
     searchwindow.ui \
     downloadwindow.ui \
-    statisticswindow.ui
+    statisticswindow.ui \
+    itemdetails.ui
 
 OBJECTS_DIR = tmp
 MOC_DIR = tmp
@@ -84,7 +87,8 @@ RC_FILE = ico.qrc
 
 QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 5
 RESOURCES += \
-    resources.qrc
+    resources.qrc \
+    translations.qrc
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -llibtorrent
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -llibtorrent
