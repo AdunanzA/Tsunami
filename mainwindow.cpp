@@ -169,7 +169,8 @@ void MainWindow::initializeScreen() {
     ui->content->addWidget(downloadPage);
 
     p_scaleGauge = new QScale(this);
-    p_scaleGauge->setInvertedAppearance(true);
+    // a simple modify to force rebuild to test autoupdate
+	//p_scaleGauge->setInvertedAppearance(true);
     ui->contentGauge->addWidget(p_scaleGauge);
 
 }
