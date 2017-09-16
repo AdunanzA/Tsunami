@@ -39,7 +39,8 @@ build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - qmake Tsunami.pro
   - nmake release
-  - cp lib_rel/*.* release
+  - cp lib_rel/*.dll release
+  - cp lib_rel/*.exe release
   - cd release
   - dir
   - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
@@ -62,8 +63,8 @@ artifacts:
   - path: Releases/Setup.exe 
     name: TsuSetup
     
-  - path: Releases
-    name: Tsunami
+  #- path: Releases
+  #  name: Tsunami
     
 deploy:
   provider: FTP
