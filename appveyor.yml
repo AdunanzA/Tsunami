@@ -40,7 +40,6 @@ build_script:
   - qmake Tsunami.pro
   - nmake release
   - cp lib_rel/*.dll release
-  - cp lib_rel/*.exe release
   - cd release
   - dir
   - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
