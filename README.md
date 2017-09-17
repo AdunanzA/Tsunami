@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/github/issues/AdunanzA/Tsunami.svg" alt="Issues">
   <img src="https://img.shields.io/github/forks/AdunanzA/Tsunami.svg" alt="Forks">
   <img src="https://img.shields.io/github/stars/AdunanzA/Tsunami.svg" alt="Stars">
-  <img src="https://img.shields.io/badge/license-AGPLv3-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/license-MPLv2-blue.svg" alt="License">
 </p>
 
 Tsuami is based on libtorrent with innovative features like Streaming, Search or Intelligent Auto-Sharing
