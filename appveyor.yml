@@ -12,7 +12,6 @@ environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
     TSU_LIB_URL: https://tsunami.adunanza.net/devs/libraries.7z
-    #TSU_ZIP_URL: https://tsunami.adunanza.net/releases/Tsunami.zip
     SQUIRREL_URL: https://github.com/Squirrel/Squirrel.Windows/releases/download/1.7.8/Squirrel.Windows-1.7.8.zip
 
 # project directory
@@ -42,12 +41,8 @@ build_script:
   - cp lib_rel/*.* release
   - cd release
   - del /Q *.cpp
-  #- dir
   - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
   - appveyor DownloadFile "%SQUIRREL_URL%" -FileName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
-  #- appveyor DownloadFile "%TSU_ZIP_URL%" -FileName "C:\Tsunami.zip" && 7z x "C:\Tsunami.zip" -o"c:\tsunami\Releases"
-  #- mkdir c:\tsunami\Releases
-  #- dir c:\tsunami\Releases
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
@@ -67,11 +62,5 @@ artifacts:
     
 deploy:
   provider: Environment
-  name: AdunanzA
-  #provider: FTP
-  #protocol: sftp
-  #host: tsunami.adunanza.net
-  #username: appveyorBotPlus
-  #password:
-  #  secure: fudAgfl/410v1jYsi+GqgyPL7mgTEbmAnCBcX+5vlY0ZMF7dFDTJIdbWoYSRCH9m76+jCzjdarkICZpZFz5VipKuRuSAjfzDHAQO1/EMbHDbilPQVIqgf0vqoTfRNYAU79fbcb4w/Ez6je55SUwC6Q==
-  #folder: releases
+  #name: AdunanzA
+  name: GH
