@@ -12,7 +12,7 @@ environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
     TSU_LIB_URL: https://tsunami.adunanza.net/devs/libraries.7z
-    TSU_ZIP_URL: https://tsunami.adunanza.net/releases/Tsunami.zip
+    #TSU_ZIP_URL: https://tsunami.adunanza.net/releases/Tsunami.zip
     SQUIRREL_URL: https://github.com/Squirrel/Squirrel.Windows/releases/download/1.7.8/Squirrel.Windows-1.7.8.zip
 
 # project directory
@@ -65,7 +65,9 @@ artifacts:
   - path: Releases/Setup.exe 
     name: TsuSetup
     
-#deploy:
+deploy:
+  provider: Environment
+  name: AdunanzA
   #provider: FTP
   #protocol: sftp
   #host: tsunami.adunanza.net
