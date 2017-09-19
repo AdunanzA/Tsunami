@@ -39,19 +39,22 @@ build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - qmake Tsunami.pro
   - nmake release
-  - cp lib_rel/*.dll release
+  - cp lib_rel/*.* release
   - cd release
-  - dir
+  - del /Q *.cpp
+  #- dir
   - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
   - appveyor DownloadFile "%SQUIRREL_URL%" -FileName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   #- appveyor DownloadFile "%TSU_ZIP_URL%" -FileName "C:\Tsunami.zip" && 7z x "C:\Tsunami.zip" -o"c:\tsunami\Releases"
-  - mkdir c:\tsunami\Releases
-  - dir c:\tsunami\Releases
+  #- mkdir c:\tsunami\Releases
+  #- dir c:\tsunami\Releases
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "0.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
   - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."0.$V_MIN.$V_BUG".nupkg 
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
+cache: Releases
+
 artifacts:
   - path: Releases/RELEASES
     name: TsuRelFile
@@ -62,14 +65,11 @@ artifacts:
   - path: Releases/Setup.exe 
     name: TsuSetup
     
-  #- path: Releases
-  #  name: Tsunami
-    
-deploy:
-  provider: FTP
-  protocol: sftp
-  host: tsunami.adunanza.net
-  username: appveyorBotPlus
-  password:
-    secure: fudAgfl/410v1jYsi+GqgyPL7mgTEbmAnCBcX+5vlY0ZMF7dFDTJIdbWoYSRCH9m76+jCzjdarkICZpZFz5VipKuRuSAjfzDHAQO1/EMbHDbilPQVIqgf0vqoTfRNYAU79fbcb4w/Ez6je55SUwC6Q==
-  folder: releases
+#deploy:
+  #provider: FTP
+  #protocol: sftp
+  #host: tsunami.adunanza.net
+  #username: appveyorBotPlus
+  #password:
+  #  secure: fudAgfl/410v1jYsi+GqgyPL7mgTEbmAnCBcX+5vlY0ZMF7dFDTJIdbWoYSRCH9m76+jCzjdarkICZpZFz5VipKuRuSAjfzDHAQO1/EMbHDbilPQVIqgf0vqoTfRNYAU79fbcb4w/Ez6je55SUwC6Q==
+  #folder: releases
