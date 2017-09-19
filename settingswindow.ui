@@ -157,15 +157,18 @@ border-style: solid;</string>
          <widget class="QSpinBox" name="numLimitUp">
           <property name="minimumSize">
            <size>
-            <width>100</width>
+            <width>120</width>
             <height>23</height>
            </size>
           </property>
+          <property name="showGroupSeparator" stdset="0">
+           <bool>true</bool>
+          </property>
           <property name="suffix">
-           <string> MB/s</string>
+           <string> KB/s</string>
           </property>
           <property name="maximum">
-           <number>100</number>
+           <number>100000</number>
           </property>
          </widget>
         </item>
@@ -306,15 +309,18 @@ border-style: solid;</string>
          <widget class="QSpinBox" name="numLimitDown">
           <property name="minimumSize">
            <size>
-            <width>100</width>
+            <width>120</width>
             <height>23</height>
            </size>
           </property>
+          <property name="showGroupSeparator" stdset="0">
+           <bool>true</bool>
+          </property>
           <property name="suffix">
-           <string> MB/s</string>
+           <string> KB/s</string>
           </property>
           <property name="maximum">
-           <number>100</number>
+           <number>100000</number>
           </property>
          </widget>
         </item>

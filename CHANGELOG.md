@@ -15,6 +15,15 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.4.3] 2017-09-19
+### Added
+- updatemanager
+- zoom on tsuitem
+- check libtorrent connection
+
+### Changed
+- new gauge
+
 ## [0.4.2] 2017-09-19
 ### Fixed
 - appveyor script

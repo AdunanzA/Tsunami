@@ -4,23 +4,6 @@
 #define TIME_TRAY_BALLOON 5000
 #define PROJECT "Tsunami++"
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-QString shortPathName(const QString & file) // returns 8.3 file format from long path
-{
-    wchar_t* input=new wchar_t[file.size()+1];
-    file.toWCharArray(input);
-    input[file.size()]=L'\0'; // terminate string
-    long length = GetShortPathName(input, NULL, 0);
-    wchar_t* output=new wchar_t[length];
-    GetShortPathName(input,output,length);
-    QString ret=QString::fromWCharArray(output,length-1); // discard
-    delete [] input;
-    delete [] output;
-    return ret;
-}
-#endif
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -39,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initializeScreen();
     readSettings();
-//    loadLanguage(p_currentLanguage);
     loadLanguage();
 
     statusBar()->addPermanentWidget(statusLabel, 0);
@@ -53,6 +35,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // deleted torrent from sessionManager goes to downloadPage to remove it from list
     connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)));//, Qt::QueuedConnection);
+
+    // assigned external ip from sessionManager goes to Main to update ico
+    connect(sessionManager, &tsuManager::externalIpAssigned, this, &MainWindow::externalIpAssigned);
+
+    // dht bootstrap signal from sessionManager goes to Main to update ico
+    connect(sessionManager, &tsuManager::dhtBootstrapExecuted, this, &MainWindow::dhtBootstrapExecuted);
+
+    // listening on port signal from sessionManager goes to Main to update ico
+    connect(sessionManager, &tsuManager::listenerUpdate, this, &MainWindow::listenerUpdate);
 
     // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
     connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));//, Qt::QueuedConnection);
@@ -73,7 +64,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)));//, Qt::QueuedConnection);
 
     // update from downloadPage to gauge
-    connect(downloadPage, SIGNAL(sendUpdateGauge(double)), this, SLOT(updateGauge(double)));//, Qt::QueuedConnection);
+    connect(downloadPage, SIGNAL(sendUpdateGauge(double, double)), this, SLOT(updateGauge(double, double)));//, Qt::QueuedConnection);
 
     // update statusBar from downloadPage
     connect(downloadPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
@@ -95,6 +86,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     p_session_thread->start();
     qDebug("MainWindow started");
+
+    QString imgUrl = "image: url(:/images/state_warning.svg);";
+    ui->lblIp->setStyleSheet(imgUrl);
+    ui->lblDht->setStyleSheet(imgUrl);
+    ui->lblTcp->setStyleSheet(imgUrl);
+    ui->lblUdp->setStyleSheet(imgUrl);
+
 }
 
 MainWindow::~MainWindow()
@@ -118,9 +116,11 @@ void MainWindow::updateStatusBarLabel(const QString &msg)
     statusBar()->showMessage(msg);
 }
 
-void MainWindow::updateGauge(const double &value)
+void MainWindow::updateGauge(const double &downValue, const double &upValue)
 {
-    p_scaleGauge->setValue(value);
+//    p_scaleGauge->setValue(value);
+    p_downNeedle->setCurrentValue(downValue);
+    p_upNeedle->setCurrentValue(upValue);
 }
 
 void MainWindow::initializeScreen() {
@@ -168,58 +168,85 @@ void MainWindow::initializeScreen() {
     ui->content->addWidget(statisticsPage);
     ui->content->addWidget(downloadPage);
 
-    p_scaleGauge = new QScale(this);
-    // a simple modify to force rebuild to test autoupdate
-	//p_scaleGauge->setInvertedAppearance(true);
-    ui->contentGauge->addWidget(p_scaleGauge);
+//    p_scaleGauge = new QScale(this);
+//    p_scaleGauge->setInvertedAppearance(true);
+//    ui->contentGauge->addWidget(p_scaleGauge);
+    p_speedGauge = new QcGaugeWidget;
+//    p_SpeedGauge->addBackground(99);
+
+//    QcBackgroundItem *bkg1 = p_SpeedGauge->addBackground(92);
+//    bkg1->clearColors();
+//    bkg1->addColor(0.1f,Qt::black);
+//    bkg1->addColor(1.0,Qt::white);
+
+//    QcBackgroundItem *bkg2 = p_SpeedGauge->addBackground(88);
+//    bkg2->clearColors();
+//    bkg2->addColor(0.1f,Qt::gray);
+//    bkg2->addColor(1.0,Qt::darkGray);
+
+    p_speedGauge->addArc(75);
+    p_speedGauge->addDegrees(75)->setValueRange(0,100);
+
+    p_speedGauge->addValues(90)->setValueRange(0,100);
+    QcLabelItem *labelType = p_speedGauge->addLabel(70);
+    labelType->setText("Mbps");
+    labelType->setColor(Qt::green);
+
+    p_upNeedle = p_speedGauge->addNeedle(70);
+    p_upNeedle->setNeedle(QcNeedleItem::NeedleType::FeatherNeedle);
+    p_upNeedle->setColor(Qt::red);
+    p_upNeedle->setValueRange(0,100);
+
+    QcLabelItem *labelDown = p_speedGauge->addLabel(40);
+    labelDown->setText("0.0");
+    labelDown->setColor(Qt::green);
+    p_downNeedle = p_speedGauge->addNeedle(80);
+    p_downNeedle->setNeedle(QcNeedleItem::NeedleType::FeatherNeedle);
+    p_downNeedle->setLabel(labelDown);
+    p_downNeedle->setColor(Qt::green);
+    p_downNeedle->setValueRange(0,100);
+
+//    p_SpeedGauge->addBackground(7);
+//    p_SpeedGauge->addGlass(88);
+    ui->contentGauge->addWidget(p_speedGauge);
 
 }
 
 void MainWindow::readSettings()
 {
-    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
+    QSettings settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
 
     settings.beginGroup("MainWindow");
+    if ( settings.value("fullScreen", false).toBool() ) setWindowState(Qt::WindowFullScreen);
     resize(settings.value("size", QSize(840, 670)).toSize());
     move(settings.value("pos", QPoint(200, 200)).toPoint());
-    if ( settings.value("fullScreen", false).toBool() ) setWindowState(Qt::WindowFullScreen);
     settings.endGroup();
-//    p_currentLanguage = settings.value("Language", 0).toInt();
     qDebug() << "Settings read";
+
+    bool justUpdated = settings.value("justUpdated", false).toBool();
+    if (justUpdated) {
+        settings.setValue("justUpdated", false);
+        settings.sync();
+        qDebug("just updated, showing change log");
+        changelog *cl = new changelog();
+        cl->exec();
+    }
+
 }
 
 void MainWindow::writeSettings()
 {
-//    QSettings settings(settingsPage->settingsFileName, settingsPage->settingsFileFormat);
-    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
+    QSettings settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
 
     settings.beginGroup("MainWindow");
+    settings.setValue("fullScreen", isFullScreen());
     settings.setValue("size", size());
     settings.setValue("pos", pos());
-    settings.setValue("fullScreen", isFullScreen());
     settings.endGroup();
+
+    settingsPage->saveSettings();
+
     qDebug() << "Settings wrote";
-}
-
-void MainWindow::updateTsunami()
-{
-    QProcess process;
-#ifdef Q_OS_WIN
-    const QString dir = shortPathName(QCoreApplication::applicationDirPath() + "/../");
-#else
-    dir = QCoreApplication::applicationDirPath() + "/../");
-#endif
-    process.start(dir+"Update.exe --checkForUpdate=https://tsunami.adunanza.net/releases/Releases/");
-
-    process.waitForFinished();
-    if(process.error() != QProcess::UnknownError)
-    {
-        qDebug() << "Error checking for updates";
-        return;
-    }
-
-    QProcess::startDetached(dir+"Update.exe --update=https://tsunami.adunanza.net/releases/Releases/");
-
 }
 
 void MainWindow::loadLanguage()
@@ -347,12 +374,36 @@ void MainWindow::popupInfo(const QString &msg)
     m_systrayIcon->showMessage(PROJECT, msg, QSystemTrayIcon::Information, TIME_TRAY_BALLOON);
 }
 
+void MainWindow::externalIpAssigned()
+{
+    ui->lblIp->setStyleSheet("image: url(:/images/state_connected.svg);");
+}
+
+void MainWindow::dhtBootstrapExecuted()
+{
+    ui->lblDht->setStyleSheet("image: url(:/images/state_connected.svg);");
+}
+
+void MainWindow::listenerUpdate(QString type, bool success)
+{
+    QString imgUrl = "image: url(:/images/state_connected.svg);";
+    if (!success) {
+        imgUrl = "image: url(:/images/state_disconnected.svg);";
+    }
+
+    if (type == "tcp") {
+        ui->lblTcp->setStyleSheet(imgUrl);
+    } else {
+        ui->lblUdp->setStyleSheet(imgUrl);
+    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     qDebug("closing");
     statusLabel->setText("Saving resume data. Please wait.");
     writeSettings();
-    updateTsunami();
+//    updateTsunami();
     emit stopSessionManager();
     event->accept();
 }

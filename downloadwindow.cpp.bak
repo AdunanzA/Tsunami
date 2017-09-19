@@ -27,7 +27,7 @@ downloadwindow::downloadwindow(QWidget *parent) :
     ui(new Ui::downloadwindow)
 {
     ui->setupUi(this);
-    p_scene = new QGraphicsScene(this);
+    p_scene = new tsugraphicsscene(this);
     p_itemDetails = new itemDetails(this);
 
     ui->graphicsView->setBackgroundBrush(QColor(23,23,23));
@@ -37,34 +37,55 @@ downloadwindow::downloadwindow(QWidget *parent) :
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setScene(p_scene);
 
+    ui->graphicsView->ensureVisible(QRectF(0, 0, 0, 0));
+    ui->graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
+    ui->graphicsView->setInteractive(true);
+
     redrawItemsPosition();
 
     p_sessionStatisticTimer = new QTimer(this);
     connect(p_sessionStatisticTimer, SIGNAL(timeout()), this, SLOT(updateSessionStatistics()));
     p_sessionStatisticTimer->start(TICKER_TIME);
 
-//    p_mw = reinterpret_cast<MainWindow*>(parent);
-//    p_mw = (MainWindow*)parent;
+//    p_contextMenu = new QMenu("Title", this);
 
+    // actually useless
+    connect(this, SIGNAL(sendDetailsRefresh()), p_itemDetails, SLOT(refreshFromParent()));
+
+    // SHOW CONTEXT MENU
+    connect(ui->graphicsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+
+    qDebug("downloadwindow created");
 }
 
 downloadwindow::~downloadwindow()
 {
     delete ui;
+    qDebug("downloadwindow destroyed");
 }
 
 void downloadwindow::requestedCancel(const std::string &hash, const bool &deleteFilesToo)
 {
+    qDebug() << QString("requestedCancel for %0 delete file too %1, emitting %2")
+                        .arg(QString::fromStdString(hash))
+                        .arg(deleteFilesToo)
+                        .arg("sendRequestedCancelToSession");
     emit sendRequestedCancelToSession(hash, deleteFilesToo);
 }
 
 void downloadwindow::requestedPause(const std::string &hash)
 {
+    qDebug() << QString("requestedPause for %0, emitting %1")
+                        .arg(QString::fromStdString(hash))
+                        .arg("sendRequestedPauseToSession");
     emit sendRequestedPauseToSession(hash);
 }
 
 void downloadwindow::requestedResume(const std::string &hash)
 {
+    qDebug() << QString("requestedResume for %0, emitting %1")
+                        .arg(QString::fromStdString(hash))
+                        .arg("sendRequestedResumeToSession");
     emit sendRequestedResumeToSession(hash);
 }
 
@@ -78,8 +99,130 @@ void downloadwindow::requestedDetails(const std::string &hash)
 //        p_itemDetails->setValues(th);
 //        p_itemDetails->exec();
 //    }
+    qDebug() << QString("requestedDetails for %0, opening details").arg(QString::fromStdString(hash));
     p_itemDetails->setHash(hash);
     p_itemDetails->exec();
+}
+
+void downloadwindow::showContextMenu(const QPoint &pos)
+{
+    qDebug("requested context menu");
+    QPoint globalPos = this->mapToGlobal(pos);
+
+    QMenu contextMenu;
+    contextMenu.addAction("Select all", this, SLOT(selectAll()));
+    contextMenu.addAction("Deselct all", this, SLOT(deselectAll()));
+    contextMenu.addSeparator();
+    contextMenu.addAction("Pause selected", this, SLOT(pauseSelected()));
+    contextMenu.addAction("Resume selected", this, SLOT(resumeSelected()));
+    contextMenu.addSeparator();
+    contextMenu.addAction("Delete selected...", this, SLOT(deleteSelected()));
+    contextMenu.exec(globalPos);
+}
+
+void downloadwindow::selectAll()
+{
+    foreach (tsuItem* item, p_tsulist) {
+        item->setSelected(true);
+    }
+}
+
+void downloadwindow::deselectAll()
+{
+    foreach (tsuItem* item, p_tsulist) {
+        item->setSelected(false);
+    }
+}
+
+void downloadwindow::pauseSelected()
+{
+    QVector<tsuItem *> listSelected;
+
+    foreach (tsuItem* item, p_tsulist) {
+        if (item->isSelected()) {
+            listSelected.append(item);
+        }
+    }
+
+    if (listSelected.length() == 0) {
+        emit sendMessageToStatusBar(QString("No item selected"));
+        return;
+    }
+
+    foreach (tsuItem* item, listSelected) {
+        item->executePause();
+    }
+    emit sendMessageToStatusBar(QString("%0 torrent paused").arg(listSelected.length()));
+}
+
+void downloadwindow::resumeSelected()
+{
+    QVector<tsuItem *> listSelected;
+
+    foreach (tsuItem* item, p_tsulist) {
+        if (item->isSelected()) {
+            listSelected.append(item);
+        }
+    }
+
+    if (listSelected.length() == 0) {
+        emit sendMessageToStatusBar(QString("No item selected"));
+        return;
+    }
+
+    foreach (tsuItem* item, listSelected) {
+        item->executeResume();
+    }
+    emit sendMessageToStatusBar(QString("%0 torrent resumed").arg(listSelected.length()));
+}
+
+void downloadwindow::deleteSelected()
+{
+    QVector<tsuItem *> listSelected;
+
+    foreach (tsuItem* item, p_tsulist) {
+        if (item->isSelected()) {
+            listSelected.append(item);
+        }
+    }
+
+    if (listSelected.length() == 0) {
+        emit sendMessageToStatusBar(QString("No item selected"));
+        return;
+    }
+
+    QMessageBox mbox;
+    QString msg = QString("<center>Do you really want to cancel <b>%0</b> torrents from download?</center>").arg(listSelected.length());
+    mbox.setText(msg);
+    mbox.setStandardButtons( QMessageBox::Yes | QMessageBox::No );
+
+    mbox.addButton("Yes and delete files too", QMessageBox::YesRole);
+
+    bool proceedWithCancel = false;
+    bool cancelFilesOnDelete = false;
+
+    switch (mbox.exec()) {
+        case QMessageBox::Yes:
+            proceedWithCancel = true;
+            break;
+        case QMessageBox::No:
+            proceedWithCancel = false;
+            break;
+        default:
+            proceedWithCancel = true;
+            cancelFilesOnDelete = true;
+            break;
+    }
+
+    if (proceedWithCancel) {
+        foreach (tsuItem* item, listSelected) {
+            qDebug() << "requesting remove for" << item->get_Head();
+            item->executeItemRemove(cancelFilesOnDelete);
+        }
+        qInfo() << QString("requested remove for %0 torrents").arg(listSelected.length());
+    }
+    emit sendMessageToStatusBar(QString("%0 torrent removed").arg(listSelected.length()));
+
 }
 
 void downloadwindow::updateSessionStatistics()
@@ -119,6 +262,9 @@ void downloadwindow::updateSessionStatistics()
 
 void downloadwindow::updateFromSession(const QVector<tsuEvents::tsuEvent> &events)
 {
+    if (p_itemDetails->isVisible())
+        return;
+
     try {
         for (tsuEvents::tsuEvent event : events) {
 //            qDebug() << QString("updateFromSession received for %0, size %1").arg(event.name).arg(event.total_size);
@@ -130,13 +276,13 @@ void downloadwindow::updateFromSession(const QVector<tsuEvents::tsuEvent> &event
             }
         }
     } catch (std::exception &exc) {
-        qDebug() << QString("updateFromSession throws %0").arg(exc.what());
+        qCritical() << QString("updateFromSession throws %0").arg(exc.what());
     }
 }
 
 void downloadwindow::addFromSession(const tsuEvents::tsuEvent &event)
 {
-//    qDebug() << QString("received add for '%0' - '%1'").arg(event.name).arg(QString::fromStdString(event.hash));
+    qDebug() << QString("received addFromSession for '%0' - '%1'").arg(event.name).arg(QString::fromStdString(event.hash));
     tsuItem *ts = new tsuItem(event.hash);
     connect(ts, SIGNAL(cancelRequested(std::string,bool)), this, SLOT(requestedCancel(std::string,bool)), Qt::QueuedConnection);
     connect(ts, SIGNAL(pauseRequested(std::string)), this, SLOT(requestedPause(std::string)), Qt::QueuedConnection);
@@ -150,6 +296,7 @@ void downloadwindow::addFromSession(const tsuEvents::tsuEvent &event)
 
 void downloadwindow::torrentDeletedFromSession(const std::string &hash)
 {
+    qDebug() << QString("received torrentDeletedFromSession for '%0'").arg(QString::fromStdString(hash));
     try {
         foreach (tsuItem* item, p_tsulist) {
             if ( item->get_Hash() == hash ) {
@@ -177,6 +324,7 @@ void downloadwindow::redrawItemsPosition()
 //        qDebug() << QString("item %0 -> row %1, col %2").arg(i).arg(row).arg(col);
         ti->setPos(QPointF((col*itemWidth)+tsuItem::ItemGlowRadius, (row*itemHeight)+tsuItem::ItemGlowRadius));
     }
+    ui->graphicsView->ensureVisible(QRectF(0, 0, 0, 0));
 }
 
 void downloadwindow::resizeEvent(QResizeEvent *event)
@@ -189,6 +337,7 @@ void downloadwindow::changeEvent(QEvent *e)
 {
     if(e->type() == QEvent::LanguageChange)
     {
+        qDebug("received QEvent::LanguageChange, retranslateUi");
         ui->retranslateUi(this);
     }
 }

@@ -17,7 +17,6 @@ public:
     // QGraphicsScene interface
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-
 };
 
 #endif // TSUGRAPHICSSCENE_H

@@ -9,13 +9,13 @@ tsuManager::tsuManager()
     QString user_agent = QString("Tsunami/%0.%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_BUGFIX);
     settings.set_str(lt::settings_pack::user_agent, user_agent.toStdString());
 
+    // DEFAULTS
     // from picotorrent (and qbittorrent)
     settings.set_str(lt::settings_pack::string_types::dht_bootstrap_nodes,
         "router.bittorrent.com:6881" ","
         "router.utorrent.com:6881" ","
         "dht.transmissionbt.com:6881" ","
         "dht.aelitis.com:6881");
-
     // from qbittorrent
     settings.set_bool(lt::settings_pack::upnp_ignore_nonrouters, true);
     settings.set_bool(lt::settings_pack::announce_to_all_trackers, true);
@@ -49,16 +49,18 @@ tsuManager::tsuManager()
 
     p_session = QSharedPointer<lt::session>::create(settings);
 
-    setupManager();
+    loadSettings();
+
+    setNotify();
 }
 
-tsuManager::tsuManager(const lt::settings_pack & sp)
-{
-    p_session = QSharedPointer<lt::session>::create(sp);
-    setupManager();
-}
+//tsuManager::tsuManager(const lt::settings_pack & sp)
+//{
+//    p_session = QSharedPointer<lt::session>::create(sp);
+//    setNotify();
+//}
 
-void tsuManager::setupManager()
+void tsuManager::setNotify()
 {
 //    timerUpdate = new QTimer(this);
 //    connect(timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
@@ -72,16 +74,61 @@ void tsuManager::setupManager()
     });
 }
 
+void tsuManager::loadSettings()
+{
+    lt::settings_pack settings = p_session->get_settings();
+    QSettings qtSettings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
+
+    int downLimit = qtSettings.value("libtorrent/download_rate_limit", 0).toInt();
+    int upLimit = qtSettings.value("libtorrent/upload_rate_limit", 0).toInt();
+
+    // from MB/s to B/S
+    downLimit = downLimit * 1000000;
+    upLimit = upLimit * 1000000;
+
+    settings.set_int(lt::settings_pack::download_rate_limit, downLimit); // B/S , 0 unlimited
+    settings.set_int(lt::settings_pack::upload_rate_limit, upLimit); // B/S , 0 unlimited
+
+    p_session->apply_settings(settings);
+}
+
 void tsuManager::startManager()
 {
 //    timerUpdate->start(TIMER_TICK);
 
+    qDebug("starting");
     QString fastresumeFolder = QString("%0\\%1").arg(QCoreApplication::applicationDirPath()).arg("fastresume");
 
     if (!QDir(fastresumeFolder).exists()) {
         QDir().mkdir(fastresumeFolder);
     } else {
         // resuming
+
+        // SESSIONSTATE
+        QString sessionFileName = QString("%0/tsunami.session").arg(fastresumeFolder);
+        QFileInfo sessionFileInfo(sessionFileName);
+        qDebug() << QString("session file exists %0, is readable %1").arg((sessionFileInfo.exists()) ? "True" : "False")
+                                                                     .arg((sessionFileInfo.isReadable()) ? "True" : "False");
+        if (sessionFileInfo.exists() && sessionFileInfo.isReadable()) {
+            QFile sessionFile(sessionFileName);
+            sessionFile.open(QIODevice::ReadOnly);
+            QByteArray sessionBuffer = sessionFile.readAll();
+            lt::error_code sec;
+            lt::bdecode_node session_state;
+            lt::bdecode(sessionBuffer.constData(), sessionBuffer.constData() + sessionBuffer.size(), session_state, sec);
+            if (sec) {
+                qCritical() << QString("session state load error: cannot decode %0, error %1").arg(sessionFileName)
+                                                                                              .arg(QString::fromStdString(sec.message()));
+            } else {
+                p_session->load_state(session_state);
+                qDebug("session state loaded");
+            }
+        } else {
+            qWarning("cannot access session state file");
+        }
+
+        // FASTRESUMES
+        int count = 0;
         QDirIterator it(fastresumeFolder, QStringList() << "*.fastresume", QDir::Files, QDirIterator::Subdirectories);
         while (it.hasNext()) {
             QString fileName = it.next();
@@ -93,20 +140,26 @@ void tsuManager::startManager()
             lt::bdecode_node bdn;
             lt::bdecode(buf.constData(), buf.constData() + buf.size(), bdn, ec);
             if (ec) {
-                qDebug() << QString("fastresume error: cannot decode %0").arg(fileName);
+                qCritical() << QString("fastresume error: cannot decode %0").arg(fileName);
                 continue;
             }
             if (bdn.type() != lt::bdecode_node::type_t::dict_t) {
-                qDebug() << QString("fastresume error: file %0 not a valid file").arg(fileName);
+                qCritical() << QString("fastresume error: file %0 not a valid file").arg(fileName);
                 continue;
             }
             lt::add_torrent_params tp = lt::read_resume_data(bdn, ec);
             if (ec) {
-                qDebug() << QString("fastresume error: cannot load fastresume %0").arg(fileName);
+                qCritical() << QString("fastresume error: cannot load fastresume %0").arg(fileName);
                 continue;
             }
             tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
             p_session->async_add_torrent(tp);
+            count++;
+        }
+        if (count == 0) {
+            qDebug("no fastresumes to load");
+        } else {
+            qDebug() << QString("loaded %0 fastresumes").arg(count);
         }
     }
 }
@@ -116,6 +169,20 @@ void tsuManager::stopManager()
 //    emit stopTimer();
     p_session->pause();
 
+    QString fastresumeFolder = QString("%0/%1").arg(QCoreApplication::applicationDirPath()).arg("fastresume");
+
+    // SAVE SESSION STATE
+    lt::entry entry;
+    p_session->save_state(entry);
+
+    QString sessionFileName = QString("%0/tsunami.session").arg(fastresumeFolder);
+    std::ofstream sessionOut(sessionFileName.toStdString(), std::ios_base::binary);
+    sessionOut.unsetf(std::ios_base::skipws);
+
+    lt::bencode(std::ostream_iterator<char>(sessionOut), entry);
+    qDebug("session state saved");
+
+    // FASTRESUMES
     std::vector<lt::torrent_handle> handles = p_session->get_torrents();
     qDebug() << QString("stopManager: Handling %0 handlers").arg(handles.size());
 
@@ -162,7 +229,6 @@ void tsuManager::stopManager()
                 lt::torrent_status st = h.status(lt::torrent_handle::query_save_path | lt::torrent_handle::query_name);
                 lt::entry &en = lt::write_resume_data(rd->params);
                 en.dict().insert({ "zu-fileName", st.name });
-                QString fastresumeFolder = QString("%0/%1").arg(QCoreApplication::applicationDirPath()).arg("fastresume");
                 std::stringstream hex;
                 hex << st.info_hash;
                 QString fileName = QString("%0/%1.fastresume").arg(fastresumeFolder).arg(QString::fromStdString(hex.str()));
@@ -174,6 +240,8 @@ void tsuManager::stopManager()
             }
         }
     }
+    qDebug("fastresumes saved");
+
     qDebug("stopped, emitting finished");
     emit finished();
 }
@@ -238,7 +306,7 @@ void tsuManager::alertsHandler()
                 QFile file(fileName);
                 file.remove();
             }
-            emit torrentDeleted(tra->info_hash.to_string());
+//            emit torrentDeleted(tra->info_hash.to_string());
             break;
         }
         default:
@@ -286,10 +354,12 @@ void tsuManager::addItems(const QStringList && items, const QString &path)
             atp.flags &= ~lt::add_torrent_params::flag_duplicate_is_error; // Already checked
 
             p_session->async_add_torrent(atp);
+
+            qInfo() << QString("torrent %0 added").arg(str);
         }
         catch (std::exception &exc)
         {
-            qDebug() << QString("addItems throws %0").arg(exc.what());
+            qCritical() << QString("addItems throws %0").arg(exc.what());
         }
     }
 }
@@ -300,9 +370,10 @@ void tsuManager::getCancelRequest(const std::string &hash, const bool deleteFile
         lt::sha1_hash sh(hash);
         lt::torrent_handle th = p_session->find_torrent(sh);
         p_session->remove_torrent(th, deleteFilesToo);
-    } catch (std::exception &exc) {
-        qDebug() << QString("tsuManager::getCancelRequest throws %0").arg(exc.what());
         emit torrentDeleted(hash);
+    } catch (std::exception &exc) {
+        qCritical() << QString("getCancelRequest throws %0").arg(exc.what());
+//        emit torrentDeleted(hash);
     }
 }
 
@@ -313,7 +384,7 @@ void tsuManager::getPauseRequest(const std::string &hash)
         lt::torrent_handle th = p_session->find_torrent(sh);
         th.pause();
     } catch (std::exception &exc) {
-        qDebug() << QString("tsuManager::getPauseRequest throws %0").arg(exc.what());
+        qCritical() << QString("getPauseRequest throws %0").arg(exc.what());
     }
 }
 
@@ -324,7 +395,13 @@ void tsuManager::getResumeRequest(const std::string &hash)
         lt::torrent_handle th = p_session->find_torrent(sh);
         th.resume();
     } catch (std::exception &exc) {
-        qDebug() << QString("tsuManager::getResumeRequest throws %0").arg(exc.what());
+        qCritical() << QString("getResumeRequest throws %0").arg(exc.what());
     }
+}
+
+void tsuManager::refreshSettings()
+{
+    qDebug("received refreshSettings");
+    loadSettings();
 }
 

@@ -11,7 +11,6 @@ searchwindow::searchwindow(QWidget *parent) :
 searchwindow::~searchwindow()
 {
     delete ui;
-    qDebug("searchwindow destroyed");
 }
 
 void searchwindow::changeEvent(QEvent *e)

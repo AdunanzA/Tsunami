@@ -46,6 +46,7 @@ private:
 //    QDateTime p_lastStatisticsSent = QDateTime::currentDateTime();
 
     int p_itemsPerRow = 0;
+    qreal p_transformFactor = 1;
 
     QTimer *p_sessionStatisticTimer;
 
@@ -66,9 +67,12 @@ private slots:
     void deleteSelected();
     void updateSessionStatistics();
 
+    void on_btnZoomIn_released();
+    void on_btnZoomOut_released();
+
 signals:
     void sendUpdateToStatusBar(const QString &msg);
-    void sendUpdateGauge(const double &value);
+    void sendUpdateGauge(const double &downValue, const double &upValue);
     void sendStatisticsUpdate(const QPair<int, int> &values);
     void sendPopupInfo(const QString &msg);
     void sendMessageToStatusBar(const QString & msg);

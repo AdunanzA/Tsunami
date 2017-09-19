@@ -4,7 +4,7 @@
 
 settingswindow::settingswindow(QWidget *parent) :
     QWidget(parent),
-    settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME)),
+    settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat),
     ui(new Ui::settingswindow)
 {
     ui->setupUi(this);
@@ -14,6 +14,7 @@ settingswindow::settingswindow(QWidget *parent) :
 settingswindow::~settingswindow()
 {
     delete ui;
+    qDebug("settingswindow destroyed");
 }
 
 void settingswindow::loadSettings()
@@ -34,7 +35,6 @@ void settingswindow::loadSettings()
 //        }
 //        settings.endGroup();
 //    }
-//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
 
     QStorageInfo storage = QStorageInfo::root();
 //    QString downloadPath = settings.value("Download/downloadPath", QCoreApplication::applicationDirPath()).toString();
@@ -56,15 +56,13 @@ void settingswindow::loadSettings()
 
     ui->numLimitDown->setValue(downLimit);
     ui->numLimitUp->setValue(upLimit);
-    qDebug() << QString("limits: download %0 MB/s, upload %1 MB/s ").arg(downLimit).arg(upLimit);
+    qDebug() << QString("limits: download %0 KB/s, upload %1 KB/s ").arg(downLimit).arg(upLimit);
 
     qInfo("settings loaded and applied");
 }
 
 void settingswindow::saveSettings()
 {
-//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
-
     settings.setValue("Language", ui->cmbLanguage->currentIndex());
     qDebug() << "current language " << ui->cmbLanguage->currentText();
 
@@ -80,19 +78,18 @@ void settingswindow::saveSettings()
     settings.setValue("download_rate_limit", ui->numLimitDown->value());
     settings.setValue("upload_rate_limit", ui->numLimitUp->value());
     settings.endGroup();
+    settings.sync();
 
     qInfo("settings saved");
 }
 
 void settingswindow::setLastBrowsedDir(const QString &path)
 {
-//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
     settings.setValue("Download/lastBrowsedDir", path);
 }
 
 QString settingswindow::getLastBrowsedDir()
 {
-//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
     return settings.value("Download/lastBrowsedDir", QCoreApplication::applicationDirPath()).toString();
 }
 
@@ -103,7 +100,6 @@ QString settingswindow::getDownloadPath() const
 
 void settingswindow::on_btnSave_released()
 {
-//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
     int savedLanguage = settings.value("Language", 0).toInt();
     int savedDownLimit = settings.value("libtorrent/download_rate_limit", 0).toInt();
     int savedUpLimit = settings.value("libtorrent/upload_rate_limit", 0).toInt();
@@ -150,7 +146,6 @@ void settingswindow::on_btnSave_released()
             emit sendRefreshSettings();
         }
     }
-//    saveSettings();
 }
 
 void settingswindow::on_btnCancel_released()

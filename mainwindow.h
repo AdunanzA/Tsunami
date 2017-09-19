@@ -24,7 +24,9 @@
 #include "libtorrent/bencode.hpp"
 #include "libtorrent/torrent_info.hpp"
 
-#include "QScale/qscale.h"
+#include <changelog.h>
+//#include "QScale/qscale.h"
+#include <QcGaugeWidget/qcgaugewidget.h>
 
 namespace Ui
 {
@@ -48,8 +50,12 @@ signals:
 public slots:
     void updateStatusBarStatistics(const QString & msg);
     void updateStatusBarLabel(const QString & msg);
-    void updateGauge(const double & value);
+    void updateGauge(const double & downValue, const double & upValue);
     void popupInfo(const QString & msg);
+
+    void externalIpAssigned();
+    void dhtBootstrapExecuted();
+    void listenerUpdate(QString type, bool success);
 
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
@@ -67,24 +73,27 @@ private:
     statisticswindow *statisticsPage;
     QLabel *statusLabel;
 
-//    int p_currentLanguage;
     QTranslator p_translator;
 
     QThread *p_session_thread;
 
-    QScale *p_scaleGauge;
+//    QScale *p_scaleGauge;
+    QcGaugeWidget * p_speedGauge;
+    QcNeedleItem *p_downNeedle;
+    QcNeedleItem *p_upNeedle;
 
     void createTrayIcon();
     void initializeScreen();
 
     void readSettings();
     void writeSettings();
-    void updateTsunami();
 
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *e) override;
+
+public slots:
 
 };
 

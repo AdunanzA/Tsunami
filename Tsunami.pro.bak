@@ -11,6 +11,11 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Tsunami
 TEMPLATE = app
 
+# Used by QSettings
+DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
+           APP_ORGANIZATION_DOMAIN=\"\\\"Adunanza.com\\\"\" \
+           APP_PROJECT_NAME=\"\\\"Tsunami\\\"\"
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -22,6 +27,10 @@ DEFINES += _WIN32_WINNT=0x0600
 DEFINES += WIN64
 DEFINES += BOOST_ALL_DYN_LINK
 DEFINES += UNICODE
+
+# Enable Context details in log even in release build
+# https://forum.qt.io/topic/67015/enable-qmessagelogcontext-in-release-build/2
+DEFINES += QT_MESSAGELOGCONTEXT
 
 #DEFINES += _WINDOWS
 #DEFINES += _DEBUG

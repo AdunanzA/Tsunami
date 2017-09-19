@@ -450,6 +450,8 @@ void tsuItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 //    if (event->lastScenePos().y() < 0) this->setY(0);
 //    setOpacity(1);
 
+//    qDebug("mouseReleaseEvent");
+
     if (p_isFadingOut || p_isFadingIn) return;
 
     int x = event->lastPos().x();

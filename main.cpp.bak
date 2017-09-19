@@ -11,44 +11,76 @@
 #include <settingswindow.h>
 
 #define SPLASH_DURATION 3000
-#define ORGANIZATION_NAME "adunanza"
-#define ORGANIZATION_DOMAIN "adunanza.com"
-#define PROJECT_NAME "tsunami"
+//#define ORGANIZATION_NAME "Adunanza"
+//#define ORGANIZATION_DOMAIN "adunanza.com"
+//#define PROJECT_NAME "tsunami"
 
 void showSplashScreen(const MainWindow & w);
 
 void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
 {
     QString txt;
-    QString txtContext = QString("%0::%2::%3").arg(context.file).arg(context.function).arg(context.line);
+
+    QString txtContext = QString("");
+    QString funcName = QString::fromUtf8(context.function);
+    QString message = QString(msg);
+
+    // strip out all chars after '(' like '(class QWidget *)' from function name
+    funcName = funcName.left(funcName.indexOf("("));
+
+    // strip out all chars like 'void __cdecl ' before function name
+    funcName = funcName.right(funcName.length() - funcName.lastIndexOf(" ") - 1);
+
+    // strip out double quotes around string message (if present)
+    if (message.left(1) == "\"") {
+        message = message.right(message.length() - 1);
+
+        if (message.right(1) == "\"") {
+            message = message.left(message.length() - 1);
+        }
+    }
+
+    txtContext = QString("%0::%1").arg(funcName).arg(context.line);
+
+    //if (QLibraryInfo::isDebugBuild()) {
+    //    txtContext = QString("%0::%1::%2").arg(context.file).arg(context.function).arg(context.line);
+    //}
+
     QString date = QDateTime::currentDateTime().toString(Qt::SystemLocaleDate);
 
-    QSettings settings(settingswindow::settingsFileName, settingswindow::settingsFileFormat);
-    QString debugLevel = settings.value("Debug/Level", "Info").toString();
+    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
+    int debugLevel = settings.value("Debug/Level", 1).toInt();
 
     switch (type) {
     case QtDebugMsg:
-        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg(debugLevel).arg(txtContext).arg(msg);
+        if (debugLevel == 0)
+            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Debug   ").arg(txtContext).arg(message);
         break;
     case QtInfoMsg:
-        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("I").arg(txtContext).arg(msg);
+        if (debugLevel >= 1)
+            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Info    ").arg(txtContext).arg(message);
         break;
     case QtWarningMsg:
-        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("W").arg(txtContext).arg(msg);
+        if (debugLevel >= 2)
+            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Warning ").arg(txtContext).arg(message);
         break;
     case QtCriticalMsg:
-        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("C").arg(txtContext).arg(msg);
+        if (debugLevel >= 3)
+            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Critical").arg(txtContext).arg(message);
         break;
     case QtFatalMsg:
-        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("F").arg(txtContext).arg(msg);
+        if (debugLevel >= 4)
+            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Fatal   ").arg(txtContext).arg(message);
         break;
     }
-    QFile outFile("Tsunami.log");
-    outFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-    QTextStream ts(&outFile);
-    ts << txt << endl;
-    QTextStream out(stdout);
-    out << txt << endl;
+    if (!txt.isNull()) {
+        QFile outFile("Tsunami.log");
+        outFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+        QTextStream ts(&outFile);
+        ts << txt << endl;
+        QTextStream out(stdout);
+        out << txt << endl;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -64,9 +96,9 @@ int main(int argc, char *argv[])
 
     MainWindow w;
 
-    QApplication::setOrganizationName(ORGANIZATION_NAME);
-    QApplication::setOrganizationDomain(ORGANIZATION_DOMAIN);
-    QApplication::setApplicationName(PROJECT_NAME);
+    QApplication::setOrganizationName(QStringLiteral(APP_ORGANIZATION_NAME));
+    QApplication::setOrganizationDomain(QStringLiteral(APP_ORGANIZATION_DOMAIN));
+    QApplication::setApplicationName(QStringLiteral(APP_PROJECT_NAME));
 
     //if (!params.noSplash) {
         showSplashScreen(w);

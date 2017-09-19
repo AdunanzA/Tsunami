@@ -17,6 +17,7 @@ statisticswindow::statisticswindow(QWidget *parent) :
 statisticswindow::~statisticswindow()
 {
     delete ui;
+    qDebug("statisticswindow destroyed");
 }
 
 void statisticswindow::updateStats(const QPair<int, int> &values)

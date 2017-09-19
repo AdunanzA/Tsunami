@@ -69,7 +69,8 @@ SOURCES += main.cpp\
     searchwindow.cpp \
     downloadwindow.cpp \
     statisticswindow.cpp \
-    itemdetails.cpp
+    itemdetails.cpp \
+    changelog.cpp
 
 HEADERS  += \
     mainwindow.h \
@@ -77,7 +78,8 @@ HEADERS  += \
     searchwindow.h \
     downloadwindow.h \
     statisticswindow.h \
-    itemdetails.h
+    itemdetails.h \
+    changelog.h
 
 FORMS    += \
     mainwindow.ui \
@@ -85,7 +87,8 @@ FORMS    += \
     searchwindow.ui \
     downloadwindow.ui \
     statisticswindow.ui \
-    itemdetails.ui
+    itemdetails.ui \
+    changelog.ui
 
 OBJECTS_DIR = tmp
 MOC_DIR = tmp

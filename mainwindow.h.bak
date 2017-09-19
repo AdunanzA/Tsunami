@@ -46,7 +46,8 @@ signals:
     void stopSessionManager();
 
 public slots:
-    void updateStatusBar(const QString & msg);
+    void updateStatusBarStatistics(const QString & msg);
+    void updateStatusBarLabel(const QString & msg);
     void updateGauge(const double & value);
     void popupInfo(const QString & msg);
 
@@ -56,7 +57,7 @@ private slots:
 
     void btnMenuClick();
     void btnAddClick();
-    void loadLanguage(QString l);
+    void loadLanguage();
 
 private:
     Ui::MainWindow *ui;
@@ -65,8 +66,9 @@ private:
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
     QLabel *statusLabel;
-    QString language;
-    QTranslator t;
+
+//    int p_currentLanguage;
+    QTranslator p_translator;
 
     QThread *p_session_thread;
 

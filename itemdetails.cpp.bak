@@ -27,7 +27,32 @@ void itemDetails::setHash(const std::string &hash)
     lt::sha1_hash sh(p_hash);
     lt::session *ses = p_mw->sessionManager->p_session.data();
     th = QSharedPointer<lt::torrent_handle>::create(ses->find_torrent(sh));
+
+    lt::torrent_status ts = th.data()->status();
+    ui->lblTorrentName->setText(ts.name.c_str());
+
+    int pieceLength = -1;
+    int piecesCount = -1;
+    if (th.data()->torrent_file())
+    {
+        pieceLength = th.data()->torrent_file()->piece_length();
+    }
+    ui->txtPiecesLength->setText(QLocale().toString(pieceLength));
+
+    if (th.data()->torrent_file())
+    {
+        piecesCount = th.data()->torrent_file()->num_pieces();
+    }
+    ui->txtPiecesCount->setText(QLocale().toString(piecesCount));
+
+    ui->chkSequential->setChecked(ts.sequential_download);
+
     update();
+}
+
+std::string itemDetails::getHash() const
+{
+    return p_hash;
 }
 
 void itemDetails::update()
@@ -39,13 +64,9 @@ void itemDetails::update()
     }
 
     lt::torrent_status ts = th.data()->status();
-    ui->lblTorrentName->setText(ts.name.c_str());
-
     bool isPaused = ts.paused && !ts.auto_managed;
     float ratio = 0;
     int eta = -1;
-    int pieceLength = -1;
-    int piecesCount = -1;
 
     if (ts.all_time_download > 0)
     {
@@ -61,24 +82,17 @@ void itemDetails::update()
         }
     }
 
-    if (th.data()->torrent_file())
-    {
-        pieceLength = th.data()->torrent_file()->piece_length();
-    }
-    ui->txtPiecesLength->setText(QLocale().toString(pieceLength));
-
-    if (th.data()->torrent_file())
-    {
-        piecesCount = th.data()->torrent_file()->num_pieces();
-    }
-    ui->txtPiecesCount->setText(QLocale().toString(piecesCount));
-
     std::vector<int64_t> progress;
     th.data()->file_progress(progress, lt::torrent_handle::file_progress_flags_t::piece_granularity);
 
     /* FILES LIST */
     ui->tableFiles->setRowCount(0);
-    ui->lblPieces->setPlaceholderText("");
+//    ui->lblPieces->setPlaceholderText("");
+
+    if (!th.data()->torrent_file()) {
+        return;
+    }
+
     lt::file_storage files = th.data()->torrent_file()->files();
     for (int i = 0; i < files.num_files(); i++)
     {
@@ -97,27 +111,34 @@ void itemDetails::update()
 
     }
 
-//    std::vector<int> pieces;
-//    th.piece_availability(pieces);
-//    for (int j = 0; j < pieces.size(); ++j) {
-//        ui->lblPieces->setPlaceholderText(QString("%0 %1").arg(ui->lblPieces->placeholderText()).arg(QString::number(pieces.at(j))));
-//    }
-//    lt::typed_bitfield ps = ts.pieces;
-//    QString htmlOff = "<span style='background-color:#808080;font-size:7px'>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
-    QString htmlOff = "<img src='qrc:/images/htmlOff.png'></img>";
-//    QString htmlOn  = "<span style='background-color:#90EE90;font-size:7px'>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
-    QString htmlOn  = "<img src='qrc:/images/htmlOn.png'></img>";
-    QString result = "";
-    ui->lblPieces->setHtml(result);
+//    QString htmlOff = "<span style='background-color:#808080;font-size:7px;border:1px solid #999999'>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+//    QString htmlOff = "<img src='qrc:/images/htmlOff.png'></img>"; background-image: url(:/images/htmlOff.png);
+//    QString htmlOff = "<div style='background-image: url(:/images/htmlOff.png);background-repeat:no-repeat;background-position: center center;min-height:8px;min-width:8px'></div>";
+
+//    QString htmlOn  = "<span style='background-color:#90EE90;font-size:7px;border:1px solid #999999'>&nbsp;&nbsp;&nbsp;&nbsp;</span>";
+//    QString htmlOn  = "<img src='qrc:/images/htmlOn.png'></img>";
+//    QString htmlOn = "<span style='background-image: url(:/images/htmlOn.png);background-repeat:no-repeat;background-position: center center;min-height:8px;min-width:8px'></span>";
+
+    ui->listWidget->clear();
+
+//    QString result = "";
+//    ui->lblPieces->setHtml(result);
     for (int j = 0; j < ts.pieces.size(); ++j) {
+
+        QListWidgetItem *item = new QListWidgetItem("  ", ui->listWidget);
+        item->setFont(QFont("Arial", 5));
+        item->setFlags(Qt::NoItemFlags | Qt::ItemNeverHasChildren);
+
         lt::piece_index_t pi(j);
         if (ts.pieces.get_bit(pi)) {
-            result += htmlOn;
+            item->setBackground(QColor(144, 238, 144));
+//            result += htmlOn;
         } else {
-            result += htmlOff;;
+            item->setBackground(QColor(128, 128, 128));
+//            result += htmlOff;;
         }
     }
-    ui->lblPieces->setHtml(result);
+//    ui->lblPieces->setHtml(result);
 
     /* STATE */
     bool hasError = ts.paused && ts.errc;
@@ -236,7 +257,6 @@ void itemDetails::timerTick()
     update();
 }
 
-
 void itemDetails::closeEvent(QCloseEvent *event)
 {
     p_refreshTimer->stop();
@@ -245,11 +265,15 @@ void itemDetails::closeEvent(QCloseEvent *event)
 
 void itemDetails::showEvent(QShowEvent *event)
 {
+    lt::torrent_status ts = th.data()->status();
+    ui->chkSequential->setChecked(ts.sequential_download);
+    update();
     p_refreshTimer->start(1000);
+    qDebug("showing details");
     event->accept();
 }
 
-void itemDetails::on_checkBox_toggled(bool checked)
+void itemDetails::on_chkSequential_toggled(bool checked)
 {
     th.data()->set_sequential_download(checked);
 }

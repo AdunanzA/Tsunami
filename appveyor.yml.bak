@@ -39,7 +39,6 @@ build_script:
   - qmake Tsunami.pro
   - nmake release
   - cp lib_rel/*.dll release
-  - cp CHANGELOG.md  release
   - cd release
   - del /Q *.cpp
   - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
@@ -56,7 +55,7 @@ artifacts:
   - path: Releases/RELEASES
     name: TsuRelFile
    
-  - path: Releases/*-delta.nupkg
+  - path: Releases/*.nupkg
     name: TsuNugets
 
   - path: Releases/Setup.exe 

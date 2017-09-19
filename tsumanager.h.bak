@@ -24,7 +24,7 @@ class tsuManager :public QObject
     Q_OBJECT
 public:
     tsuManager();
-    explicit tsuManager(const lt::settings_pack & sp);
+//    explicit tsuManager(const lt::settings_pack & sp);
     ~tsuManager();
     static int outstanding_resume_data;
 
@@ -43,11 +43,13 @@ public slots:
     void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
     void getPauseRequest(const std::string &hash);
     void getResumeRequest(const std::string &hash);
+    void refreshSettings();
     void startManager();
     void stopManager();
 
 private:
-    void setupManager();
+    void setNotify();
+    void loadSettings();
 //    QTimer *timerUpdate;
 
 private slots:

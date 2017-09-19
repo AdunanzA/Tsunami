@@ -11,6 +11,8 @@ itemDetails::itemDetails(QWidget *parent) :
     ui->setupUi(this);
     p_mw = reinterpret_cast<MainWindow*>(parent->parent());
 
+    this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+
     p_refreshTimer = new QTimer(this);
     connect(p_refreshTimer, SIGNAL(timeout()), this, SLOT(timerTick()));
 //    p_refreshTimer->start(1000);
@@ -19,6 +21,7 @@ itemDetails::itemDetails(QWidget *parent) :
 itemDetails::~itemDetails()
 {
     delete ui;
+    qDebug("itemDetails destroyed");
 }
 
 void itemDetails::setHash(const std::string &hash)
@@ -62,6 +65,7 @@ void itemDetails::update()
     if (!th.data()->is_valid()) {
         this->close();
     }
+//    qDebug("processing details update");
 
     lt::torrent_status ts = th.data()->status();
     bool isPaused = ts.paused && !ts.auto_managed;
@@ -265,6 +269,9 @@ void itemDetails::closeEvent(QCloseEvent *event)
 
 void itemDetails::showEvent(QShowEvent *event)
 {
+    qDebug("called showEvent");
+    if (p_hash.empty() || !this->isVisible()) return;
+
     lt::torrent_status ts = th.data()->status();
     ui->chkSequential->setChecked(ts.sequential_download);
     update();

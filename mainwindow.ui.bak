@@ -17,13 +17,29 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string notr="true"/>
+   <string>MainWindow</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">#btnAdd {
+	border:none;
+	padding:0px;
+	margin:0px;
+	background-repeat: no-repeat;
+	background-image: url(:/images/add.png);
+	background-position: center center;
+}
+
+#btnPower {
+	border:none;
+	padding:0px;
+	margin:0px;
+	background-repeat: no-repeat;
+	background-image: url(:/images/power.png);
+	background-position: center center;
+}</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -186,9 +202,6 @@ QPushButton#btnStatistics_on { background-image: url(:/images/statistics_on.png)
           </property>
           <property name="toolTip">
            <string>Settings</string>
-          </property>
-          <property name="styleSheet">
-           <string notr="true"/>
           </property>
           <property name="text">
            <string/>
@@ -699,13 +712,7 @@ QPushButton#btnStatistics_on { background-image: url(:/images/statistics_on.png)
           <string>Add Torrent</string>
          </property>
          <property name="styleSheet">
-          <string notr="true">border:none;
-padding:0px;
-margin:0px;
-background-repeat: no-repeat;
-background-image: url(:/images/add.png);
-background-position: center center;
-</string>
+          <string notr="true"/>
          </property>
          <property name="text">
           <string/>
@@ -758,13 +765,7 @@ background-position: center center;
           <string>Turn off Tsuanmi</string>
          </property>
          <property name="styleSheet">
-          <string notr="true">border:none;
-padding:0px;
-margin:0px;
-background-repeat: no-repeat;
-background-image: url(:/images/power.png);
-background-position: center center;
-</string>
+          <string notr="true"/>
          </property>
          <property name="text">
           <string/>

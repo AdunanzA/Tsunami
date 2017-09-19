@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QTimer>
+#include <QStandardPaths>
 
 #include "libtorrent/session.hpp"
 #include "libtorrent/torrent_info.hpp"
@@ -13,6 +14,7 @@
 #include "libtorrent/bencode.hpp"
 #include "libtorrent/write_resume_data.hpp"
 #include "libtorrent/read_resume_data.hpp"
+#include <libtorrent/create_torrent.hpp>
 
 #include "tsuitem.h"
 #include "tsuevents.h"
@@ -36,7 +38,12 @@ signals:
     void updateFromSessionManager(const QVector<tsuEvents::tsuEvent> events);
     void addFromSessionManager(const tsuEvents::tsuEvent &event);
     void torrentDeleted(const std::string &hash);
-//    void stopTimer();
+
+    void externalIpAssigned();
+    void dhtBootstrapExecuted();
+    void listenerUpdate(QString type, bool success);
+
+    //    void stopTimer();
     void finished();
 
 public slots:
@@ -50,6 +57,7 @@ public slots:
 private:
     void setNotify();
     void loadSettings();
+    QString p_tsunamiSessionFolder;
 //    QTimer *timerUpdate;
 
 private slots:

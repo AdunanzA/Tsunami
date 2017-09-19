@@ -6,16 +6,11 @@
 #include <QFile>
 #include <QTextStream>
 #include <QSettings>
+#include <QStandardPaths>
 
 #include <tsumanager.h>
 #include <settingswindow.h>
-
-#define SPLASH_DURATION 3000
-//#define ORGANIZATION_NAME "Adunanza"
-//#define ORGANIZATION_DOMAIN "adunanza.com"
-//#define PROJECT_NAME "tsunami"
-
-void showSplashScreen(const MainWindow & w);
+#include <updatemanager.h>
 
 void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
 {
@@ -48,32 +43,56 @@ void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const
 
     QString date = QDateTime::currentDateTime().toString(Qt::SystemLocaleDate);
 
-    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_ORGANIZATION_NAME), QStringLiteral(APP_PROJECT_NAME));
+    QSettings settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
     int debugLevel = settings.value("Debug/Level", 1).toInt();
+
+    bool shouldLog = false;
+    switch (debugLevel) {
+    case 0: // debug
+        shouldLog = true;
+        break;
+    case 1: // info
+        if (type != QtDebugMsg)
+            shouldLog = true;
+        break;
+    case 2: // warning
+        if (type == QtWarningMsg || type == QtCriticalMsg || type == QtFatalMsg)
+            shouldLog = true;
+        break;
+    case 3: // critical
+        if (type == QtCriticalMsg || type == QtFatalMsg)
+            shouldLog = true;
+        break;
+    case 4: // fatal
+        if (type == QtFatalMsg)
+            shouldLog = true;
+        break;
+    default:
+        // info
+        shouldLog = true;
+        break;
+    }
 
     switch (type) {
     case QtDebugMsg:
-        if (debugLevel == 0)
-            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Debug   ").arg(txtContext).arg(message);
+        txt = "Debug   ";
         break;
     case QtInfoMsg:
-        if (debugLevel >= 1)
-            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Info    ").arg(txtContext).arg(message);
+        txt = "Info    ";
         break;
     case QtWarningMsg:
-        if (debugLevel >= 2)
-            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Warning ").arg(txtContext).arg(message);
+        txt = "Warning ";
         break;
     case QtCriticalMsg:
-        if (debugLevel >= 3)
-            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Critical").arg(txtContext).arg(message);
+        txt = "Critical";
         break;
     case QtFatalMsg:
-        if (debugLevel >= 4)
-            txt = QString("%0 - %1 - %2 -> %3").arg(date).arg("Fatal   ").arg(txtContext).arg(message);
+        txt = "Fatal   ";
         break;
     }
-    if (!txt.isNull()) {
+
+    if (shouldLog) {
+        txt = QString("%0 - %1 - %2 -> %3").arg(date).arg(txt).arg(txtContext).arg(message);
         QFile outFile("Tsunami.log");
         outFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
         QTextStream ts(&outFile);
@@ -94,37 +113,44 @@ int main(int argc, char *argv[])
     // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
     qInstallMessageHandler(logMessageHandler);
 
-    MainWindow w;
+    // REMOVED TO LET INI FILE TO BE PLACE IN CORRECT FOLDER (...local/Tsunami INSTEAD OF ...local/Adunanza/Tsunami)
+//    QApplication::setOrganizationName(QStringLiteral(APP_ORGANIZATION_NAME));
 
-    QApplication::setOrganizationName(QStringLiteral(APP_ORGANIZATION_NAME));
     QApplication::setOrganizationDomain(QStringLiteral(APP_ORGANIZATION_DOMAIN));
     QApplication::setApplicationName(QStringLiteral(APP_PROJECT_NAME));
 
-    //if (!params.noSplash) {
-        showSplashScreen(w);
-    //} else {
-        //w.show();
-    //}
+//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_PROJECT_NAME), QStringLiteral(APP_PROJECT_NAME));
+    QString filePath = QString("%0/%1.ini").arg(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
+                                           .arg(QStringLiteral(APP_PROJECT_NAME));
+    filePath = QDir::toNativeSeparators(filePath);
+    a.setProperty("iniFilePath", filePath); // QApplication property are application wide qApp->property("")
 
-    return a.exec();
+    QSettings settings(filePath, QSettings::IniFormat);
+    bool justUpdated = settings.value("justUpdated", false).toBool();
+
+    updatemanager *um = new updatemanager();
+
+    if (!justUpdated) {
+        qDebug("checking for update");
+        um->checkUpdate();
+
+        while (!um->isFinished()) {
+            a.processEvents();
+        }
+    } else {
+        um->showSplashScreen(3000);
+    }
+
+    if (um->appNeedRestart()) {
+        settings.setValue("justUpdated", true);
+        qDebug("restarting");
+        qApp->quit();
+        QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+        return 0;
+    } else {
+        qDebug("showing main window");
+        MainWindow w;
+        w.show();
+        return a.exec();
+    }
 }
-
-void showSplashScreen(const MainWindow &w)
-{
-    QPixmap splash_img(":/images/adunanza.jpg");
-    QPainter painter(&splash_img);
-    QString version = VERSION;
-    painter.setPen(QPen(Qt::white));
-    painter.setFont(QFont("Arial", 12, QFont::Black));
-    int paddingRight = 9;
-    int paddingBottom = 9;
-    painter.drawText(splash_img.width() - paddingRight - painter.fontMetrics().width(version), splash_img.height() - paddingBottom, version);
-    QSplashScreen *splash = new QSplashScreen(splash_img);
-    splash->show();
-
-    QTimer::singleShot(SPLASH_DURATION, splash, SLOT(close()));
-    QTimer::singleShot(SPLASH_DURATION, &w, SLOT(show()));
-
-//    qApp->processEvents();
-}
-

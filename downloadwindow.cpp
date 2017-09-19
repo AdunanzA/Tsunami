@@ -47,11 +47,6 @@ downloadwindow::downloadwindow(QWidget *parent) :
     connect(p_sessionStatisticTimer, SIGNAL(timeout()), this, SLOT(updateSessionStatistics()));
     p_sessionStatisticTimer->start(TICKER_TIME);
 
-//    p_contextMenu = new QMenu("Title", this);
-
-    // actually useless
-    connect(this, SIGNAL(sendDetailsRefresh()), p_itemDetails, SLOT(refreshFromParent()));
-
     // SHOW CONTEXT MENU
     connect(ui->graphicsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
 
@@ -106,12 +101,12 @@ void downloadwindow::requestedDetails(const std::string &hash)
 
 void downloadwindow::showContextMenu(const QPoint &pos)
 {
-    qDebug("requested context menu");
+//    qDebug("requested context menu");
     QPoint globalPos = this->mapToGlobal(pos);
 
     QMenu contextMenu;
     contextMenu.addAction("Select all", this, SLOT(selectAll()));
-    contextMenu.addAction("Deselct all", this, SLOT(deselectAll()));
+    contextMenu.addAction("Deselect all", this, SLOT(deselectAll()));
     contextMenu.addSeparator();
     contextMenu.addAction("Pause selected", this, SLOT(pauseSelected()));
     contextMenu.addAction("Resume selected", this, SLOT(resumeSelected()));
@@ -248,8 +243,9 @@ void downloadwindow::updateSessionStatistics()
 //        }
 
         // update mainwindow gauge
-        double val = (p_downRate * 8)/1000000; // Ethernet 100 BASE-T -> http://www.convert-me.com/en/convert/data_transfer_rate/byte_s.html?u=byte%2Fs&v=1
-        emit sendUpdateGauge(val);
+        double dval = (p_downRate * 8)/1000000; // Ethernet 100 BASE-T -> http://www.convert-me.com/en/convert/data_transfer_rate/byte_s.html?u=byte%2Fs&v=1
+        double uval = (p_upRate * 8)/1000000;
+        emit sendUpdateGauge(dval, uval);
 
         // update statistics page
         emit sendStatisticsUpdate(QPair<int, int>(p_downRate, p_upRate));
@@ -313,15 +309,14 @@ void downloadwindow::torrentDeletedFromSession(const std::string &hash)
 
 void downloadwindow::redrawItemsPosition()
 {
+//    qDebug("redrawing tsuCard position");
     int row = -1;
     int col = -1;
-    int itemWidth = tsuItem::ItemGlowRadius + tsuItem::ItemWidth;
-    int itemHeight = tsuItem::ItemGlowRadius + tsuItem::ItemHeight;
+    int itemWidth = (tsuItem::ItemGlowRadius + tsuItem::ItemWidth) * p_transformFactor;
+    int itemHeight = (tsuItem::ItemGlowRadius + tsuItem::ItemHeight) * p_transformFactor;
     for (int i = 0; i < p_tsulist.count(); i++) {
-//        if (i % itemsPerRow == 0) { row++; col = 0; } else { col++; }
         if (col == p_itemsPerRow-1) { row++; col = 0; } else { col++; }
         tsuItem *ti = p_tsulist[i];
-//        qDebug() << QString("item %0 -> row %1, col %2").arg(i).arg(row).arg(col);
         ti->setPos(QPointF((col*itemWidth)+tsuItem::ItemGlowRadius, (row*itemHeight)+tsuItem::ItemGlowRadius));
     }
     ui->graphicsView->ensureVisible(QRectF(0, 0, 0, 0));
@@ -340,4 +335,60 @@ void downloadwindow::changeEvent(QEvent *e)
         qDebug("received QEvent::LanguageChange, retranslateUi");
         ui->retranslateUi(this);
     }
+}
+
+//void downloadwindow::mousePressEvent(QMouseEvent *event)
+//{
+//    if (event->button() == Qt::RightButton) {
+//        qDebug("right!");
+//        return;
+//    } else {
+//        qDebug("else");
+//        QWidget::mousePressEvent(event);
+//    }
+//}
+
+
+//void downloadwindow::wheelEvent(QWheelEvent *event)
+//{
+//    if (event->modifiers() == Qt::ControlModifier) {
+//        if (p_tsulist.isEmpty()) return;
+
+//        QPoint numDegrees = event->angleDelta() / 8;
+//        if (!numDegrees.isNull()) {
+//            QPoint numSteps = numDegrees / 15;
+//            int value = numSteps.y();
+
+//            if ((value > 0 && p_transformFactor >= 3) || (value < 0 && p_transformFactor <= 1)) return;
+//            p_transformFactor += value;
+//            qDebug() << QString("setting transformation to %0").arg(QString::number(p_transformFactor));
+
+//            foreach (tsuItem* item, p_tsulist) {
+//                item->set_FactorTransform(p_transformFactor);
+//            }
+//            redrawItemsPosition();
+//            event->ignore();
+//            return;
+//        }
+//    }
+//}
+
+void downloadwindow::on_btnZoomIn_released()
+{
+    if (p_transformFactor == 3) return;
+    p_transformFactor += 0.25;
+    foreach (tsuItem* item, p_tsulist) {
+        item->set_FactorTransform(p_transformFactor);
+    }
+    redrawItemsPosition();
+}
+
+void downloadwindow::on_btnZoomOut_released()
+{
+    if (p_transformFactor == 1) return;
+    p_transformFactor -= 0.25;
+    foreach (tsuItem* item, p_tsulist) {
+        item->set_FactorTransform(p_transformFactor);
+    }
+    redrawItemsPosition();
 }
