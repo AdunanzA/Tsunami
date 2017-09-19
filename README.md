@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/license-MPLv2-blue.svg" alt="License">
 </p>
 
-Tsuami is based on libtorrent with innovative features like Streaming, Search or Intelligent Auto-Sharing
+Tsunami is a <a href="https://www.qt.io/">Qt</a> application based on <a href="https://github.com/arvidn/libtorrent" target="_blank">libtorrent</a> with innovative features like Streaming, Search and Intelligent Auto-Sharing
 
 We are currently setting up the team volunteers who will develop the software. We accept pull request.
 

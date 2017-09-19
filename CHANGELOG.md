@@ -1,0 +1,158 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+Types of changes
+Added - for new features.
+Changed - for changes in existing functionality.
+Deprecated - for soon-to-be removed features.
+Removed - for now removed features.
+Fixed - for any bug fixes.
+Security - in case of vulnerabilities.
+[YANKED] - versions that had to be pulled because of a serious bug or security issue
+
+## [Unreleased]
+
+## [0.4.2] 2017-09-19
+### Fixed
+- appveyor script
+- README
+
+## [0.4.1] 2017-09-15
+### Added
+- this CHANGELOG
+
+## [0.4.0] 2017-09-10
+### Added
+- new tsuGraphicsScene
+- context menu in tsulist (right mouse)
+- tsuCard selection (single item and mouse drag)
+- many debug log
+- settings to limit download and upload rate
+- session state
+- restart on language change
+
+### Changed
+- optimized itemdetails
+- optimized log
+- optimized settings window
+
+### Fixed
+- tooltip errors on showing
+- settings and languages problems
+- color problem on graphs
+
+### Removed
+- unused images
+
+## [0.3.11] 2017-09-09
+### Fixed
+- update.exe error (short path name)
+
+### Changed
+- appveyor script
+
+## [0.3.10] 2017-09-08
+### Changed
+- command test
+
+## [0.3.9] 2017-09-05
+### Changed
+- Updated appveyor to manage only 3 version digit
+
+## [0.3.8] 2017-09-04
+### Fixed
+- title bar translate error
+
+## [0.3.7] 2017-09-02
+### Added
+- translation
+
+### Fixed
+- auto update bug
+
+### Changed
+- appveyor script
+
+## [0.3.6] 2017-09-01
+### Added
+- included appveyor for auto update on commit
+
+## [0.3.5] 2017-07-03
+### Added
+- item details to see file and parts
+- new thread for sessionManager
+- debug level to settings (bugged...)
+- optimized settings for libtorrent
+- redirected log from console to log file
+
+### Changed
+- optimized update and add events
+- managed closing sequence and fastresume
+
+## [0.3.4] 2017-07-01
+### Fixed
+- appveyor script test
+
+## [0.3.3] 2017-06-30
+### Fixed
+- appveyor version enumerating error
+
+## [0.3.2] 2017-06-17
+### Added
+- session statistic timer on download page
+- pause and resume functions
+- events class
+- settings in ini file
+- button chat link
+
+### Fixed
+- optimized events emits
+- managed download path on settingspage
+- managed state and optimized remaining time in tsuItem
+- managed save resume session in tsuManager
+
+## [0.3.1] 2017-06-16
+### Fixed
+- appveyor script test
+
+## [0.3.0] [YANKED]
+
+## [0.2.0] 2017-06-06
+### Changed
+- changed from qwidget to qgraphicsitem for tsuItem
+- changed libtorrent management to shared::pointer
+- moved libtorrent from downloadpage to tsumanager
+- updated Ui and ref to libtorrent
+
+## [0.1.1] 2017-05-13
+### Added
+- downloadwindow with libtorrent session
+- chartXY
+- tsuProgress (inherited from QSegmentWidget)
+- splash screen
+
+## [0.1.0] 2017-04-20
+### Added
+- tsucard
+
+### Changed
+- main layout
+
+### Fixed
+- compile in debug and release with libtorrent included
+
+## [0.0.2] 2017-03-19
+### Added
+- mainwindow 
+- basic menu button with content change on click
+
+### Changed
+- resizable window: fixed position for add and quit button
+
+## [0.0.1] 2017-03-19
+### Added
+- qt project
+- imported libtorrent library
