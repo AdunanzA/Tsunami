@@ -28,6 +28,8 @@ public:
     explicit downloadwindow(QWidget *parent = 0);
     ~downloadwindow();
 
+    QPair<float, float> getRate();
+
 public slots:
     void updateFromSession(const QVector<tsuEvents::tsuEvent> &events);
     void addFromSession(const tsuEvents::tsuEvent &event);
@@ -39,16 +41,16 @@ private:
     Ui::downloadwindow *ui;
     tsugraphicsscene *p_scene;
     QVector<tsuItem *> p_tsulist;
-    int p_downRate = 0;
-    int p_upRate = 0;
-    int p_totalDownload = 0;
-    int p_totalUpload = 0;
+//    int p_downRate = 0;
+//    int p_upRate = 0;
+//    int p_totalDownload = 0;
+//    int p_totalUpload = 0;
 //    QDateTime p_lastStatisticsSent = QDateTime::currentDateTime();
 
     int p_itemsPerRow = 0;
     qreal p_transformFactor = 1;
 
-    QTimer *p_sessionStatisticTimer;
+//    QTimer *p_sessionStatisticTimer;
 
     itemDetails *p_itemDetails;
 
@@ -65,13 +67,13 @@ private slots:
     void pauseSelected();
     void resumeSelected();
     void deleteSelected();
-    void updateSessionStatistics();
+//    void updateSessionStatistics();
 
     void on_btnZoomIn_released();
     void on_btnZoomOut_released();
 
 signals:
-    void sendUpdateToStatusBar(const QString &msg);
+//    void sendUpdateToStatusBar(const QString &msg);
     void sendUpdateGauge(const double &downValue, const double &upValue);
     void sendStatisticsUpdate(const QPair<int, int> &values);
     void sendPopupInfo(const QString &msg);

@@ -50,5 +50,8 @@
         <file>images/state_disconnected.svg</file>
         <file>images/state_unknown.svg</file>
         <file>images/state_warning.svg</file>
+        <file>CHANGELOG.md</file>
+        <file>images/arrow_down.png</file>
+        <file>images/arrow_up.png</file>
     </qresource>
 </RCC>

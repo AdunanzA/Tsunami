@@ -20,8 +20,8 @@ public:
     explicit statisticswindow(QWidget *parent = 0);
     ~statisticswindow();
 
-public slots:
     void updateStats(const QPair<int, int> & values);
+//public slots:
 
 private:
     Ui::statisticswindow *ui;

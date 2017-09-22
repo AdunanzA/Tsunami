@@ -1,8 +1,6 @@
 HEADERS += \
-    $$PWD/logger.h \
     $$PWD/QSegment/qsegmentwidget.h \
     $$PWD/tsuprogress.h \
-    $$PWD/QScale/qscale.h \
     $$PWD/chartxy/chartxy.h \
     $$PWD/chartxy/chartxyalgoritm.h \
     $$PWD/chartxy/chartxyborder.h \
@@ -22,10 +20,8 @@ HEADERS += \
     $$PWD/QcGaugeWidget/qcgaugewidget.h
 
 SOURCES += \
-    $$PWD/logger.cpp \
     $$PWD/QSegment/qsegmentwidget.cpp \
     $$PWD/tsuprogress.cpp \
-    $$PWD/QScale/qscale.cpp \
     $$PWD/chartxy/chartxy.cpp \
     $$PWD/chartxy/chartxyalgoritm.cpp \
     $$PWD/chartxy/chartxyborder.cpp \

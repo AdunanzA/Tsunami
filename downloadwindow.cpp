@@ -3,7 +3,7 @@
 
 //#include "mainwindow.h"
 
-#define TICKER_TIME 1000
+//#define TICKER_TIME 1000
 
 // return the name of a torrent status enum
 //char const* state(libtorrent::torrent_status::state_t s)
@@ -43,9 +43,9 @@ downloadwindow::downloadwindow(QWidget *parent) :
 
     redrawItemsPosition();
 
-    p_sessionStatisticTimer = new QTimer(this);
-    connect(p_sessionStatisticTimer, SIGNAL(timeout()), this, SLOT(updateSessionStatistics()));
-    p_sessionStatisticTimer->start(TICKER_TIME);
+//    p_sessionStatisticTimer = new QTimer(this);
+//    connect(p_sessionStatisticTimer, SIGNAL(timeout()), this, SLOT(updateSessionStatistics()));
+//    p_sessionStatisticTimer->start(TICKER_TIME);
 
     // SHOW CONTEXT MENU
     connect(ui->graphicsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
@@ -57,6 +57,19 @@ downloadwindow::~downloadwindow()
 {
     delete ui;
     qDebug("downloadwindow destroyed");
+}
+
+QPair<float, float> downloadwindow::getRate()
+{
+    float dRate = 0;
+    float uRate = 0;
+
+    foreach (tsuItem* item, p_tsulist) {
+        dRate += qFabs(item->get_RateDownload());
+        uRate += qFabs(item->get_RateUpload());
+    }
+
+    return QPair<int, int>(dRate, uRate);
 }
 
 void downloadwindow::requestedCancel(const std::string &hash, const bool &deleteFilesToo)
@@ -220,41 +233,38 @@ void downloadwindow::deleteSelected()
 
 }
 
-void downloadwindow::updateSessionStatistics()
-{
-    try {
-        p_downRate = 0;
-        p_upRate = 0;
-        foreach (tsuItem* item, p_tsulist) {
-            p_totalDownload += qFabs(item->get_Downloaded());
-            p_totalUpload += qFabs(item->get_Uploaded());
-            p_downRate += qFabs(item->get_RateDownload());
-            p_upRate += qFabs(item->get_RateUpload());
-        }
-
-        // update mainwindow statusbar message
-//        if (p_downRate > 0 || p_upRate > 0 || p_totalDownload > 0 || p_totalUpload > 0) {
-        tsuItem ts;
-        QString ups = QString("%1%2/s (%3%4) / %5%6/s (%7%8)").arg(ts.convertSize(p_downRate)).arg(ts.convertSizeUnit(p_downRate))
-                                                              .arg(ts.convertSize(p_totalDownload)).arg(ts.convertSizeUnit(p_totalDownload))
-                                                              .arg(ts.convertSize(p_upRate)).arg(ts.convertSizeUnit(p_upRate))
-                                                              .arg(ts.convertSize(p_totalUpload)).arg(ts.convertSizeUnit(p_totalUpload));
-        emit sendUpdateToStatusBar(ups);
+//void downloadwindow::updateSessionStatistics()
+//{
+//    try {
+//        p_downRate = 0;
+//        p_upRate = 0;
+//        foreach (tsuItem* item, p_tsulist) {
+//            p_totalDownload += qFabs(item->get_Downloaded());
+//            p_totalUpload += qFabs(item->get_Uploaded());
+//            p_downRate += qFabs(item->get_RateDownload());
+//            p_upRate += qFabs(item->get_RateUpload());
 //        }
 
-        // update mainwindow gauge
-        double dval = (p_downRate * 8)/1000000; // Ethernet 100 BASE-T -> http://www.convert-me.com/en/convert/data_transfer_rate/byte_s.html?u=byte%2Fs&v=1
-        double uval = (p_upRate * 8)/1000000;
-        emit sendUpdateGauge(dval, uval);
+//        // update mainwindow statusbar message
+//        tsuItem ts;
+//        QString ups = QString("%1%2/s (%3%4) / %5%6/s (%7%8)").arg(ts.convertSize(p_downRate)).arg(ts.convertSizeUnit(p_downRate))
+//                                                              .arg(ts.convertSize(p_totalDownload)).arg(ts.convertSizeUnit(p_totalDownload))
+//                                                              .arg(ts.convertSize(p_upRate)).arg(ts.convertSizeUnit(p_upRate))
+//                                                              .arg(ts.convertSize(p_totalUpload)).arg(ts.convertSizeUnit(p_totalUpload));
+//        emit sendUpdateToStatusBar(ups);
 
-        // update statistics page
-        emit sendStatisticsUpdate(QPair<int, int>(p_downRate, p_upRate));
+//        // update mainwindow gauge
+//        double dval = (p_downRate * 8)/1000000; // Ethernet 100 BASE-T -> http://www.convert-me.com/en/convert/data_transfer_rate/byte_s.html?u=byte%2Fs&v=1
+//        double uval = (p_upRate * 8)/1000000;
+//        emit sendUpdateGauge(dval, uval);
 
-    } catch (std::exception &exc) {
-        qDebug() << QString("updateSessionStatistics throws %0").arg(exc.what());
-    }
+//        // update statistics page
+//        emit sendStatisticsUpdate(QPair<int, int>(p_downRate, p_upRate));
 
-}
+//    } catch (std::exception &exc) {
+//        qDebug() << QString("updateSessionStatistics throws %0").arg(exc.what());
+//    }
+//}
 
 void downloadwindow::updateFromSession(const QVector<tsuEvents::tsuEvent> &events)
 {
@@ -310,6 +320,7 @@ void downloadwindow::torrentDeletedFromSession(const std::string &hash)
 void downloadwindow::redrawItemsPosition()
 {
 //    qDebug("redrawing tsuCard position");
+    p_itemsPerRow = floor(ui->graphicsView->size().width()/((tsuItem::ItemWidth + tsuItem::ItemGlowRadius) * p_transformFactor));
     int row = -1;
     int col = -1;
     int itemWidth = (tsuItem::ItemGlowRadius + tsuItem::ItemWidth) * p_transformFactor;
@@ -317,14 +328,15 @@ void downloadwindow::redrawItemsPosition()
     for (int i = 0; i < p_tsulist.count(); i++) {
         if (col == p_itemsPerRow-1) { row++; col = 0; } else { col++; }
         tsuItem *ti = p_tsulist[i];
-        ti->setPos(QPointF((col*itemWidth)+tsuItem::ItemGlowRadius, (row*itemHeight)+tsuItem::ItemGlowRadius));
+        ti->setPos(QPointF((col*itemWidth)+tsuItem::ItemGlowRadius,
+                           (row*itemHeight)+tsuItem::ItemGlowRadius));
     }
     ui->graphicsView->ensureVisible(QRectF(0, 0, 0, 0));
 }
 
 void downloadwindow::resizeEvent(QResizeEvent *event)
 {
-    p_itemsPerRow = floor(event->size().width()/(tsuItem::ItemWidth + tsuItem::ItemGlowRadius));
+    Q_UNUSED(event);
     redrawItemsPosition();
 }
 

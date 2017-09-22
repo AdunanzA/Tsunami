@@ -183,3 +183,9 @@ void settingswindow::on_btnFolder_released()
         ui->txtDownloadPath->setText(dir);
     }
 }
+
+void settingswindow::on_pushButton_released()
+{
+    changelog *cl = new changelog();
+    cl->exec();
+}

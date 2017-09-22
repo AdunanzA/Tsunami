@@ -25,7 +25,6 @@
 #include "libtorrent/torrent_info.hpp"
 
 #include <changelog.h>
-//#include "QScale/qscale.h"
 #include <QcGaugeWidget/qcgaugewidget.h>
 
 namespace Ui
@@ -50,12 +49,14 @@ signals:
 public slots:
     void updateStatusBarStatistics(const QString & msg);
     void updateStatusBarLabel(const QString & msg);
-    void updateGauge(const double & downValue, const double & upValue);
+//    void updateGauge(const float &downValue, const float &upValue);
     void popupInfo(const QString & msg);
 
     void externalIpAssigned();
     void dhtBootstrapExecuted();
     void listenerUpdate(QString type, bool success);
+
+    void sessionStatisticUpdate(const quint64 &sent, const quint64 &received);
 
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
@@ -77,10 +78,13 @@ private:
 
     QThread *p_session_thread;
 
-//    QScale *p_scaleGauge;
-    QcGaugeWidget * p_speedGauge;
-    QcNeedleItem *p_downNeedle;
-    QcNeedleItem *p_upNeedle;
+    QcGaugeWidget *p_gauge;
+    QcDegreesItem *p_gaugeDegreesItem;
+    QcValuesItem *p_gaugeValuesItem;
+    QcNeedleItem *p_gaugeDownNeedle;
+    QcNeedleItem *p_gaugeUpNeedle;
+    QcLabelItem *p_gaugeUnitLabel;
+    QcLabelItem *p_gaugeSpeedLabel;
 
     void createTrayIcon();
     void initializeScreen();
@@ -88,12 +92,15 @@ private:
     void readSettings();
     void writeSettings();
 
+    void updateGauge(const float &downValue, const float &upValue);
+
+    QString convertSize(const int &size);
+    QString convertSizeUnit(const int &size);
+
     // QWidget interface
 protected:
     void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *e) override;
-
-public slots:
 
 };
 

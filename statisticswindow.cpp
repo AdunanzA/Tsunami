@@ -39,13 +39,13 @@ void statisticswindow::updateStats(const QPair<int, int> &values)
     } else {
         model->setData(model->index(lastRowIndex,1), 1);
     }
-    model->setData(model->index(lastRowIndex,1),QColor(255,0,0),Qt::DecorationRole);
+    model->setData(model->index(lastRowIndex,1),QColor(0,255,0),Qt::DecorationRole);
     if (values.second > 0 ) {
         model->setData(model->index(lastRowIndex,2),values.second);
     } else {
         model->setData(model->index(lastRowIndex,2), 1);
     }
-    model->setData(model->index(lastRowIndex,2),QColor(0,255,0),Qt::DecorationRole);
+    model->setData(model->index(lastRowIndex,2),QColor(255,0,0),Qt::DecorationRole);
 
     if (model->rowCount() > 100) { model->removeRow(0); }
 

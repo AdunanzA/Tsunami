@@ -138,6 +138,7 @@ public:
     void setMinDegree(float minDegree);
     void setMaxDegree(float maxDegree);
 
+    float getMaxValue();
 signals:
 
 public slots:

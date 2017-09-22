@@ -60,7 +60,7 @@
          </font>
         </property>
         <property name="text">
-         <string>0.4.0</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -76,7 +76,7 @@
          <string notr="true">color: rgb(104, 104, 104);</string>
         </property>
         <property name="text">
-         <string>16/09/2042</string>
+         <string/>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -90,6 +90,9 @@
     <widget class="QScrollArea" name="scrollArea">
      <property name="frameShape">
       <enum>QFrame::Box</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
      </property>
      <property name="horizontalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -131,7 +134,7 @@
           <enum>QFrame::NoFrame</enum>
          </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

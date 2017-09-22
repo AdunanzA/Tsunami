@@ -15,6 +15,31 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.4.5] 2017-09-22
+### Added
+- Show changelog in settings window
+- Timer on tsumanager to post statistic updates
+
+### Changed
+- Included CHANGELOG in resources
+- Session statistic message queue
+- Dynamic max value on gauge
+
+### Fixed
+- Wrong session statistic values
+- Chart wrong color
+
+### Removed
+- Unused log class
+- Removed Qscale
+
+## [0.4.4] 2017-09-21
+### Changed
+- appveyor script to ignore bak file
+
+### Removed
+- Unused bak file
+
 ## [0.4.3] 2017-09-19
 ### Added
 - updatemanager

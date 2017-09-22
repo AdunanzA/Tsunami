@@ -16,6 +16,8 @@
 #include "libtorrent/read_resume_data.hpp"
 #include <libtorrent/create_torrent.hpp>
 
+#include <libtorrent/session_stats.hpp>
+
 #include "tsuitem.h"
 #include "tsuevents.h"
 
@@ -43,8 +45,10 @@ signals:
     void dhtBootstrapExecuted();
     void listenerUpdate(QString type, bool success);
 
-    //    void stopTimer();
+    void stopTimer();
     void finished();
+    
+    void sessionStatisticUpdate(const quint64 &sent, const quint64 &received);
 
 public slots:
     void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
@@ -58,11 +62,11 @@ private:
     void setNotify();
     void loadSettings();
     QString p_tsunamiSessionFolder;
-//    QTimer *timerUpdate;
+    QTimer *timerUpdate;
 
 private slots:
     void alertsHandler();
-//    void postUpdates();
+    void postUpdates();
 };
 
 /*

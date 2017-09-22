@@ -55,20 +55,41 @@ tsuManager::tsuManager()
 
     loadSettings();
 
+    // total number of bytes sent and received by the session (type 0 counter)
+    // net.sent_payload_bytes     (included in net.sent_bytes)
+    // net.sent_bytes
+    // net.sent_ip_overhead_bytes (not included in net.sent_bytes)
+    // net.sent_tracker_bytes     (not included in net.sent_bytes)
+    
+    // net.recv_payload_bytes
+    // net.recv_bytes
+    // net.recv_ip_overhead_bytes
+    // net.recv_tracker_bytes
+    
+    // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
+    
+    std::vector<lt::stats_metric> ssm = lt::session_stats_metrics();
+
+    for(lt::stats_metric & metric : ssm) {
+        qApp->setProperty(metric.name, metric.value_index);
+//        qDebug() << QString("[%0] %1 (%2)").arg(metric.value_index).arg(metric.name).arg(metric.type);
+    }
+    qDebug() << QString("loaded %0 metric index from libtorrent").arg(QString::number(ssm.size()));
+
     setNotify();
 }
 
 void tsuManager::setNotify()
 {
-//    timerUpdate = new QTimer(this);
-//    connect(timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
-//    connect(this, SIGNAL(stopTimer()), timerUpdate, SLOT(stop()));
-//    connect(this, SIGNAL(finished()), timerUpdate, SLOT(deleteLater()));
+    timerUpdate = new QTimer(this);
+    connect(timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
+    connect(this, SIGNAL(stopTimer()), timerUpdate, SLOT(stop()));
+    connect(this, SIGNAL(finished()), timerUpdate, SLOT(deleteLater()));
 
     p_session->set_alert_notify([this]()
     {
 //        QTimer::singleShot(0, this, SLOT(alertsHandler()));
-        QMetaObject::invokeMethod(this, "alertsHandler", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "alertsHandler", Qt::AutoConnection);
     });
 }
 
@@ -92,7 +113,7 @@ void tsuManager::loadSettings()
 
 void tsuManager::startManager()
 {
-//    timerUpdate->start(TIMER_TICK);
+    timerUpdate->start(1000);
 
     qDebug("starting");
 
@@ -173,7 +194,7 @@ void tsuManager::startManager()
 
 void tsuManager::stopManager()
 {
-//    emit stopTimer();
+    emit stopTimer();
     p_session->pause();
 
     // SAVE SESSION STATE
@@ -365,6 +386,17 @@ void tsuManager::alertsHandler()
             emit listenerUpdate(type, false);
             break;
         }
+        case lt::session_stats_alert::alert_type:
+        {
+            lt::session_stats_alert *ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+            // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
+            quint64 recvbytes = ssa->values[qApp->property("net.recv_bytes").toInt()];
+            recvbytes += ssa->values[qApp->property("net.recv_ip_overhead_bytes").toInt()];
+            quint64 sentbytes = ssa->values[qApp->property("net.sent_bytes").toInt()];
+            sentbytes += ssa->values[qApp->property("net.sent_ip_overhead_bytes").toInt()];
+            emit sessionStatisticUpdate(sentbytes, recvbytes);
+            break;
+        }
         default:
             break;
         }
@@ -378,11 +410,11 @@ void tsuManager::alertsHandler()
     p_session->post_torrent_updates(lt::alert::status_notification | lt::alert::progress_notification);
 }
 
-//void tsuManager::postUpdates()
-//{
-//    qDebug("ticker ticked, posting updates");
+void tsuManager::postUpdates()
+{
 //    p_session->post_torrent_updates(lt::alert::status_notification | lt::alert::progress_notification);
-//}
+      p_session->post_session_stats();
+}
 
 tsuManager::~tsuManager()
 {
