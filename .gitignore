@@ -58,3 +58,6 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user
+
+# Backup Files
+*.bak
