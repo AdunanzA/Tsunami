@@ -295,6 +295,7 @@ void downloadwindow::addFromSession(const tsuEvents::tsuEvent &event)
     connect(ts, SIGNAL(resumeRequested(std::string)), this, SLOT(requestedResume(std::string)), Qt::QueuedConnection);
     connect(ts, SIGNAL(detailsRequested(std::string)), this, SLOT(requestedDetails(std::string)), Qt::QueuedConnection);
     ts->setValue(event);
+    ts->set_FactorTransform(p_transformFactor);
     p_tsulist.append(ts);
     p_scene->addItem(ts);
     redrawItemsPosition();

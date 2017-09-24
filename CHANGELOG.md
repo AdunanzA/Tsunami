@@ -15,6 +15,19 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.4.6] 2017-09-24
+### Added
+- More thread (based on cpu) for libtorrent
+
+### Changed
+- Gauge max value on max download rate
+- Session startup to catch all events
+
+### Fixed
+- Added tsuCard get correct size
+- Download and Upload stats on status bar
+- Restart problem if updated
+
 ## [0.4.5] 2017-09-22
 ### Added
 - Show changelog in settings window

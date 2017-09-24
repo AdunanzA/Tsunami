@@ -184,7 +184,7 @@ void settingswindow::on_btnFolder_released()
     }
 }
 
-void settingswindow::on_pushButton_released()
+void settingswindow::on_commandLinkButton_released()
 {
     changelog *cl = new changelog();
     cl->exec();

@@ -48,7 +48,7 @@ private slots:
     void on_btnCancel_released();
     void on_btnFolder_released();
 
-    void on_pushButton_released();
+    void on_commandLinkButton_released();
 
 private:
     Ui::settingswindow *ui;

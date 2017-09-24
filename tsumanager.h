@@ -60,9 +60,16 @@ public slots:
 
 private:
     void setNotify();
-    void loadSettings();
+    void loadSettings(libtorrent::settings_pack &settings);
+
     QString p_tsunamiSessionFolder;
-    QTimer *timerUpdate;
+    QTimer *p_timerUpdate;
+
+    // session stat alert index
+    int p_net_recv_bytes;
+    int p_net_recv_ip_overhead_bytes;
+    int p_net_sent_bytes;
+    int p_net_sent_ip_overhead_bytes;
 
 private slots:
     void alertsHandler();

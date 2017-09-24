@@ -4,23 +4,74 @@ int tsuManager::outstanding_resume_data = 0;
 
 tsuManager::tsuManager()
 {
+    // setting default tsunami folder
     QString localTsunami = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // win -> C:\Users\user\AppData\Local\Tsunami
     localTsunami = QString("%0/%1").arg(localTsunami).arg("session");
     p_tsunamiSessionFolder = QDir::toNativeSeparators(localTsunami);
 
-    lt::settings_pack settings;
+    // loading libtorrent stats metric indexes
+    std::vector<lt::stats_metric> ssm = lt::session_stats_metrics();
+    for(lt::stats_metric & metric : ssm) {
+        qApp->setProperty(metric.name, metric.value_index);
+    }
+    qDebug() << QString("loaded %0 metric index from libtorrent").arg(QString::number(ssm.size()));
+
+    // total number of bytes sent and received by the session (type 0 counter)
+    // net.sent_payload_bytes     (included in net.sent_bytes)
+    // net.sent_bytes
+    // net.sent_ip_overhead_bytes (not included in net.sent_bytes)
+    // net.sent_tracker_bytes     (not included in net.sent_bytes)
+    
+    // net.recv_payload_bytes
+    // net.recv_bytes
+    // net.recv_ip_overhead_bytes
+    // net.recv_tracker_bytes
+    
+    // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
+
+    p_net_recv_bytes = qApp->property("net.recv_bytes").toInt();
+    p_net_recv_ip_overhead_bytes = qApp->property("net.recv_ip_overhead_bytes").toInt();
+    p_net_sent_bytes = qApp->property("net.sent_bytes").toInt();
+    p_net_sent_ip_overhead_bytes = qApp->property("net.sent_ip_overhead_bytes").toInt();
+
+    p_timerUpdate = new QTimer(this);
+    connect(p_timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
+    connect(this, SIGNAL(stopTimer()), p_timerUpdate, SLOT(stop()));
+    connect(this, SIGNAL(finished()), p_timerUpdate, SLOT(deleteLater()));
+}
+
+void tsuManager::setNotify()
+{
+    p_session->set_alert_notify([this]()
+    {
+//        QTimer::singleShot(0, this, SLOT(alertsHandler()));
+        QMetaObject::invokeMethod(this, "alertsHandler", Qt::AutoConnection);
+    });
+}
+
+void tsuManager::loadSettings(lt::settings_pack &settings)
+{
+//    lt::settings_pack settings = p_session->get_settings();
+    QSettings qtSettings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
+    int downLimit = qtSettings.value("libtorrent/download_rate_limit", 0).toInt();
+    int upLimit = qtSettings.value("libtorrent/upload_rate_limit", 0).toInt();
+
+    // from KB/s to B/S
+    downLimit = downLimit * 1000;
+    upLimit = upLimit * 1000;
 
     QString user_agent = QString("Tsunami/%0.%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_BUGFIX);
-    settings.set_str(lt::settings_pack::user_agent, user_agent.toStdString());
 
-    // DEFAULTS
-    // from picotorrent (and qbittorrent)
+    settings.set_str(lt::settings_pack::user_agent, user_agent.toStdString());
+    settings.set_int(lt::settings_pack::download_rate_limit, downLimit); // B/S , 0 unlimited
+    settings.set_int(lt::settings_pack::upload_rate_limit, upLimit); // B/S , 0 unlimited
+
+    // DEFAULTS from picotorrent (and qbittorrent)
     settings.set_str(lt::settings_pack::string_types::dht_bootstrap_nodes,
         "router.bittorrent.com:6881" ","
         "router.utorrent.com:6881" ","
         "dht.transmissionbt.com:6881" ","
         "dht.aelitis.com:6881");
-    // from qbittorrent
     settings.set_bool(lt::settings_pack::upnp_ignore_nonrouters, true);
     settings.set_bool(lt::settings_pack::announce_to_all_trackers, true);
     settings.set_bool(lt::settings_pack::announce_to_all_tiers, true);
@@ -51,71 +102,21 @@ tsuManager::tsuManager()
     settings.set_int(lt::settings_pack::connection_speed, 20);
     settings.set_int(lt::settings_pack::seed_choking_algorithm, 1);
 
-    p_session = QSharedPointer<lt::session>::create(settings);
-
-    loadSettings();
-
-    // total number of bytes sent and received by the session (type 0 counter)
-    // net.sent_payload_bytes     (included in net.sent_bytes)
-    // net.sent_bytes
-    // net.sent_ip_overhead_bytes (not included in net.sent_bytes)
-    // net.sent_tracker_bytes     (not included in net.sent_bytes)
-    
-    // net.recv_payload_bytes
-    // net.recv_bytes
-    // net.recv_ip_overhead_bytes
-    // net.recv_tracker_bytes
-    
-    // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
-    
-    std::vector<lt::stats_metric> ssm = lt::session_stats_metrics();
-
-    for(lt::stats_metric & metric : ssm) {
-        qApp->setProperty(metric.name, metric.value_index);
-//        qDebug() << QString("[%0] %1 (%2)").arg(metric.value_index).arg(metric.name).arg(metric.type);
-    }
-    qDebug() << QString("loaded %0 metric index from libtorrent").arg(QString::number(ssm.size()));
-
-    setNotify();
-}
-
-void tsuManager::setNotify()
-{
-    timerUpdate = new QTimer(this);
-    connect(timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
-    connect(this, SIGNAL(stopTimer()), timerUpdate, SLOT(stop()));
-    connect(this, SIGNAL(finished()), timerUpdate, SLOT(deleteLater()));
-
-    p_session->set_alert_notify([this]()
-    {
-//        QTimer::singleShot(0, this, SLOT(alertsHandler()));
-        QMetaObject::invokeMethod(this, "alertsHandler", Qt::AutoConnection);
-    });
-}
-
-void tsuManager::loadSettings()
-{
-    lt::settings_pack settings = p_session->get_settings();
-    QSettings qtSettings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
-
-    int downLimit = qtSettings.value("libtorrent/download_rate_limit", 0).toInt();
-    int upLimit = qtSettings.value("libtorrent/upload_rate_limit", 0).toInt();
-
-    // from KB/s to B/S
-    downLimit = downLimit * 1000;
-    upLimit = upLimit * 1000;
-
-    settings.set_int(lt::settings_pack::download_rate_limit, downLimit); // B/S , 0 unlimited
-    settings.set_int(lt::settings_pack::upload_rate_limit, upLimit); // B/S , 0 unlimited
-
-    p_session->apply_settings(settings);
+    int availThreads = ceil(QThread::idealThreadCount()/4);
+    qDebug() << QString("found %0 ideal thread count, assigning %1 to hash threads").arg(QThread::idealThreadCount()).arg(availThreads);
+    settings.set_int(lt::settings_pack::aio_threads, availThreads);
+//    p_session->apply_settings(settings);
 }
 
 void tsuManager::startManager()
 {
-    timerUpdate->start(1000);
-
     qDebug("starting");
+
+    lt::settings_pack settings;
+    loadSettings(settings);
+    p_session = QSharedPointer<lt::session>::create(settings);
+    setNotify();
+    p_timerUpdate->start(1000);
 
     if (!QDir(p_tsunamiSessionFolder).exists()) {
         if (QDir().mkpath(p_tsunamiSessionFolder)) {
@@ -277,7 +278,6 @@ void tsuManager::stopManager()
 
 void tsuManager::alertsHandler()
 {
-//    timerUpdate->stop();
     std::vector<lt::alert*> alerts;
     p_session->pop_alerts(&alerts);
 //    qDebug() << QString("processing %1 alerts:").arg(alerts.size());
@@ -389,11 +389,14 @@ void tsuManager::alertsHandler()
         case lt::session_stats_alert::alert_type:
         {
             lt::session_stats_alert *ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+
             // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
-            quint64 recvbytes = ssa->values[qApp->property("net.recv_bytes").toInt()];
-            recvbytes += ssa->values[qApp->property("net.recv_ip_overhead_bytes").toInt()];
-            quint64 sentbytes = ssa->values[qApp->property("net.sent_bytes").toInt()];
-            sentbytes += ssa->values[qApp->property("net.sent_ip_overhead_bytes").toInt()];
+            quint64 recvbytes = ssa->values[p_net_recv_bytes];
+//            recvbytes += ssa->values[p_net_recv_ip_overhead_bytes];
+
+            quint64 sentbytes = ssa->values[p_net_sent_bytes];
+//            sentbytes += ssa->values[p_net_sent_ip_overhead_bytes];
+
             emit sessionStatisticUpdate(sentbytes, recvbytes);
             break;
         }
@@ -405,8 +408,6 @@ void tsuManager::alertsHandler()
             emit updateFromSessionManager(eventsArray);
         }
     }
-//    timerUpdate->start(TIMER_TICK);
-
     p_session->post_torrent_updates(lt::alert::status_notification | lt::alert::progress_notification);
 }
 
@@ -496,6 +497,8 @@ void tsuManager::getResumeRequest(const std::string &hash)
 void tsuManager::refreshSettings()
 {
     qDebug("received refreshSettings");
-    loadSettings();
+    lt::settings_pack settings = p_session->get_settings();
+    loadSettings(settings);
+    p_session->apply_settings(settings);
 }
 

@@ -144,8 +144,17 @@ int main(int argc, char *argv[])
     if (um->appNeedRestart()) {
         settings.setValue("justUpdated", true);
         qDebug("restarting");
+
+        // due to squirrel standard behaviour, qApp->arguments()[0] returs path to a tsunami version older than one just downloaded
+        // retrieve path of tsunami.exe loader outside current path and launch
+        QString fileName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
+        QDir oldPath(QCoreApplication::applicationDirPath());
+        oldPath.cdUp();
+        QString newPath = oldPath.filePath(fileName);
+
         qApp->quit();
-        QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+//        QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+        QProcess::startDetached(newPath, qApp->arguments());
         return 0;
     } else {
         qDebug("showing main window");

@@ -671,7 +671,7 @@ void QcNeedleItem::setCurrentValue(float value)
         mCurrentValue = value;
 
     if(mLabel!=0)
-        mLabel->setText(QString::number(mCurrentValue),false);
+        mLabel->setText(QString::number(mCurrentValue, 'f', 1),false);
 
 // This pull request is not working properly
 //    if(mLabel!=0){

@@ -74,8 +74,8 @@ private slots:
 
 signals:
 //    void sendUpdateToStatusBar(const QString &msg);
-    void sendUpdateGauge(const double &downValue, const double &upValue);
-    void sendStatisticsUpdate(const QPair<int, int> &values);
+//    void sendUpdateGauge(const double &downValue, const double &upValue);
+//    void sendStatisticsUpdate(const QPair<int, int> &values);
     void sendPopupInfo(const QString &msg);
     void sendMessageToStatusBar(const QString & msg);
     void sendRequestedCancelToSession(const std::string &hash, const bool &deleteFilesToo);

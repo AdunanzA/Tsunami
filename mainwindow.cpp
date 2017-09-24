@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // listening on port signal from sessionManager goes to Main to update ico
     connect(sessionManager, &tsuManager::listenerUpdate, this, &MainWindow::listenerUpdate);
 
+    // session statistic update goes to Main to update UI
     connect(sessionManager, &tsuManager::sessionStatisticUpdate, this, &MainWindow::sessionStatisticUpdate);
 
     // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
@@ -86,15 +87,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(sessionManager, SIGNAL(finished()), sessionManager, SLOT(deleteLater()));
 //    connect(p_session_thread, SIGNAL(finished()), p_session_thread, SLOT(deleteLater()));
 
-    p_session_thread->start();
-    qDebug("MainWindow started");
-
     QString imgUrl = "image: url(:/images/state_warning.svg);";
     ui->lblIp->setStyleSheet(imgUrl);
     ui->lblDht->setStyleSheet(imgUrl);
     ui->lblTcp->setStyleSheet(imgUrl);
     ui->lblUdp->setStyleSheet(imgUrl);
 
+    p_session_thread->start();
+
+    qDebug("created");
 }
 
 MainWindow::~MainWindow()
@@ -130,7 +131,6 @@ void MainWindow::updateGauge(const float &downValue, const float &upValue)
         p_gaugeUpNeedle->setMaxValue(upValue);
     }
 
-    p_gaugeSpeedLabel->setText(QString::number(downValue, 'f', 2));
     p_gaugeDownNeedle->setCurrentValue(downValue);
     p_gaugeUpNeedle->setCurrentValue(upValue);
 }
@@ -181,14 +181,14 @@ void MainWindow::initializeScreen() {
     ui->content->addWidget(downloadPage);
 
     p_gauge = new QcGaugeWidget;
-//    p_SpeedGauge->addBackground(99);
+//    p_gauge->addBackground(99);
 
-//    QcBackgroundItem *bkg1 = p_SpeedGauge->addBackground(92);
+//    QcBackgroundItem *bkg1 = p_gauge->addBackground(92);
 //    bkg1->clearColors();
 //    bkg1->addColor(0.1f,Qt::black);
 //    bkg1->addColor(1.0,Qt::white);
 
-//    QcBackgroundItem *bkg2 = p_SpeedGauge->addBackground(88);
+//    QcBackgroundItem *bkg2 = p_gauge->addBackground(88);
 //    bkg2->clearColors();
 //    bkg2->addColor(0.1f,Qt::gray);
 //    bkg2->addColor(1.0,Qt::darkGray);
@@ -219,8 +219,8 @@ void MainWindow::initializeScreen() {
     p_gaugeDownNeedle->setColor(Qt::green);
     p_gaugeDownNeedle->setValueRange(0,20);
 
-//    p_SpeedGauge->addBackground(7);
-//    p_SpeedGauge->addGlass(88);
+//    p_gauge->addBackground(7);
+//    p_gauge->addGlass(88);
     ui->contentGauge->addWidget(p_gauge);
 
 }

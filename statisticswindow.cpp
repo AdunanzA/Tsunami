@@ -5,7 +5,6 @@
 
 statisticswindow::statisticswindow(QWidget *parent) :
     QWidget(parent),
-//    chart(new ChartXY),
     ui(new Ui::statisticswindow)
 {
     ui->setupUi(this);
@@ -58,14 +57,14 @@ void statisticswindow::setupModel()
 //    QDateTime date_time=QDateTime::currentDateTime();
 
     model=new QStandardItemModel(1,3,this);
-    model->setHeaderData(0,Qt::Horizontal,tr("X"));
-    model->setHeaderData(1,Qt::Horizontal,tr("Y"));
-    model->setHeaderData(2,Qt::Horizontal,tr("K"));
+    model->setHeaderData(0, Qt::Horizontal,tr("X"));
+    model->setHeaderData(1, Qt::Horizontal,tr("Y"));
+    model->setHeaderData(2, Qt::Horizontal,tr("K"));
 
-    model->setData(model->index(0,0),QVariant(QDateTime::currentDateTime()));
-    model->setData(model->index(0,1),QColor(0,255,0),Qt::DecorationRole);
+    model->setData(model->index(0,0), QVariant(QDateTime::currentDateTime()));
+    model->setData(model->index(0,1), QColor(0,255,0), Qt::DecorationRole);
     model->setData(model->index(0,1), 1);
-    model->setData(model->index(0,2),QColor(255,0,0),Qt::DecorationRole);
+    model->setData(model->index(0,2), QColor(255,0,0), Qt::DecorationRole);
     model->setData(model->index(0,2), 1);
 
 
@@ -86,10 +85,6 @@ void statisticswindow::setupModel()
 
 void statisticswindow::setupChart()
 {
-//    QTableView *qtv = new QTableView();
-//    qtv->setModel(model);
-//    ui->horizontalLayout->addWidget(qtv);
-
     ui->horizontalLayout->addWidget(chart);
     chart->setModel(model);
     chart->setting().border().setRight(64);
