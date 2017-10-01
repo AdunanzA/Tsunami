@@ -55,7 +55,7 @@ artifacts:
   - path: Releases/RELEASES
     name: TsuRelFile
    
-  - path: Releases/*-delta.nupkg
+  - path: Releases/*.nupkg
     name: TsuNugets
 
   - path: Releases/Setup.exe 
