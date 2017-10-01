@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLabel = new QLabel(this);
     statisticsPage = new statisticswindow(this);
     downloadPage = new downloadwindow(this);
+    archivePage = new archivewindow(this);
 
     initializeScreen();
     readSettings();
@@ -48,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // session statistic update goes to Main to update UI
     connect(sessionManager, &tsuManager::sessionStatisticUpdate, this, &MainWindow::sessionStatisticUpdate);
 
+
     // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
     connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));//, Qt::QueuedConnection);
 
@@ -57,20 +59,15 @@ MainWindow::MainWindow(QWidget *parent) :
     // requested resume from downloadPage (emitted from a tsucard) goes to sessionManager to resume torrent
     connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)));//, Qt::QueuedConnection);
 
-    // update from downloadPage to statusbar text DA TOGLIERE
-//    connect(downloadPage, SIGNAL(sendUpdateToStatusBar(const QString &)), this, SLOT(updateStatusBarStatistics(const QString &)));//, Qt::QueuedConnection);
-
-    // update from downloadPage to statistics page DA TOGLIERE
-//    connect(downloadPage, SIGNAL(sendStatisticsUpdate(const QPair<int,int> &)), statisticsPage, SLOT(updateStats(const QPair<int,int> &)));//, Qt::QueuedConnection);
-
     // popup message from downloadPage
     connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)));//, Qt::QueuedConnection);
 
-    // update from downloadPage to gauge DA TOGLIERE
-//    connect(downloadPage, SIGNAL(sendUpdateGauge(double, double)), this, SLOT(updateGauge(double, double)));//, Qt::QueuedConnection);
-
     // update statusBar from downloadPage
     connect(downloadPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
+
+    // file dropped from graphicsscene (emitted from downloadPage) goes to Main
+    connect(downloadPage, SIGNAL(fileDropped(QString)), this, SLOT(fileDropped(QString)));
+
 
     // update statusBar from settings
     connect(settingsPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
@@ -78,8 +75,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // update libtorrent settings from settingsWindow
     connect(settingsPage, SIGNAL(sendRefreshSettings()), sessionManager, SLOT(refreshSettings()));
 
+
     // Constructions events
     connect(p_session_thread, SIGNAL(started()), sessionManager, SLOT(startManager()));
+
 
     // Destructions events
     connect(this, SIGNAL(stopSessionManager()), sessionManager, SLOT(stopManager()), Qt::BlockingQueuedConnection);
@@ -174,11 +173,13 @@ void MainWindow::initializeScreen() {
     searchPage->hide();
     downloadPage->hide();
     statisticsPage->hide();
+    archivePage->hide();
 
     ui->content->addWidget(settingsPage);
     ui->content->addWidget(searchPage);
     ui->content->addWidget(statisticsPage);
     ui->content->addWidget(downloadPage);
+    ui->content->addWidget(archivePage);
 
     p_gauge = new QcGaugeWidget;
 //    p_gauge->addBackground(99);
@@ -244,8 +245,25 @@ void MainWindow::readSettings()
     p_gaugeUpNeedle->setMaxValue(upValue);
     settings.endGroup();
 
+    settings.beginGroup("Filters");
+    bool showDownloading = settings.value("showDownloading", true).toBool();
+    bool showUploading = settings.value("showUploading", true).toBool();
+    bool showChecking = settings.value("showChecking", true).toBool();
+    bool showPaused = settings.value("showPaused", true).toBool();
+    bool showError = settings.value("showError", true).toBool();
+    qApp->setProperty("showDownloading", showDownloading);
+    qApp->setProperty("showUploading", showUploading);
+    qApp->setProperty("showChecking", showChecking);
+    qApp->setProperty("showPaused", showPaused);
+    qApp->setProperty("showError", showError);
+    ui->btnStatDown->setChecked(showDownloading);
+    ui->btnStatUp->setChecked(showUploading);
+    ui->btnStatCheck->setChecked(showChecking);
+    ui->btnStatPause->setChecked(showPaused);
+    ui->btnStatError->setChecked(showError);
     settings.endGroup();
 
+    settings.endGroup();
     qDebug() << "Settings read";
 
     bool justUpdated = settings.value("justUpdated", false).toBool();
@@ -270,6 +288,13 @@ void MainWindow::writeSettings()
     settings.beginGroup("Gauge");
     settings.setValue("maxDownloadValue", p_gaugeDownNeedle->getMaxValue());
     settings.setValue("maxUploadValue", p_gaugeUpNeedle->getMaxValue());
+    settings.endGroup();
+    settings.beginGroup("Filters");
+    settings.setValue("showDownloading", ui->btnStatDown->isChecked());
+    settings.setValue("showUploading", ui->btnStatUp->isChecked());
+    settings.setValue("showChecking", ui->btnStatCheck->isChecked());
+    settings.setValue("showPaused", ui->btnStatPause->isChecked());
+    settings.setValue("showError", ui->btnStatError->isChecked());
     settings.endGroup();
     settings.endGroup();
 
@@ -381,6 +406,7 @@ void MainWindow::btnMenuClick() {
     searchPage->setHidden(btn != ui->btnSearch->objectName());
     statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
     downloadPage->setHidden(btn != ui->btnDownload->objectName());
+    archivePage->setHidden(btn != ui->btnArchive->objectName());
 
     if (btn == ui->btnChat->objectName()) {
         QString link = "https://discordapp.com/invite/0pfzTOXuEjt9ifvF";
@@ -427,14 +453,14 @@ void MainWindow::listenerUpdate(QString type, bool success)
     }
 }
 
-void MainWindow::sessionStatisticUpdate(const quint64 &sent, const quint64 &received)
+void MainWindow::sessionStatisticUpdate(const quint64 &sent, const quint64 &received,
+                                        const quint64 &downloading, const quint64 &uploading,
+                                        const quint64 &checking, const quint64 &stopped,
+                                        const quint64 &error, const quint64 &queuedDown, const quint64 &queuedSeed)
 {
     QPair<float, float> pair = downloadPage->getRate();
     float downRate = pair.first;
     float upRate = pair.second;
-
-//    QString msg = QString("sent %0%1 / received %2%3").arg(convertSize(sent)).arg(convertSizeUnit(sent))
-//                                                        .arg(convertSize(received)).arg(convertSizeUnit(received));
 
     QString htmlDown = "<img src='qrc:/images/arrow_down.png'></img>";
     QString htmlUp = "<img src='qrc:/images/arrow_up.png'></img>";
@@ -448,6 +474,17 @@ void MainWindow::sessionStatisticUpdate(const quint64 &sent, const quint64 &rece
     updateGauge((downRate * 8)/1000000, (upRate * 8)/1000000);  // Ethernet 100 BASE-T -> http://www.convert-me.com/en/convert/data_transfer_rate/byte_s.html?u=byte%2Fs&v=1
 
     statisticsPage->updateStats(pair);
+
+    ui->btnStatDown->setText(QString::number(downloading));
+    ui->btnStatDown->setToolTip(QString("Downloading %0 torrents (%1 queued)").arg(downloading).arg(queuedDown));
+    ui->btnStatUp->setText(QString::number(uploading));
+    ui->btnStatUp->setToolTip(QString("Uploading %0 torrents (%1 queued)").arg(uploading).arg(queuedSeed));
+    ui->btnStatCheck->setText(QString::number(checking));
+    ui->btnStatCheck->setToolTip(QString("Checking %0 torrents").arg(checking));
+    ui->btnStatPause->setText(QString::number(stopped));
+    ui->btnStatPause->setToolTip(QString("%0 torrents stopped").arg(stopped));
+    ui->btnStatError->setText(QString::number(error));
+    ui->btnStatError->setToolTip(QString("%0 torrents with error").arg(error));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -511,3 +548,65 @@ QString MainWindow::convertSizeUnit(const int &size)
     }
     return unit;
 }
+
+void MainWindow::on_btnStatDown_toggled(bool checked)
+{
+    qApp->setProperty("showDownloading", checked);
+    downloadPage->updateVisibility();
+}
+
+void MainWindow::on_btnStatUp_toggled(bool checked)
+{
+    qApp->setProperty("showUploading", checked);
+    downloadPage->updateVisibility();
+}
+
+void MainWindow::on_btnStatCheck_toggled(bool checked)
+{
+    qApp->setProperty("showChecking", checked);
+    downloadPage->updateVisibility();
+}
+
+void MainWindow::on_btnStatPause_toggled(bool checked)
+{
+    qApp->setProperty("showPaused", checked);
+    downloadPage->updateVisibility();
+}
+
+void MainWindow::on_btnStatError_toggled(bool checked)
+{
+    qApp->setProperty("showError", checked);
+    downloadPage->updateVisibility();
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    // http://doc.qt.io/qt-4.8/dnd.html
+    QString fileName = event->mimeData()->text();
+    QString msg;
+    if (fileName.contains(".TORRENT", Qt::CaseInsensitive)) {
+        msg = QString("accepted %0 from drag & drop").arg(fileName);
+        event->acceptProposedAction();
+    } else {
+        msg = QString("wrong extension in file %0").arg(fileName);
+        updateStatusBarLabel(msg);
+    }
+    qDebug() << msg;
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    fileDropped(event->mimeData()->text());
+    event->acceptProposedAction();
+}
+
+void MainWindow::fileDropped(QString fileName)
+{
+
+    QStringList fileNames = fileName.replace("file:///", "").split("\n");
+//    fileNames.append(QDir::toNativeSeparators(fileName.replace("file:///", "")));
+    sessionManager->addItems(std::move(fileNames), settingsPage->getDownloadPath());
+    ui->btnDownload->released(); // switch to downloadpage
+    updateStatusBarLabel(QString("file %0 added to download").arg(fileName.replace("file:///", "")));
+}
+

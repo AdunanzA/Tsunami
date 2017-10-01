@@ -18,6 +18,7 @@
 #include "searchwindow.h"
 #include "settingswindow.h"
 #include "statisticswindow.h"
+#include "archivewindow.h"
 
 #include "libtorrent/add_torrent_params.hpp"
 #include "libtorrent/torrent_handle.hpp"
@@ -49,14 +50,19 @@ signals:
 public slots:
     void updateStatusBarStatistics(const QString & msg);
     void updateStatusBarLabel(const QString & msg);
-//    void updateGauge(const float &downValue, const float &upValue);
     void popupInfo(const QString & msg);
 
     void externalIpAssigned();
     void dhtBootstrapExecuted();
     void listenerUpdate(QString type, bool success);
 
-    void sessionStatisticUpdate(const quint64 &sent, const quint64 &received);
+    void sessionStatisticUpdate(const quint64 &sent, const quint64 &received,
+                                const quint64 &downloading, const quint64 &uploading,
+                                const quint64 &checking, const quint64 &stopped,
+                                const quint64 &error, const quint64 &queuedDown,
+                                const quint64 &queuedSeed);
+
+    void fileDropped(QString fileName);
 
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
@@ -66,12 +72,19 @@ private slots:
     void btnAddClick();
     void loadLanguage();
 
+    void on_btnStatDown_toggled(bool checked);
+    void on_btnStatUp_toggled(bool checked);
+    void on_btnStatCheck_toggled(bool checked);
+    void on_btnStatPause_toggled(bool checked);
+    void on_btnStatError_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     settingswindow *settingsPage;
     searchwindow *searchPage;
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
+    archivewindow *archivePage;
     QLabel *statusLabel;
 
     QTranslator p_translator;
@@ -101,6 +114,12 @@ private:
 protected:
     void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *e) override;
+
+
+    // QWidget interface
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
 };
 

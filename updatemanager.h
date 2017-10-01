@@ -14,6 +14,9 @@
 #include <QPainter>
 #include <QMetaEnum>
 #include <QApplication>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QSettings>
 
 #include <chrono>
 #include <thread>
@@ -36,6 +39,8 @@ public slots:
     void readFromUpdateProcess();
     void updateProcessFinished(int finishCode, QProcess::ExitStatus exitStatus);
 
+    void finishedDownloadingNewSplash(QNetworkReply *reply);
+
 private:
     QProcess *p_checkProcess;
     QProcess *p_updateProcess;
@@ -46,6 +51,8 @@ private:
     QString p_param = " --checkForUpdate=";
     QPixmap p_splash_img = QPixmap(":/images/adunanza.jpg");
     QSplashScreen p_splash;
+
+    QNetworkAccessManager *p_nam;
 
     bool p_finished = false;
     bool p_appNeedRestart = false;

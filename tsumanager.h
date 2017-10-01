@@ -48,7 +48,11 @@ signals:
     void stopTimer();
     void finished();
     
-    void sessionStatisticUpdate(const quint64 &sent, const quint64 &received);
+    void sessionStatisticUpdate(const quint64 &sent, const quint64 &received,
+                                const quint64 &downloading, const quint64 &uploading,
+                                const quint64 &checking, const quint64 &stopped,
+                                const quint64 &error, const quint64 &queuedDown,
+                                const quint64 &queuedSeed);
 
 public slots:
     void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
@@ -67,9 +71,21 @@ private:
 
     // session stat alert index
     int p_net_recv_bytes;
+    int p_net_recv_payload_bytes;
     int p_net_recv_ip_overhead_bytes;
+
     int p_net_sent_bytes;
+    int p_net_sent_payload_bytes;
     int p_net_sent_ip_overhead_bytes;
+
+    int p_ses_num_downloading_torrents;
+    int p_ses_num_queued_download_torrents;
+    int p_ses_num_upload_only_torrents;
+    int p_ses_num_seeding_torrents;
+    int p_ses_num_queued_seeding_torrents;
+    int p_ses_num_checking_torrents;
+    int p_ses_num_stopped_torrents;
+    int p_ses_num_error_torrents;
 
 private slots:
     void alertsHandler();

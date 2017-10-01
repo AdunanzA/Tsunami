@@ -27,6 +27,7 @@ enum statusEnum {
 class tsuItem : public QObject, public QGraphicsItem
 {
     Q_OBJECT
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
     tsuItem();
     tsuItem(const std::string &head);
@@ -47,10 +48,13 @@ public:
     void set_Status(const int &value);
 
     int get_RateDownload() const;
-    void set_RateDownload(int value);
+    void set_RateDownload(const int &value);
 
     int get_RateUpload() const;
-    void set_RateUpload(int value);
+    void set_RateUpload(const int &value);
+
+    bool get_Visibility() const;
+    void set_Visibility(const bool &visible);
 
     static const qreal ItemWidth;
     static const qreal ItemHeight;
@@ -65,6 +69,7 @@ public:
 
     QString convertSize(const int &size);
     QString convertSizeUnit(const int &size);
+
 
 public slots:
     void setValue(const tsuEvents::tsuEvent &event);
@@ -120,8 +125,8 @@ private:
     QColor p_colorLabel = QColor(127,127,127);
     QFont p_fontLabel = QFont("Tahoma", 7.5);
 
-    QGraphicsDropShadowEffect * p_itemShadow;
-    QPropertyAnimation * p_itemShadowAnimation;
+    QGraphicsDropShadowEffect *p_itemShadow;
+    QPropertyAnimation *p_itemShadowAnimation;
 
     std::string p_hash;
     int p_size = 0;
@@ -129,13 +134,18 @@ private:
     int p_uploaded = 0;
     int p_rateDownload = 0;
     int p_rateUpload = 0;
+    int p_numSeeds = 0;
+    int p_numPeers = 0;
     statusEnum p_status = statusEnum::undefined;
     QDateTime p_eta;
 
     bool p_cancelFilesOnDelete = false;
 
+    bool p_visible = true;
+
 private slots:
     void fadeInFinished();
+    void fadeOutFinished();
 
 protected:
     void createItem();
@@ -153,6 +163,7 @@ signals:
     void pauseRequested(const std::string &hash);
     void resumeRequested(const std::string &hash);
     void detailsRequested(const std::string &hash);
+    void downloadFinished(tsuItem *item);
 
 };
 

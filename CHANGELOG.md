@@ -15,6 +15,22 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.4.7] 2017-10-01
+### Added
+- Drag & Drop torrent to add
+- Top badges with torrent count and filter
+- Message on download finished (and option to disable)
+- Animation on tsuCard reorder
+- Archive window (still not working)
+- Seeds and peers information on tsuCard
+- Donwload splash screen
+- Tree widget for archive page
+
+### Fixed
+- Appveyor script error for delta nupkg
+- Error on multiple add of same torrent
+- Wrong sum of send and received bytes
+
 ## [0.4.6] 2017-09-24
 ### Added
 - More thread (based on cpu) for libtorrent

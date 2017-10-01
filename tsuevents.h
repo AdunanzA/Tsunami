@@ -9,7 +9,8 @@ namespace tsuEvents {
         { }
         tsuEvent(const std::string &_hash, const QString &_name, const int &_downloaded = 0,
                  const int &_uploaded = 0, const int &_downRate = 0, const int &_upRate = 0,
-                 const int &_size = 0, const int &_state = 0, const int &_percentage = 0):
+                 const int &_size = 0, const int &_state = 0, const int &_percentage = 0,
+                 const int &_numSeeds = 0, const int &_numPeers = 0):
             hash(_hash),
             name(_name),
             downloaded(_downloaded),
@@ -18,7 +19,9 @@ namespace tsuEvents {
             uploadRate(_upRate),
             total_size(_size),
             state(_state),
-            percentage(_percentage)
+            percentage(_percentage),
+            numSeeds(_numSeeds),
+            numPeers(_numPeers)
         { }
         ~tsuEvent()
         { }
@@ -32,6 +35,8 @@ namespace tsuEvents {
             int total_size = 0;
             int state = 0;
             int percentage = 0;
+            int numSeeds = 0;
+            int numPeers = 0;
     };
 }
 

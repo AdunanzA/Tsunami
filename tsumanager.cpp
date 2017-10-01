@@ -10,9 +10,10 @@ tsuManager::tsuManager()
     p_tsunamiSessionFolder = QDir::toNativeSeparators(localTsunami);
 
     // loading libtorrent stats metric indexes
+    QHash<QString, int> statsList;
     std::vector<lt::stats_metric> ssm = lt::session_stats_metrics();
     for(lt::stats_metric & metric : ssm) {
-        qApp->setProperty(metric.name, metric.value_index);
+        statsList.insert(QString::fromUtf8(metric.name), metric.value_index);
     }
     qDebug() << QString("loaded %0 metric index from libtorrent").arg(QString::number(ssm.size()));
 
@@ -29,10 +30,22 @@ tsuManager::tsuManager()
     
     // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
 
-    p_net_recv_bytes = qApp->property("net.recv_bytes").toInt();
-    p_net_recv_ip_overhead_bytes = qApp->property("net.recv_ip_overhead_bytes").toInt();
-    p_net_sent_bytes = qApp->property("net.sent_bytes").toInt();
-    p_net_sent_ip_overhead_bytes = qApp->property("net.sent_ip_overhead_bytes").toInt();
+    p_net_recv_bytes = statsList["net.recv_bytes"];
+    p_net_recv_payload_bytes = statsList["net.recv_payload_bytes"];
+    p_net_recv_ip_overhead_bytes = statsList["net.recv_ip_overhead_bytes"];
+
+    p_net_sent_bytes = statsList["net.sent_bytes"];
+    p_net_sent_payload_bytes = statsList["net.sent_payload_bytes"];
+    p_net_sent_ip_overhead_bytes = statsList["net.sent_ip_overhead_bytes"];
+
+    p_ses_num_downloading_torrents = statsList["ses.num_downloading_torrents"];
+    p_ses_num_queued_download_torrents = statsList["ses.num_queued_download_torrents"];
+    p_ses_num_upload_only_torrents = statsList["ses.num_upload_only_torrents"];
+    p_ses_num_seeding_torrents = statsList["ses.num_seeding_torrents"];
+    p_ses_num_queued_seeding_torrents = statsList["ses.num_queued_seeding_torrents"];
+    p_ses_num_checking_torrents = statsList["ses.num_checking_torrents"];
+    p_ses_num_stopped_torrents = statsList["ses.num_stopped_torrents"];
+    p_ses_num_error_torrents = statsList["ses.num_error_torrents"];
 
     p_timerUpdate = new QTimer(this);
     connect(p_timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
@@ -291,6 +304,8 @@ void tsuManager::alertsHandler()
 
         switch (alert->type())
         {
+
+        // ADD TORRENT
         case lt::add_torrent_alert::alert_type:
         {
             lt::add_torrent_alert* ata = lt::alert_cast<lt::add_torrent_alert>(alert);
@@ -307,10 +322,14 @@ void tsuManager::alertsHandler()
             lt::torrent_status const &ts = ata->handle.status();
             statusEnum se = static_cast<statusEnum>((int)ts.state);
             if (ts.paused) se = statusEnum::paused;
-            tsuEvents::tsuEvent ev(ata->handle.info_hash().to_string(), ts.name.c_str(), ts.total_done, ts.total_upload, ts.download_rate, ts.upload_rate, ts.total_wanted, (int)se, ts.progress_ppm);
+            tsuEvents::tsuEvent ev(ata->handle.info_hash().to_string(), ts.name.c_str(), ts.total_done,
+                                   ts.total_upload, ts.download_rate, ts.upload_rate, ts.total_wanted,
+                                   (int)se, ts.progress_ppm, ts.num_seeds, ts.num_peers);
             emit addFromSessionManager(ev);
             break;
         }
+
+        // UPDATE TORRENT
         case lt::state_update_alert::alert_type:
         {
             lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
@@ -319,11 +338,15 @@ void tsuManager::alertsHandler()
             {
                 statusEnum se = static_cast<statusEnum>((int)s.state);
                 if (s.paused) se = statusEnum::paused;
-                tsuEvents::tsuEvent ev(s.info_hash.to_string(), s.name.c_str(), s.total_done, s.total_upload, s.download_rate, s.upload_rate, s.total_wanted, (int)se, s.progress_ppm);
+                tsuEvents::tsuEvent ev(s.info_hash.to_string(), s.name.c_str(), s.total_done,
+                                       s.total_upload, s.download_rate, s.upload_rate, s.total_wanted,
+                                       (int)se, s.progress_ppm, s.num_seeds, s.num_peers);
                 eventsArray.append(ev);
             }
             break;
         }
+
+        // TORRENT DELETED
         case lt::torrent_deleted_alert::alert_type:
         {
             lt::torrent_deleted_alert* tra = lt::alert_cast<lt::torrent_deleted_alert>(alert);
@@ -345,6 +368,8 @@ void tsuManager::alertsHandler()
 //            emit torrentDeleted(tra->info_hash.to_string());
             break;
         }
+
+        // EXTERNAL IP
         case lt::external_ip_alert::alert_type:
         {
             lt::external_ip_alert* eia = lt::alert_cast<lt::external_ip_alert>(alert);
@@ -353,6 +378,8 @@ void tsuManager::alertsHandler()
             emit externalIpAssigned();
             break;
         }
+
+        // DHT BOOTSTRAP
         case lt::dht_bootstrap_alert::alert_type:
         {
 //            lt::dht_bootstrap_alert* dba = lt::alert_cast<lt::dht_bootstrap_alert>(alert);
@@ -360,6 +387,8 @@ void tsuManager::alertsHandler()
             emit dhtBootstrapExecuted();
             break;
         }
+
+        // LISTEN SUCCEEDED
         case lt::listen_succeeded_alert::alert_type:
         {
             lt::listen_succeeded_alert* lsa = lt::alert_cast<lt::listen_succeeded_alert>(alert);
@@ -373,6 +402,8 @@ void tsuManager::alertsHandler()
             emit listenerUpdate(type, true);
             break;
         }
+
+        // LISTEN FAILED
         case lt::listen_failed_alert::alert_type:
         {
             lt::listen_failed_alert* lfa = lt::alert_cast<lt::listen_failed_alert>(alert);
@@ -386,18 +417,35 @@ void tsuManager::alertsHandler()
             emit listenerUpdate(type, false);
             break;
         }
+
+        // SESSION STATS
         case lt::session_stats_alert::alert_type:
         {
             lt::session_stats_alert *ssa = lt::alert_cast<lt::session_stats_alert>(alert);
 
             // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
             quint64 recvbytes = ssa->values[p_net_recv_bytes];
-//            recvbytes += ssa->values[p_net_recv_ip_overhead_bytes];
+            quint64 recvbytesPayload = ssa->values[p_net_recv_payload_bytes]; // included in recv_bytes, subctracted for exact downloaded bytes count
+            recvbytes -= recvbytesPayload;
 
             quint64 sentbytes = ssa->values[p_net_sent_bytes];
-//            sentbytes += ssa->values[p_net_sent_ip_overhead_bytes];
+            quint64 sentbytesPayload = ssa->values[p_net_sent_payload_bytes];
+            sentbytes -= sentbytesPayload;
 
-            emit sessionStatisticUpdate(sentbytes, recvbytes);
+            quint64 numDownloading = ssa->values[p_ses_num_downloading_torrents];
+            quint64 numQueuedDown  = ssa->values[p_ses_num_queued_download_torrents];
+            quint64 numUploading   = ssa->values[p_ses_num_upload_only_torrents];
+            quint64 numSeeding     = ssa->values[p_ses_num_seeding_torrents];
+            quint64 numQueuedSeed  = ssa->values[p_ses_num_queued_seeding_torrents];
+            quint64 numChecking    = ssa->values[p_ses_num_checking_torrents];
+            quint64 numStopped     = ssa->values[p_ses_num_stopped_torrents];
+            quint64 numError       = ssa->values[p_ses_num_error_torrents];
+
+            numDownloading += numQueuedDown;
+            numUploading   += numSeeding + numQueuedSeed;
+
+            emit sessionStatisticUpdate(sentbytes, recvbytes, numDownloading, numUploading, numChecking,
+                                        numStopped, numError, numQueuedDown, numQueuedSeed);
             break;
         }
         default:
@@ -428,19 +476,20 @@ void tsuManager::addItems(const QStringList && items, const QString &path)
 {
     foreach (const QString &str, items)
     {
+        qDebug() << "processing " << str;
         try
         {
             lt::add_torrent_params atp;
             lt::torrent_info ti(str.toStdString());
 
-            if (!ti.metadata()) qDebug("NO METADATA!");
-            if (!ti.is_valid()) qDebug("INVALID!");
+            if (!ti.metadata()) qWarning() << "No metadata for " << str;
+            if (!ti.is_valid()) qWarning() << "torrent " << str << " is invalid";
             atp.ti = std::make_shared<lt::torrent_info>(ti);
             atp.save_path = path.toStdString();
 
             atp.flags &= ~lt::add_torrent_params::flag_paused; // Start in pause
             atp.flags &= ~lt::add_torrent_params::flag_auto_managed; // Because it is added in paused state
-            atp.flags &= ~lt::add_torrent_params::flag_duplicate_is_error; // Already checked
+//            atp.flags &= ~lt::add_torrent_params::flag_duplicate_is_error; // Already checked
 
             p_session->async_add_torrent(atp);
 

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -70,7 +70,8 @@ SOURCES += main.cpp\
     downloadwindow.cpp \
     statisticswindow.cpp \
     itemdetails.cpp \
-    changelog.cpp
+    changelog.cpp \
+    archivewindow.cpp
 
 HEADERS  += \
     mainwindow.h \
@@ -79,7 +80,8 @@ HEADERS  += \
     downloadwindow.h \
     statisticswindow.h \
     itemdetails.h \
-    changelog.h
+    changelog.h \
+    archivewindow.h
 
 FORMS    += \
     mainwindow.ui \
@@ -88,7 +90,8 @@ FORMS    += \
     downloadwindow.ui \
     statisticswindow.ui \
     itemdetails.ui \
-    changelog.ui
+    changelog.ui \
+    archivewindow.ui
 
 OBJECTS_DIR = tmp
 MOC_DIR = tmp

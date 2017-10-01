@@ -324,6 +324,53 @@ border-style: solid;</string>
           </property>
          </widget>
         </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="lblPort">
+          <property name="text">
+           <string>Port</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="QSpinBox" name="numPort">
+          <property name="minimumSize">
+           <size>
+            <width>120</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="minimum">
+           <number>1024</number>
+          </property>
+          <property name="maximum">
+           <number>49151</number>
+          </property>
+          <property name="value">
+           <number>6881</number>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="1">
+         <widget class="QCheckBox" name="chkMsgDownFinish">
+          <property name="text">
+           <string>On finished download</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QLabel" name="lblMessages">
+          <property name="text">
+           <string>Popup Messages</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QCheckBox" name="chkMsgNewChat">
+          <property name="text">
+           <string>Message from chat</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

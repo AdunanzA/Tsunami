@@ -1,10 +1,6 @@
 #include "downloadwindow.h"
 #include "ui_downloadwindow.h"
 
-//#include "mainwindow.h"
-
-//#define TICKER_TIME 1000
-
 // return the name of a torrent status enum
 //char const* state(libtorrent::torrent_status::state_t s)
 //{
@@ -19,8 +15,6 @@
 //    default: return "<>";
 //  }
 //}
-
-//MainWindow *p_mw;
 
 downloadwindow::downloadwindow(QWidget *parent) :
     QWidget(parent),
@@ -43,12 +37,11 @@ downloadwindow::downloadwindow(QWidget *parent) :
 
     redrawItemsPosition();
 
-//    p_sessionStatisticTimer = new QTimer(this);
-//    connect(p_sessionStatisticTimer, SIGNAL(timeout()), this, SLOT(updateSessionStatistics()));
-//    p_sessionStatisticTimer->start(TICKER_TIME);
-
     // SHOW CONTEXT MENU
     connect(ui->graphicsView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+
+    // IF FILE DROPPED IN GRAPHICSSCENE EMIT SIGNAL TO MANAGE IN MAINWINDOW
+    connect(p_scene, &tsugraphicsscene::fileDropped, this, &downloadwindow::fileDroppedFromGraphicScene);
 
     qDebug("downloadwindow created");
 }
@@ -70,6 +63,40 @@ QPair<float, float> downloadwindow::getRate()
     }
 
     return QPair<int, int>(dRate, uRate);
+}
+
+void downloadwindow::updateVisibility()
+{
+    bool showDownloading = qApp->property("showDownloading").toBool();
+    bool showUploading   = qApp->property("showUploading").toBool();
+    bool showChecking    = qApp->property("showChecking").toBool();
+    bool showPaused      = qApp->property("showPaused").toBool();
+    bool showError       = qApp->property("showError").toBool();
+
+    for (int i = 0; i < p_tsulist.count(); i++) {
+        tsuItem *ti = p_tsulist[i];
+
+        if ( ti->get_Status() == statusEnum::downloading || ti->get_Status() == statusEnum::downloading_metadata ) {
+            ti->set_Visibility(showDownloading);
+        }
+
+        if (ti->get_Status() == statusEnum::seeding || ti->get_Status() == statusEnum::finished) {
+            ti->set_Visibility(showUploading);
+        }
+
+        if (ti->get_Status() == statusEnum::allocating || ti->get_Status() == statusEnum::checking_files || ti->get_Status() == statusEnum::checking_resume_data) {
+            ti->set_Visibility(showChecking);
+        }
+
+        if (ti->get_Status() == statusEnum::paused) {
+            ti->set_Visibility(showPaused);
+        }
+
+        if (ti->get_Status() == statusEnum::undefined) {
+            ti->set_Visibility(showError);
+        }
+    }
+    redrawItemsPosition();
 }
 
 void downloadwindow::requestedCancel(const std::string &hash, const bool &deleteFilesToo)
@@ -110,6 +137,14 @@ void downloadwindow::requestedDetails(const std::string &hash)
     qDebug() << QString("requestedDetails for %0, opening details").arg(QString::fromStdString(hash));
     p_itemDetails->setHash(hash);
     p_itemDetails->exec();
+}
+
+void downloadwindow::downloadFinished(tsuItem *item)
+{
+    qDebug() << QString("received download finished for %0").arg(item->get_Head());
+    bool emitMsg = qApp->property("msgOnFinish").toBool();
+    if (emitMsg)
+        emit sendPopupInfo("download finished for " + item->get_Head());
 }
 
 void downloadwindow::showContextMenu(const QPoint &pos)
@@ -233,39 +268,6 @@ void downloadwindow::deleteSelected()
 
 }
 
-//void downloadwindow::updateSessionStatistics()
-//{
-//    try {
-//        p_downRate = 0;
-//        p_upRate = 0;
-//        foreach (tsuItem* item, p_tsulist) {
-//            p_totalDownload += qFabs(item->get_Downloaded());
-//            p_totalUpload += qFabs(item->get_Uploaded());
-//            p_downRate += qFabs(item->get_RateDownload());
-//            p_upRate += qFabs(item->get_RateUpload());
-//        }
-
-//        // update mainwindow statusbar message
-//        tsuItem ts;
-//        QString ups = QString("%1%2/s (%3%4) / %5%6/s (%7%8)").arg(ts.convertSize(p_downRate)).arg(ts.convertSizeUnit(p_downRate))
-//                                                              .arg(ts.convertSize(p_totalDownload)).arg(ts.convertSizeUnit(p_totalDownload))
-//                                                              .arg(ts.convertSize(p_upRate)).arg(ts.convertSizeUnit(p_upRate))
-//                                                              .arg(ts.convertSize(p_totalUpload)).arg(ts.convertSizeUnit(p_totalUpload));
-//        emit sendUpdateToStatusBar(ups);
-
-//        // update mainwindow gauge
-//        double dval = (p_downRate * 8)/1000000; // Ethernet 100 BASE-T -> http://www.convert-me.com/en/convert/data_transfer_rate/byte_s.html?u=byte%2Fs&v=1
-//        double uval = (p_upRate * 8)/1000000;
-//        emit sendUpdateGauge(dval, uval);
-
-//        // update statistics page
-//        emit sendStatisticsUpdate(QPair<int, int>(p_downRate, p_upRate));
-
-//    } catch (std::exception &exc) {
-//        qDebug() << QString("updateSessionStatistics throws %0").arg(exc.what());
-//    }
-//}
-
 void downloadwindow::updateFromSession(const QVector<tsuEvents::tsuEvent> &events)
 {
     if (p_itemDetails->isVisible())
@@ -289,15 +291,23 @@ void downloadwindow::updateFromSession(const QVector<tsuEvents::tsuEvent> &event
 void downloadwindow::addFromSession(const tsuEvents::tsuEvent &event)
 {
     qDebug() << QString("received addFromSession for '%0' - '%1'").arg(event.name).arg(QString::fromStdString(event.hash));
+    foreach (tsuItem* item, p_tsulist) {
+        if (item->get_Hash() == event.hash) {
+            qDebug() << QString("torrent %0 already in list, ignoring").arg(event.name);
+            return;
+        }
+    }
     tsuItem *ts = new tsuItem(event.hash);
     connect(ts, SIGNAL(cancelRequested(std::string,bool)), this, SLOT(requestedCancel(std::string,bool)), Qt::QueuedConnection);
     connect(ts, SIGNAL(pauseRequested(std::string)), this, SLOT(requestedPause(std::string)), Qt::QueuedConnection);
     connect(ts, SIGNAL(resumeRequested(std::string)), this, SLOT(requestedResume(std::string)), Qt::QueuedConnection);
     connect(ts, SIGNAL(detailsRequested(std::string)), this, SLOT(requestedDetails(std::string)), Qt::QueuedConnection);
+    connect(ts, SIGNAL(downloadFinished(tsuItem*)), this, SLOT(downloadFinished(tsuItem*)), Qt::QueuedConnection);
     ts->setValue(event);
     ts->set_FactorTransform(p_transformFactor);
     p_tsulist.append(ts);
     p_scene->addItem(ts);
+    updateVisibility();
     redrawItemsPosition();
 }
 
@@ -327,10 +337,22 @@ void downloadwindow::redrawItemsPosition()
     int itemWidth = (tsuItem::ItemGlowRadius + tsuItem::ItemWidth) * p_transformFactor;
     int itemHeight = (tsuItem::ItemGlowRadius + tsuItem::ItemHeight) * p_transformFactor;
     for (int i = 0; i < p_tsulist.count(); i++) {
-        if (col == p_itemsPerRow-1) { row++; col = 0; } else { col++; }
         tsuItem *ti = p_tsulist[i];
-        ti->setPos(QPointF((col*itemWidth)+tsuItem::ItemGlowRadius,
-                           (row*itemHeight)+tsuItem::ItemGlowRadius));
+
+        if (ti->get_Visibility()) {
+            if (col == p_itemsPerRow-1) { row++; col = 0; } else { col++; }
+            int newX = (col*itemWidth)+tsuItem::ItemGlowRadius;
+            int newY = (row*itemHeight)+tsuItem::ItemGlowRadius;
+//            ti->setPos(QPointF(newX, newY));
+
+            QPropertyAnimation *a = new QPropertyAnimation(ti, "pos");
+            a->setDuration(300);
+            a->setStartValue(QPointF(ti->pos().x(), ti->pos().y()));
+            a->setEndValue(QPoint(newX, newY));
+            a->setEasingCurve(QEasingCurve::Linear);
+            a->start(QPropertyAnimation::DeleteWhenStopped);
+
+        }
     }
     ui->graphicsView->ensureVisible(QRectF(0, 0, 0, 0));
 }
@@ -404,4 +426,9 @@ void downloadwindow::on_btnZoomOut_released()
         item->set_FactorTransform(p_transformFactor);
     }
     redrawItemsPosition();
+}
+
+void downloadwindow::fileDroppedFromGraphicScene(QString fileName)
+{
+    emit fileDropped(fileName);
 }

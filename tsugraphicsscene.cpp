@@ -1,14 +1,14 @@
 #include "tsugraphicsscene.h"
 
 tsugraphicsscene::tsugraphicsscene(QWidget *parent)
-    : QWidget(parent)
+    : QGraphicsScene(parent)
 {
-
+    qDebug("created");
 }
 
 tsugraphicsscene::~tsugraphicsscene()
 {
-    qDebug("tsugraphicsscene destroyed");
+    qDebug("destroyed");
 }
 
 void tsugraphicsscene::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -22,3 +22,18 @@ void tsugraphicsscene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsScene::mousePressEvent(event);
 }
 
+void tsugraphicsscene::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    event->accept();
+}
+
+void tsugraphicsscene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+{
+    event->accept();
+}
+
+void tsugraphicsscene::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+    emit fileDropped(event->mimeData()->text());
+    event->accept();
+}

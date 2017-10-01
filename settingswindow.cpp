@@ -37,13 +37,16 @@ void settingswindow::loadSettings()
 //    }
 
     QStorageInfo storage = QStorageInfo::root();
-//    QString downloadPath = settings.value("Download/downloadPath", QCoreApplication::applicationDirPath()).toString();
     QString downloadPath = settings.value("Download/downloadPath", storage.rootPath()).toString();
 
     int debugLevel = settings.value("Debug/Level", 1).toInt();
     int currentLanguage = settings.value("Language", 0).toInt();
     int downLimit = settings.value("libtorrent/download_rate_limit", 0).toInt();
     int upLimit = settings.value("libtorrent/upload_rate_limit", 0).toInt();
+    int port = settings.value("libtorrent/port", 6881).toInt();
+
+    bool msgOnFinish = settings.value("Messages/onFinish").toBool();
+    bool msgOnChat = settings.value("Messages/onChat").toBool();
 
     ui->txtDownloadPath->setText(downloadPath);
     qDebug() << "download path " << downloadPath;
@@ -57,6 +60,15 @@ void settingswindow::loadSettings()
     ui->numLimitDown->setValue(downLimit);
     ui->numLimitUp->setValue(upLimit);
     qDebug() << QString("limits: download %0 KB/s, upload %1 KB/s ").arg(downLimit).arg(upLimit);
+
+    ui->numPort->setValue(port);
+    qDebug() << "listening on port " << port;
+
+    ui->chkMsgDownFinish->setChecked(msgOnFinish);
+    ui->chkMsgNewChat->setChecked(msgOnChat);
+
+    // needed by downloadwindow when a tsuCard emit a downloadFinished event
+    qApp->setProperty("msgOnFinish", ui->chkMsgDownFinish->isChecked());
 
     qInfo("settings loaded and applied");
 }
@@ -77,8 +89,16 @@ void settingswindow::saveSettings()
     settings.beginGroup("libtorrent");
     settings.setValue("download_rate_limit", ui->numLimitDown->value());
     settings.setValue("upload_rate_limit", ui->numLimitUp->value());
+    settings.setValue("port", ui->numPort->value());
     settings.endGroup();
+
+    settings.setValue("Messages/onFinish", ui->chkMsgDownFinish->isChecked());
+    settings.setValue("Messages/onChat", ui->chkMsgNewChat->isChecked());
+
     settings.sync();
+
+    // needed by downloadwindow when a tsuCard emit a downloadFinished event
+    qApp->setProperty("msgOnFinish", ui->chkMsgDownFinish->isChecked());
 
     qInfo("settings saved");
 }

@@ -4,7 +4,7 @@ PROJECT_NAME = tsunami
 # Define version numbers here
 VER_MAJOR = 0
 VER_MINOR = 4
-VER_BUGFIX = 6
+VER_BUGFIX = 7
 VER_BUILD = 0
 VER_STATUS = # Should be empty for stable releases!
 

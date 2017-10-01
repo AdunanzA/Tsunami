@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
     qInstallMessageHandler(logMessageHandler);
 
-    // REMOVED TO LET INI FILE TO BE PLACE IN CORRECT FOLDER (...local/Tsunami INSTEAD OF ...local/Adunanza/Tsunami)
+    // REMOVED TO LET INI FILE TO BE PLACED IN CORRECT FOLDER (...local/Tsunami INSTEAD OF ...local/Adunanza/Tsunami)
 //    QApplication::setOrganizationName(QStringLiteral(APP_ORGANIZATION_NAME));
 
     QApplication::setOrganizationDomain(QStringLiteral(APP_ORGANIZATION_DOMAIN));

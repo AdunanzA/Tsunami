@@ -26,11 +26,39 @@ updatemanager::updatemanager(QObject *parent) : QObject(parent)
     p_updateProcess->setProcessChannelMode(QProcess::MergedChannels); // merge process stdout to app stdout
 
     // short connect version
-    connect(p_updateProcess, &QProcess::readyRead,
-            this, &updatemanager::readFromUpdateProcess);
+    connect(p_updateProcess, &QProcess::readyRead, this, &updatemanager::readFromUpdateProcess);
 
     // cannot use short connect version because finished has overloads
     connect(p_updateProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(updateProcessFinished(int,QProcess::ExitStatus)));
+
+    p_nam = new QNetworkAccessManager(this);
+//    connect(p_nam, &QNetworkAccessManager::finished, this, &updatemanager::finishedDownloadingNewSplash);
+
+    // download new splashscreen
+    QSettings settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
+    QString downloadUrl = settings.value("Download/splashUrl", "http://tsunami.biuken.com/splash.jpg").toString();
+    if (!downloadUrl.isEmpty()) {
+        QUrl url(downloadUrl);
+        QNetworkRequest request(url);
+//        p_nam->get(request);
+        QNetworkReply *reply = p_nam->get(request);
+
+        QEventLoop loop;
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray jpegData = reply->readAll();
+            QPixmap pixmap;
+            pixmap.loadFromData(jpegData);
+ //            p_splash_img.loadFromData(reply->readAll());
+            if (pixmap.isNull()) qDebug("image is null");
+            p_splash_img = pixmap;
+            qDebug("new splash downloaded");
+        } else {
+            qDebug() << QString("cannot download new splash, error %0").arg(reply->errorString());
+        }
+    }
 
     QString version = VERSION;
     QFont font("Arial", 9, QFont::Normal);
@@ -195,6 +223,20 @@ void updatemanager::updateProcessFinished(int finishCode, QProcess::ExitStatus e
     p_appNeedRestart = true;
     waitAndClose(3000);
     return;
+}
+
+void updatemanager::finishedDownloadingNewSplash(QNetworkReply *reply)
+{
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray jpegData = reply->readAll();
+        QPixmap pixmap;
+        pixmap.loadFromData(jpegData);
+        if (pixmap.isNull()) qDebug("image is null");
+        p_splash_img = pixmap;
+        qDebug("new splash downloaded");
+    } else {
+        qDebug() << QString("cannot download new splash, error %0").arg(reply->errorString());
+    }
 }
 
 void updatemanager::updateSplashMessage(QString message) {

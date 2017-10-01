@@ -31,7 +31,7 @@ void tsuItem::createItem()
     fadeInAnimation->setDuration(500);
     fadeInAnimation->setStartValue(0);
     fadeInAnimation->setEndValue(1);
-    fadeInAnimation->setEasingCurve(QEasingCurve::InBack);
+    fadeInAnimation->setEasingCurve(QEasingCurve::OutQuad);
     fadeInAnimation->start(QPropertyAnimation::DeleteWhenStopped);
     connect(fadeInAnimation,SIGNAL(finished()),this,SLOT(fadeInFinished()));
 
@@ -72,7 +72,6 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     // SELECTED
     if (!p_isFadingOut && !p_isFadingIn && !p_isMoving && this->isSelected() ) {
         painter->drawPixmap(p_imageSelectedPosition, p_imageSelected);
-    } else {
     }
 
     // CANCEL IMAGE
@@ -268,6 +267,24 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
         painter->drawPath(pathEta);
     }
 
+    // SEEDS
+    QPainterPath seedsPath;
+    QFont seedsFont = QFont("Tahoma", 8, QFont::Thin);
+    painter->setFont(seedsFont);
+    painter->setBrush(QColor(131, 131, 131));
+    int seedsSize = painter->fontMetrics().width(p_numSeeds);
+    seedsPath.addText(10-(seedsSize/2), 135, seedsFont, QString::number(p_numSeeds));
+    painter->drawPath(seedsPath);
+
+    // PEERS
+    QPainterPath peersPath;
+    QFont peersFont = QFont("Tahoma", 8, QFont::Thin);
+    painter->setFont(peersFont);
+    painter->setBrush(QColor(131, 131, 131));
+    int peersSize = painter->fontMetrics().width(p_numPeers);
+    peersPath.addText(122-(peersSize/2), 135, peersFont, QString::number(p_numPeers));
+    painter->drawPath(peersPath);
+
 }
 
 void tsuItem::set_FactorTransform(const qreal &value)
@@ -316,12 +333,14 @@ void tsuItem::setValue(const tsuEvents::tsuEvent &event)
 {
 //    qDebug() << QString("setValue event.percentage %1").arg(event.percentage);
     p_progressValue = event.percentage/10000;
-    p_downloaded = (event.downloaded != 0) ? qFabs(event.downloaded) : 0;
-    p_rateDownload = (event.downloadRate != 0) ? qFabs(event.downloadRate) : 0;
+    p_downloaded = (event.downloaded > 0) ? qFabs(event.downloaded) : 0;
+    p_rateDownload = (event.downloadRate > 0) ? qFabs(event.downloadRate) : 0;
     p_head = event.name;
-    p_size = (event.total_size != 0) ? qFabs(event.total_size) : 0;
-    p_uploaded = (event.uploaded != 0) ? qFabs(event.uploaded) : 0;
-    p_rateUpload = (event.uploadRate != 0) ? qFabs(event.uploadRate) : 0;
+    p_size = (event.total_size > 0) ? qFabs(event.total_size) : 0;
+    p_uploaded = (event.uploaded > 0) ? qFabs(event.uploaded) : 0;
+    p_rateUpload = (event.uploadRate > 0) ? qFabs(event.uploadRate) : 0;
+    p_numSeeds = event.numSeeds;
+    p_numPeers = event.numPeers;
     set_Status(event.state);
     update();
 }
@@ -351,7 +370,7 @@ void tsuItem::executeItemRemove(const bool &filesToo)
     a->setDuration(500);
     a->setStartValue(1);
     a->setEndValue(0.5);
-    a->setEasingCurve(QEasingCurve::OutBack);
+    a->setEasingCurve(QEasingCurve::OutQuad);
     a->start(QPropertyAnimation::DeleteWhenStopped);
     connect(a,SIGNAL(finished()),this,SLOT(emitCancel()));
 }
@@ -377,9 +396,47 @@ int tsuItem::get_RateUpload() const
     return p_rateUpload;
 }
 
-void tsuItem::set_RateUpload(int value)
+void tsuItem::set_RateUpload(const int &value)
 {
     p_rateUpload = value;
+}
+
+bool tsuItem::get_Visibility() const
+{
+    return p_visible;
+}
+
+void tsuItem::set_Visibility(const bool &visible)
+{
+    if (p_visible == true && visible == false) {
+        // hiding, fade out
+        p_isFadingOut = true;
+        QGraphicsOpacityEffect *eff = new QGraphicsOpacityEffect(this);
+        this->setGraphicsEffect(eff);
+        QPropertyAnimation *a = new QPropertyAnimation(eff,"opacity");
+        a->setDuration(500);
+        a->setStartValue(1);
+        a->setEndValue(0);
+        a->setEasingCurve(QEasingCurve::OutQuad);
+        a->start(QPropertyAnimation::DeleteWhenStopped);
+        connect(a,SIGNAL(finished()),this,SLOT(fadeOutFinished()));
+    }
+
+    if (p_visible == false && visible == true) {
+        // showing, fade in
+        p_isFadingIn = true;
+        QGraphicsOpacityEffect *eff = new QGraphicsOpacityEffect(this);
+        this->setGraphicsEffect(eff);
+        QPropertyAnimation *a = new QPropertyAnimation(eff,"opacity");
+        a->setDuration(500);
+        a->setStartValue(0);
+        a->setEndValue(1);
+        a->setEasingCurve(QEasingCurve::OutQuad);
+        a->start(QPropertyAnimation::DeleteWhenStopped);
+        connect(a,SIGNAL(finished()),this,SLOT(fadeInFinished()));
+    }
+    p_visible = visible;
+    update();
 }
 
 int tsuItem::get_RateDownload() const
@@ -387,7 +444,7 @@ int tsuItem::get_RateDownload() const
     return p_rateDownload;
 }
 
-void tsuItem::set_RateDownload(int value)
+void tsuItem::set_RateDownload(const int &value)
 {
     p_rateDownload = value;
 }
@@ -399,6 +456,11 @@ statusEnum tsuItem::get_Status() const
 
 void tsuItem::set_Status(const int &value)
 {
+    statusEnum newStatus = static_cast<statusEnum>(value);
+    if ( p_status == statusEnum::downloading && newStatus == statusEnum::seeding ) {
+        qInfo() << QString("download finished for %0").arg(this->get_Head());
+        emit downloadFinished(this);
+    }
     p_status = static_cast<statusEnum>(value);
 }
 
@@ -411,16 +473,17 @@ void tsuItem::fadeInFinished()
     p_itemShadow->setColor(QColor(0, 0, 0));
     this->setGraphicsEffect(p_itemShadow);
 
-//    p_itemShadowAnimation = new QPropertyAnimation(p_itemShadow, "blurRadius");
-//    p_itemShadowAnimation->setDuration(300);
-//    p_itemShadowAnimation->setStartValue(0);
-//    p_itemShadowAnimation->setEndValue(20);
     p_itemShadowAnimation = new QPropertyAnimation(p_itemShadow, "color");
     p_itemShadowAnimation->setDuration(250);
     p_itemShadowAnimation->setStartValue(QColor(0, 0, 0));
     p_itemShadowAnimation->setEndValue(QColor(255, 162, 0));
 
     p_isFadingIn = false;
+}
+
+void tsuItem::fadeOutFinished()
+{
+    p_isFadingOut = false;
 }
 
 void tsuItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -527,7 +590,7 @@ void tsuItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void tsuItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsItem::hoverEnterEvent(event);
-    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving ) {
+    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving && p_visible ) {
         p_itemShadowAnimation->stop();
         p_itemShadowAnimation->setDirection(QAbstractAnimation::Forward);
         p_itemShadowAnimation->start();
@@ -537,7 +600,7 @@ void tsuItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void tsuItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsItem::hoverLeaveEvent(event);
-    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving ) {
+    if (!p_isFadingOut && !p_isFadingIn && !p_isMoving && p_visible ) {
         p_itemShadowAnimation->stop();
         p_itemShadowAnimation->setDirection(QAbstractAnimation::Backward);
         p_itemShadowAnimation->start();

@@ -53,5 +53,15 @@
         <file>CHANGELOG.md</file>
         <file>images/arrow_down.png</file>
         <file>images/arrow_up.png</file>
+        <file>images/drive.png</file>
+        <file>images/file-doc.png</file>
+        <file>images/folder.png</file>
+        <file>images/close.png</file>
+        <file>images/open.png</file>
+        <file>images/stats_d.png</file>
+        <file>images/stats_c.png</file>
+        <file>images/stats_e.png</file>
+        <file>images/stats_p.png</file>
+        <file>images/stats_u.png</file>
     </qresource>
 </RCC>
