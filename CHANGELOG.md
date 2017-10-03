@@ -15,6 +15,10 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.5.0] 2017-10-03
+### Added
+- Streaming of content directly inside the app using VLC-Qt library
+
 ## [0.4.7] 2017-10-01
 ### Added
 - Drag & Drop torrent to add
@@ -23,7 +27,7 @@ Security - in case of vulnerabilities.
 - Animation on tsuCard reorder
 - Archive window (still not working)
 - Seeds and peers information on tsuCard
-- Donwload splash screen
+- Download splash screen
 - Tree widget for archive page
 
 ### Fixed

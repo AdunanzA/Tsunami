@@ -70,6 +70,7 @@ SOURCES += main.cpp\
     downloadwindow.cpp \
     statisticswindow.cpp \
     itemdetails.cpp \
+    previewplayerwindow.cpp \
     changelog.cpp \
     archivewindow.cpp
 
@@ -80,6 +81,7 @@ HEADERS  += \
     downloadwindow.h \
     statisticswindow.h \
     itemdetails.h \
+    previewplayerwindow.h \
     changelog.h \
     archivewindow.h
 
@@ -90,6 +92,7 @@ FORMS    += \
     downloadwindow.ui \
     statisticswindow.ui \
     itemdetails.ui \
+    previewplayerwindow.ui \
     changelog.ui \
     archivewindow.ui
 
@@ -117,3 +120,16 @@ else:win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -lboost_syst
 unix: LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_64
 
 #DISTFILES +=
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtCore
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtCored
+
+INCLUDEPATH += $$PWD/lib/vlc_qt
+DEPENDPATH += $$PWD/lib/vlc_qt
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtWidgets
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgetsd
+else:unix: LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgets
+
+INCLUDEPATH += $$PWD/lib/vlc_qt
+DEPENDPATH += $$PWD/lib/vlc_qt

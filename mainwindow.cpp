@@ -19,8 +19,9 @@ MainWindow::MainWindow(QWidget *parent) :
     statusLabel = new QLabel(this);
     statisticsPage = new statisticswindow(this);
     downloadPage = new downloadwindow(this);
-    archivePage = new archivewindow(this);
-
+    previewPlayerPage = new PreviewPlayerWindow(this);
+	archivePage = new archivewindow(this);
+	
     initializeScreen();
     readSettings();
     loadLanguage();
@@ -173,13 +174,15 @@ void MainWindow::initializeScreen() {
     searchPage->hide();
     downloadPage->hide();
     statisticsPage->hide();
-    archivePage->hide();
+    previewPlayerPage->hide();
+	archivePage->hide();
 
     ui->content->addWidget(settingsPage);
     ui->content->addWidget(searchPage);
     ui->content->addWidget(statisticsPage);
     ui->content->addWidget(downloadPage);
-    ui->content->addWidget(archivePage);
+    ui->content->addWidget(previewPlayerPage);
+	ui->content->addWidget(archivePage);
 
     p_gauge = new QcGaugeWidget;
 //    p_gauge->addBackground(99);
@@ -406,7 +409,8 @@ void MainWindow::btnMenuClick() {
     searchPage->setHidden(btn != ui->btnSearch->objectName());
     statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
     downloadPage->setHidden(btn != ui->btnDownload->objectName());
-    archivePage->setHidden(btn != ui->btnArchive->objectName());
+    previewPlayerPage->setHidden(btn != ui->btnStreaming->objectName());
+	archivePage->setHidden(btn != ui->btnArchive->objectName());
 
     if (btn == ui->btnChat->objectName()) {
         QString link = "https://discordapp.com/invite/0pfzTOXuEjt9ifvF";

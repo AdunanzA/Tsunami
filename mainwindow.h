@@ -13,6 +13,7 @@
 #include <QFileDialog>
 #include <QTranslator>
 
+#include "previewplayerwindow.h"
 #include "tsumanager.h"
 #include "downloadwindow.h"
 #include "searchwindow.h"
@@ -84,7 +85,9 @@ private:
     searchwindow *searchPage;
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
-    archivewindow *archivePage;
+    PreviewPlayerWindow *previewPlayerPage;
+	archivewindow *archivePage;
+
     QLabel *statusLabel;
 
     QTranslator p_translator;

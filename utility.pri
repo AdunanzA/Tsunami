@@ -15,6 +15,7 @@ HEADERS += \
     $$PWD/tsumanager.h \
     $$PWD/tsuitem.h \
     $$PWD/tsuevents.h \
+    $$PWD/previewplayer.h \
     $$PWD/tsugraphicsscene.h \
     $$PWD/updatemanager.h \
     $$PWD/QcGaugeWidget/qcgaugewidget.h \
@@ -36,6 +37,7 @@ SOURCES += \
     $$PWD/chartxy/chartxysetting.cpp \
     $$PWD/tsumanager.cpp \
     $$PWD/tsuitem.cpp \
+    $$PWD/previewplayer.cpp \
     $$PWD/tsugraphicsscene.cpp \
     $$PWD/updatemanager.cpp \
     $$PWD/QcGaugeWidget/qcgaugewidget.cpp \
