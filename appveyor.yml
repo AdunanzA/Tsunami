@@ -63,6 +63,10 @@ artifacts:
     name: TsuSetup
     
 deploy:
-  provider: Environment
+  - provider: Environment
+    name: GH
+  - provider: Environment
+    name: AdunanzA
+  #provider: Environment
   #name: AdunanzA
-  name: GH
+  #name: GH
