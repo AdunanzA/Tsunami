@@ -1,6 +1,9 @@
 build:
   verbosity: minimal
-  
+
+branches:
+  only:
+    - master  
   
 image: Visual Studio 2015
 
