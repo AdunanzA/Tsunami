@@ -11,6 +11,7 @@ PreviewPlayerWindow::PreviewPlayerWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+
     previewPlayer = new PreviewPlayer(ui->videoAreaWidget);
     ui->videoAreaWidget->setMediaPlayer(previewPlayer->mediaPlayer);
     ui->volumeWidget->setMediaPlayer(previewPlayer->mediaPlayer);

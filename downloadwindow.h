@@ -45,6 +45,8 @@ private:
     qreal p_transformFactor = 1;
     itemDetails *p_itemDetails;
 
+    QMenu *p_contextMenu;
+
     void redrawItemsPosition();
     void changeEvent(QEvent *e);
 

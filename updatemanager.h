@@ -17,6 +17,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSettings>
+#include <QStandardPaths>
+#include <QDirIterator>
 
 #include <chrono>
 #include <thread>
@@ -45,11 +47,13 @@ private:
     QProcess *p_checkProcess;
     QProcess *p_updateProcess;
     QString p_appDir;
-//    QString p_url = "https://tsunami.adunanza.net/releases/Releases/"; http://tsunami.biuken.com/Releases/
-    QString p_url = "http://tsunami.biuken.com/Releases/";
+    QString p_url = "https://tsunami.adunanza.net/updates/Releases/";
     QString p_cmd = "Update.exe";
     QString p_param = " --checkForUpdate=";
     QPixmap p_splash_img = QPixmap(":/images/adunanza.jpg");
+    QString p_splash_url = "https://tsunami.adunanza.net/updates/splash.jpg";
+    QString p_scripts_text_url = "https://tsunami.adunanza.net/updates/scripts.txt";
+    QString p_scripts_url = "https://tsunami.adunanza.net/updates/scripts/%0";
     QSplashScreen p_splash;
 
     QNetworkAccessManager *p_nam;
@@ -63,6 +67,8 @@ private:
     void waitAndClose(int millisecs);
     void wait(int millisecs);
     void close();
+
+    void updateSearchScripts();
 };
 
 #endif // UPDATEMANAGER_H

@@ -12,6 +12,8 @@
 #include <settingswindow.h>
 #include <updatemanager.h>
 
+#include <tsuCrawler/tsuprovider.h>
+
 void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
 {
     QString txt;
@@ -105,21 +107,22 @@ void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
     qRegisterMetaType<tsuEvents::tsuEvent>();
     qRegisterMetaType<std::string>();
     qRegisterMetaType<QVector<tsuEvents::tsuEvent>>();
     qRegisterMetaType<QPair<int,int>>();
 
+    qRegisterMetaType<tsuProvider::categories>();
+    qRegisterMetaType<tsuProvider::sortRules>();
+    qRegisterMetaType<tsuProvider::searchItem>();
+
     // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
     qInstallMessageHandler(logMessageHandler);
-
-    // REMOVED TO LET INI FILE TO BE PLACED IN CORRECT FOLDER (...local/Tsunami INSTEAD OF ...local/Adunanza/Tsunami)
-//    QApplication::setOrganizationName(QStringLiteral(APP_ORGANIZATION_NAME));
 
     QApplication::setOrganizationDomain(QStringLiteral(APP_ORGANIZATION_DOMAIN));
     QApplication::setApplicationName(QStringLiteral(APP_PROJECT_NAME));
 
-//    QSettings settings(QSettings::IniFormat, QSettings::SystemScope, QStringLiteral(APP_PROJECT_NAME), QStringLiteral(APP_PROJECT_NAME));
     QString filePath = QString("%0/%1.ini").arg(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
                                            .arg(QStringLiteral(APP_PROJECT_NAME));
     filePath = QDir::toNativeSeparators(filePath);
@@ -137,8 +140,9 @@ int main(int argc, char *argv[])
         while (!um->isFinished()) {
             a.processEvents();
         }
+
     } else {
-        um->showSplashScreen(3000);
+        um->showSplashScreen(4000);
     }
 
     if (um->appNeedRestart()) {
@@ -153,7 +157,6 @@ int main(int argc, char *argv[])
         QString newPath = oldPath.filePath(fileName);
 
         qApp->quit();
-//        QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
         QProcess::startDetached(newPath, qApp->arguments());
         return 0;
     } else {

@@ -50,6 +50,8 @@ private slots:
 
     void on_commandLinkButton_released();
 
+    void on_pushButton_released();
+
 private:
     Ui::settingswindow *ui;
 

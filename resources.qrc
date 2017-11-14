@@ -63,5 +63,10 @@
         <file>images/stats_e.png</file>
         <file>images/stats_p.png</file>
         <file>images/stats_u.png</file>
+        <file>images/patreon.png</file>
+        <file>images/download.png</file>
+        <file>images/homepage.png</file>
+        <file>images/draw-arrow-down.png</file>
+        <file>images/draw-arrow-up.png</file>
     </qresource>
 </RCC>

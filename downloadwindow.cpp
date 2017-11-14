@@ -35,6 +35,15 @@ downloadwindow::downloadwindow(QWidget *parent) :
     ui->graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
     ui->graphicsView->setInteractive(true);
 
+    p_contextMenu = new QMenu(this);
+    p_contextMenu->addAction("Select all", this, SLOT(selectAll()));
+    p_contextMenu->addAction("Deselect all", this, SLOT(deselectAll()));
+    p_contextMenu->addSeparator();
+    p_contextMenu->addAction("Pause selected", this, SLOT(pauseSelected()));
+    p_contextMenu->addAction("Resume selected", this, SLOT(resumeSelected()));
+    p_contextMenu->addSeparator();
+    p_contextMenu->addAction("Delete selected...", this, SLOT(deleteSelected()));
+
     redrawItemsPosition();
 
     // SHOW CONTEXT MENU
@@ -151,16 +160,7 @@ void downloadwindow::showContextMenu(const QPoint &pos)
 {
 //    qDebug("requested context menu");
     QPoint globalPos = this->mapToGlobal(pos);
-
-    QMenu contextMenu;
-    contextMenu.addAction("Select all", this, SLOT(selectAll()));
-    contextMenu.addAction("Deselect all", this, SLOT(deselectAll()));
-    contextMenu.addSeparator();
-    contextMenu.addAction("Pause selected", this, SLOT(pauseSelected()));
-    contextMenu.addAction("Resume selected", this, SLOT(resumeSelected()));
-    contextMenu.addSeparator();
-    contextMenu.addAction("Delete selected...", this, SLOT(deleteSelected()));
-    contextMenu.exec(globalPos);
+    p_contextMenu->exec(globalPos);
 }
 
 void downloadwindow::selectAll()

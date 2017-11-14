@@ -15,6 +15,26 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.5.2] 2017-11-14
+### Added
+- Search engine from torrent site
+- Add magnet from clipboard
+- Patreon link
+
+### Fixed
+- Optimized context menu creation in downloadwindow
+- Wrong languange on restart
+
+### Changed
+- Window management
+
+## [0.5.1] 2017-11-12
+### Fixed
+- Appveyor cache
+
+### Added
+- Installer icon
+
 ## [0.5.0] 2017-10-03
 ### Added
 - Streaming of content directly inside the app using VLC-Qt library

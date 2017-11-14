@@ -133,13 +133,13 @@ void tsuManager::startManager()
 
     if (!QDir(p_tsunamiSessionFolder).exists()) {
         if (QDir().mkpath(p_tsunamiSessionFolder)) {
-            qDebug() << "created " << p_tsunamiSessionFolder;
+            qDebug() << "created" << p_tsunamiSessionFolder;
         } else {
-            qWarning() << "cannot create " << p_tsunamiSessionFolder;
+            qWarning() << "cannot create" << p_tsunamiSessionFolder;
         }
     } else {
         // resuming
-        qDebug() << "using " << p_tsunamiSessionFolder;
+        qDebug() << "using" << p_tsunamiSessionFolder;
 
         // SESSIONSTATE
         QString sessionFileName = QString("%0/tsunami.session").arg(p_tsunamiSessionFolder);
@@ -318,6 +318,7 @@ void tsuManager::alertsHandler()
                 // FROM .TORRENT
             } else {
                 // FROM MAGNET
+                qDebug() << "added from magnet";  // maybe we want to manage a freeze state until metadata_received_alert arrived
             }
             lt::torrent_status const &ts = ata->handle.status();
             statusEnum se = static_cast<statusEnum>((int)ts.state);
@@ -418,6 +419,33 @@ void tsuManager::alertsHandler()
             break;
         }
 
+        case lt::metadata_received_alert::alert_type:
+        {
+            lt::metadata_received_alert *mra = lt::alert_cast<lt::metadata_received_alert>(alert);
+            lt::torrent_handle th = mra->handle;
+            if (th.is_valid()) {
+                std::shared_ptr<lt::torrent_info const> ti = th.torrent_file();
+                lt::create_torrent ct(*ti);
+                lt::entry te = ct.generate();
+                std::vector<char> buffer;
+                lt::bencode(std::back_inserter(buffer), te);
+
+                std::stringstream hex;
+                hex << ti->info_hash();
+                QString newFilePath = QDir::toNativeSeparators(QString("%0/%1.torrent").arg(p_tsunamiSessionFolder)
+                                                               .arg(QString::fromStdString(hex.str())));
+                FILE* f = fopen(newFilePath.toStdString().c_str(), "wb+");
+                if (f) {
+                    fwrite(&buffer[0], 1, buffer.size(), f);
+                    fclose(f);
+                }
+                qDebug() << "torrent saved from metadata for" << mra->torrent_name();
+            } else {
+                qDebug() << "received invalid metadata for" << mra->torrent_name();
+            }
+            break;
+        }
+
         // SESSION STATS
         case lt::session_stats_alert::alert_type:
         {
@@ -476,14 +504,14 @@ void tsuManager::addItems(const QStringList && items, const QString &path)
 {
     foreach (const QString &str, items)
     {
-        qDebug() << "processing " << str;
+        qDebug() << "processing" << str;
         try
         {
             lt::add_torrent_params atp;
             lt::torrent_info ti(str.toStdString());
 
-            if (!ti.metadata()) qWarning() << "No metadata for " << str;
-            if (!ti.is_valid()) qWarning() << "torrent " << str << " is invalid";
+            if (!ti.metadata()) qWarning() << "No metadata for" << str;
+            if (!ti.is_valid()) qWarning() << "torrent" << str << "is invalid";
             atp.ti = std::make_shared<lt::torrent_info>(ti);
             atp.save_path = path.toStdString();
 
@@ -504,6 +532,33 @@ void tsuManager::addItems(const QStringList && items, const QString &path)
         catch (std::exception &exc)
         {
             qCritical() << QString("addItems throws %0").arg(exc.what());
+        }
+    }
+}
+
+void tsuManager::addFromMagnet(const QStringList &&items, const QString &path)
+{
+    foreach (const QString &str, items)
+    {
+        qDebug() << "processing magnet" << str;
+        try
+        {
+            lt::error_code ec;
+            lt::add_torrent_params atp;
+            atp.flags &= ~lt::add_torrent_params::flag_paused; // Start in pause
+            atp.flags &= ~lt::add_torrent_params::flag_auto_managed; // Because it is added in paused state
+            atp.save_path = path.toStdString();
+
+            lt::parse_magnet_uri(str.toStdString(), atp, ec);
+
+            // MANAGE ERROR ON ec
+            p_session->async_add_torrent(atp);
+
+            qInfo() << QString("torrent %0 added").arg(str);
+        }
+        catch (std::exception &exc)
+        {
+            qCritical() << QString("addFromMagnet throws %0").arg(exc.what());
         }
     }
 }
