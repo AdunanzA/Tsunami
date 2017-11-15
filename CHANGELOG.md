@@ -15,6 +15,10 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.5.3] 2017-11-15
+### Fixed
+- Missing reference
+
 ## [0.5.2] 2017-11-14
 ### Added
 - Search engine from torrent site
