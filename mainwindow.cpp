@@ -673,3 +673,9 @@ void MainWindow::downloadFromSearchPage(const QString magnet)
     updateStatusBarLabel("file added from search page");
 }
 
+
+void MainWindow::on_btnPatreon_released()
+{
+    QString link = "https://www.patreon.com/bePatron?u=3133703";
+    QDesktopServices::openUrl(QUrl(link));
+}

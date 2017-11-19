@@ -63,6 +63,7 @@ DEFINES += WIN32_LEAN_AND_MEAN
 include(version.pri)
 include(utility.pri)
 include(tsuCrawler.pri)
+include(runGuard.pri)
 
 SOURCES += main.cpp\
     mainwindow.cpp \

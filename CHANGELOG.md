@@ -15,6 +15,17 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.5.4] 2017-11-19
+### Added
+- Single instance check
+- Filename on tsuCard name tooltip
+
+### Fixed
+- Scripts download after update
+
+### Changed
+- Patreon button from config page to main page
+
 ## [0.5.3] 2017-11-15
 ### Fixed
 - Missing reference

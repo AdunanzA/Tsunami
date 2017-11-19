@@ -219,9 +219,3 @@ void settingswindow::on_commandLinkButton_released()
     changelog *cl = new changelog();
     cl->exec();
 }
-
-void settingswindow::on_pushButton_released()
-{
-    QString link = "https://www.patreon.com/bePatron?u=3133703";
-    QDesktopServices::openUrl(QUrl(link));
-}

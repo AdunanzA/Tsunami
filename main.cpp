@@ -13,6 +13,7 @@
 #include <updatemanager.h>
 
 #include <tsuCrawler/tsuprovider.h>
+#include <runGuard/runguard.h>
 
 void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
 {
@@ -108,6 +109,15 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    // exit if already running
+    runGuard guard("singleTsunamiInstance");
+    if ( !guard.tryToRun() ) {
+        QMessageBox msgBox;
+        msgBox.setText("Tsunami is already running");
+        msgBox.exec();
+        return 0;
+    }
+
     qRegisterMetaType<tsuEvents::tsuEvent>();
     qRegisterMetaType<std::string>();
     qRegisterMetaType<QVector<tsuEvents::tsuEvent>>();
@@ -128,24 +138,25 @@ int main(int argc, char *argv[])
     filePath = QDir::toNativeSeparators(filePath);
     a.setProperty("iniFilePath", filePath); // QApplication property are application wide qApp->property("")
 
-    QSettings settings(filePath, QSettings::IniFormat);
-    bool justUpdated = settings.value("justUpdated", false).toBool();
+//    QSettings settings(filePath, QSettings::IniFormat);
+//    bool justUpdated = settings.value("justUpdated", false).toBool();
 
     updatemanager *um = new updatemanager();
 
-    if (!justUpdated) {
-        qDebug("checking for update");
-        um->checkUpdate();
+//    if (!justUpdated) {
+    qDebug("checking for update");
+    um->checkUpdate();
 
-        while (!um->isFinished()) {
-            a.processEvents();
-        }
-
-    } else {
-        um->showSplashScreen(4000);
+    while (!um->isFinished()) {
+        a.processEvents();
     }
 
+//    } else {
+//        um->showSplashScreen(4000);
+//    }
+
     if (um->appNeedRestart()) {
+        QSettings settings(filePath, QSettings::IniFormat);
         settings.setValue("justUpdated", true);
         qDebug("restarting");
 

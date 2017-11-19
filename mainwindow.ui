@@ -2072,6 +2072,59 @@ QPushButton#btnStatError:checked {
            </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnPatreon">
+            <property name="minimumSize">
+             <size>
+              <width>175</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Franklin Gothic Medium</family>
+              <pointsize>9</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+              <kerning>false</kerning>
+             </font>
+            </property>
+            <property name="statusTip">
+             <string>You'll feel better!</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(249, 104, 84);
+border: none;
+background-image: url(:/images/patreon.png) left center;
+background-repeat: no-repeat;
+text-align: right;
+padding-right: 20px;
+color: white;</string>
+            </property>
+            <property name="text">
+             <string>BECOME A PATREON</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

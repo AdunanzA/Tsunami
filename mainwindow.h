@@ -83,6 +83,8 @@ private slots:
 
     void downloadFromSearchPage(const QString magnet);
 
+    void on_btnPatreon_released();
+
 private:
     Ui::MainWindow *ui;
     settingswindow *settingsPage;
@@ -121,10 +123,6 @@ private:
 protected:
     void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *e) override;
-
-
-    // QWidget interface
-protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 
