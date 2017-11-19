@@ -11,6 +11,8 @@ platform: x64
 
 configuration: Release
 
+test: off
+
 environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
