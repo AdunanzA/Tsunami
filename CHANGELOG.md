@@ -15,6 +15,14 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.5.5] 2017-11-23
+### Added
+- Added Installer Icon
+
+### Fixed
+- Fixed Program Icon
+
+
 ## [0.5.4] 2017-11-19
 ### Added
 - Single instance check
