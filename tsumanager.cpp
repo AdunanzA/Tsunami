@@ -514,7 +514,8 @@ void tsuManager::getCancelRequest(const std::string &hash, const bool deleteFile
     try {
         lt::sha1_hash sh(hash);
         lt::torrent_handle th = p_session->find_torrent(sh);
-        p_session->remove_torrent((const)th, deleteFilesToo);
+        const lt::torrent_handle &addTh = th;
+        p_session->remove_torrent(addTh, (lt::remove_flags_t)deleteFilesToo);
         emit torrentDeleted(hash);
     } catch (std::exception &exc) {
         qCritical() << QString("getCancelRequest throws %0").arg(exc.what());
