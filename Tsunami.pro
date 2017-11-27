@@ -22,9 +22,8 @@ DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-DEFINES += TORRENT_NO_DEPRECATE
+#DEFINES += TORRENT_NO_DEPRECATE
 DEFINES += _WIN32_WINNT=0x0600
-DEFINES += WIN64
 DEFINES += BOOST_ALL_DYN_LINK
 DEFINES += UNICODE
 
@@ -101,7 +100,7 @@ MOC_DIR = tmp
 
 # icon for exe file (for win)
 # here for other os: http://doc.qt.io/qt-4.8/appicon.html
-RC_FILE = ico.qrc
+# RC_FILE = ico.qrc // this line was commented for testing purposes - GOBNE
 
 QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 5
 RESOURCES += \
@@ -129,7 +128,7 @@ DEPENDPATH += $$PWD/lib/vlc_qt
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtWidgets
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgetsd
-else:unix: LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgets
+else:unix: LIBS += lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system
 
 INCLUDEPATH += $$PWD/lib/vlc_qt
 DEPENDPATH += $$PWD/lib/vlc_qt
