@@ -457,7 +457,7 @@ void tsuManager::alertsHandler()
             emit updateFromSessionManager(eventsArray);
         }
     }
-    p_session->post_torrent_updates(lt::alert::status_notification | lt::alert::progress_notification);
+    p_session->post_torrent_updates((lt::status_flags_t)lt::alert::status_notification | (lt::status_flags_t)lt::alert::progress_notification);
 }
 
 void tsuManager::postUpdates()
