@@ -269,7 +269,8 @@ void tsuManager::stopManager()
                 lt::save_resume_data_alert const* rd = lt::alert_cast<lt::save_resume_data_alert>(a);
                 lt::torrent_handle h = rd->handle;
                 lt::torrent_status st = h.status(lt::torrent_handle::query_save_path | lt::torrent_handle::query_name);
-                lt::entry &en = lt::write_resume_data(rd->params);
+                lt::entry lte = lt::write_resume_data(rd->params);
+                lt::entry &en = lte;
                 en.dict().insert({ "zu-fileName", st.name });
                 std::stringstream hex;
                 hex << st.info_hash;
