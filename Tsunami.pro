@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Tsunami
 TEMPLATE = app
+CONFIG += c++11
 
 # Used by QSettings
 DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
@@ -109,14 +110,12 @@ RESOURCES += \
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -llibtorrent
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -llibtorrent
-else:unix: LIBS += -L$$PWD/lib/ -llibtorrent
 
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
 
 win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_64
 else:win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -lboost_system-vc140-mt-1_64
-unix: LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_64
 
 #DISTFILES +=
 
@@ -128,7 +127,7 @@ DEPENDPATH += $$PWD/lib/vlc_qt
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtWidgets
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgetsd
-else:unix: LIBS += lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system
+else:unix: LIBS += -lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system -Wdeprecated-declarations
 
 INCLUDEPATH += $$PWD/lib/vlc_qt
 DEPENDPATH += $$PWD/lib/vlc_qt
