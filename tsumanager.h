@@ -7,13 +7,13 @@
 #include <QTimer>
 #include <QStandardPaths>
 
-#include "libtorrent/session.hpp"
-#include "libtorrent/torrent_info.hpp"
-#include "libtorrent/torrent_handle.hpp"
-#include "libtorrent/alert_types.hpp"
-#include "libtorrent/bencode.hpp"
-#include "libtorrent/write_resume_data.hpp"
-#include "libtorrent/read_resume_data.hpp"
+#include <libtorrent/session.hpp>
+#include <libtorrent/torrent_info.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/alert_types.hpp>
+#include <libtorrent/bencode.hpp>
+#include <libtorrent/write_resume_data.hpp>
+#include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/create_torrent.hpp>
 
 #include <libtorrent/session_stats.hpp>
