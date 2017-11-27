@@ -107,7 +107,7 @@ void itemDetails::update()
         QTableWidgetItem *item1 = new QTableWidgetItem(QString(files.file_path(fi).c_str()));
         QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(th.data()->file_priority(fi)));
         QTableWidgetItem *item3 = new QTableWidgetItem(QString("%0%").arg(QString::number(prg)));
-        QTableWidgetItem *item4 = new QTableWidgetItem(QLocale().toString(files.file_size(fi)));
+        QTableWidgetItem *item4 = new QTableWidgetItem(QLocale().toString((qint64)files.file_size(fi)));
         ui->tableFiles->setItem(i, 0, item1);
         ui->tableFiles->setItem(i, 1, item2);
         ui->tableFiles->setItem(i, 2, item3);
