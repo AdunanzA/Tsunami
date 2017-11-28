@@ -640,8 +640,9 @@ void tsuItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
             }
         }
         if ( (x >= 8 && x <= 120) && (y >= 6 && y <= 17) ) {
-             setToolTip("Click for torrent details");
-             setCursor(Qt::PointingHandCursor);
+             //setToolTip("Click for torrent details");
+            setToolTip(QString("%0\n%1").arg(p_head).arg("Click for torrent details"));
+            setCursor(Qt::PointingHandCursor);
         }
     }
 }

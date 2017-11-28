@@ -63,7 +63,6 @@ public slots:
                                 const quint64 &error, const quint64 &queuedDown,
                                 const quint64 &queuedSeed);
 
-    void fileDropped(QString fileName);
 
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
@@ -79,6 +78,13 @@ private slots:
     void on_btnStatPause_toggled(bool checked);
     void on_btnStatError_toggled(bool checked);
 
+    void fileDropped(QString fileName);
+    void clipboardChanged();
+
+    void downloadFromSearchPage(const QString magnet);
+
+    void on_btnPatreon_released();
+
 private:
     Ui::MainWindow *ui;
     settingswindow *settingsPage;
@@ -86,7 +92,7 @@ private:
     downloadwindow *downloadPage;
     statisticswindow *statisticsPage;
     PreviewPlayerWindow *previewPlayerPage;
-	archivewindow *archivePage;
+    archivewindow *archivePage;
 
     QLabel *statusLabel;
 
@@ -117,10 +123,6 @@ private:
 protected:
     void closeEvent(QCloseEvent *event) override;
     void changeEvent(QEvent *e) override;
-
-
-    // QWidget interface
-protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
 

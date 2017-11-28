@@ -49,20 +49,20 @@ void settingswindow::loadSettings()
     bool msgOnChat = settings.value("Messages/onChat").toBool();
 
     ui->txtDownloadPath->setText(downloadPath);
-    qDebug() << "download path " << downloadPath;
+    qDebug() << "download path" << downloadPath;
 
     ui->cmbDebugLevel->setCurrentIndex(debugLevel);
-    qDebug() << "debug level " << ui->cmbDebugLevel->currentText();
+    qDebug() << "debug level" << ui->cmbDebugLevel->currentText();
 
     ui->cmbLanguage->setCurrentIndex(currentLanguage);
-    qDebug() << "current language " << ui->cmbLanguage->currentText();
+    qDebug() << "current language" << ui->cmbLanguage->currentText();
 
     ui->numLimitDown->setValue(downLimit);
     ui->numLimitUp->setValue(upLimit);
-    qDebug() << QString("limits: download %0 KB/s, upload %1 KB/s ").arg(downLimit).arg(upLimit);
+    qDebug() << QString("limits: download %0 KB/s, upload %1 KB/s").arg(downLimit).arg(upLimit);
 
     ui->numPort->setValue(port);
-    qDebug() << "listening on port " << port;
+    qDebug() << "listening on port" << port;
 
     ui->chkMsgDownFinish->setChecked(msgOnFinish);
     ui->chkMsgNewChat->setChecked(msgOnChat);
@@ -76,15 +76,15 @@ void settingswindow::loadSettings()
 void settingswindow::saveSettings()
 {
     settings.setValue("Language", ui->cmbLanguage->currentIndex());
-    qDebug() << "current language " << ui->cmbLanguage->currentText();
+    qDebug() << "current language" << ui->cmbLanguage->currentText();
 
     settings.beginGroup("Download");
     settings.setValue("downloadPath", ui->txtDownloadPath->text());
-    qDebug() << "download path " << ui->txtDownloadPath->text();
+    qDebug() << "download path" << ui->txtDownloadPath->text();
     settings.endGroup();
 
     settings.setValue("Debug/Level", ui->cmbDebugLevel->currentIndex());
-    qDebug() << "debug level " << ui->cmbDebugLevel->currentText();
+    qDebug() << "debug level" << ui->cmbDebugLevel->currentText();
 
     settings.beginGroup("libtorrent");
     settings.setValue("download_rate_limit", ui->numLimitDown->value());
@@ -151,8 +151,18 @@ void settingswindow::on_btnSave_released()
                 break;
         }
         if (proceedWithRestart) {
+            qDebug("restarting");
+
+            // due to squirrel standard behaviour, qApp->arguments()[0] returs path to a tsunami version older than one just downloaded
+            // retrieve path of tsunami.exe loader outside current path and launch
+            QString fileName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
+            QDir oldPath(QCoreApplication::applicationDirPath());
+            oldPath.cdUp();
+            QString newPath = oldPath.filePath(fileName);
+
             qApp->quit();
-            QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+//            QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+            QProcess::startDetached(newPath, qApp->arguments());
         } else {
             if (needRefreshTorrentSettings) {
                 qDebug("send refresh to libtorrent");

@@ -16,12 +16,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     settingsPage = new settingswindow(this);
     searchPage = new searchwindow(this);
-    statusLabel = new QLabel(this);
     statisticsPage = new statisticswindow(this);
     downloadPage = new downloadwindow(this);
     previewPlayerPage = new PreviewPlayerWindow(this);
 	archivePage = new archivewindow(this);
 	
+    statusLabel = new QLabel(this);
+
     initializeScreen();
     readSettings();
     loadLanguage();
@@ -77,8 +78,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(settingsPage, SIGNAL(sendRefreshSettings()), sessionManager, SLOT(refreshSettings()));
 
 
+    // request download from searchpage
+    connect(searchPage, &searchwindow::downloadFromMagnet, this, &MainWindow::downloadFromSearchPage);
+
+
     // Constructions events
     connect(p_session_thread, SIGNAL(started()), sessionManager, SLOT(startManager()));
+
+    // Bind clipboard change to get magnet
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::clipboardChanged);
 
 
     // Destructions events
@@ -94,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lblUdp->setStyleSheet(imgUrl);
 
     p_session_thread->start();
+
+    ui->btnDownload->released(); // switch to downloadpage
 
     qDebug("created");
 }
@@ -170,19 +180,26 @@ void MainWindow::initializeScreen() {
     ui->btnStreaming_on->hide();
     ui->btnStatistics_on->hide();
 
-    settingsPage->hide();
-    searchPage->hide();
-    downloadPage->hide();
-    statisticsPage->hide();
-    previewPlayerPage->hide();
-	archivePage->hide();
+    ui->stackedWidget->addWidget(settingsPage);
+    ui->stackedWidget->addWidget(searchPage);
+    ui->stackedWidget->addWidget(statisticsPage);
+    ui->stackedWidget->addWidget(downloadPage);
+    ui->stackedWidget->addWidget(previewPlayerPage);
+    ui->stackedWidget->addWidget(archivePage);
 
-    ui->content->addWidget(settingsPage);
-    ui->content->addWidget(searchPage);
-    ui->content->addWidget(statisticsPage);
-    ui->content->addWidget(downloadPage);
-    ui->content->addWidget(previewPlayerPage);
-	ui->content->addWidget(archivePage);
+//    settingsPage->hide();
+//    searchPage->hide();
+//    downloadPage->hide();
+//    statisticsPage->hide();
+//    previewPlayerPage->hide();
+//	archivePage->hide();
+
+//    ui->content->addWidget(settingsPage);
+//    ui->content->addWidget(searchPage);
+//    ui->content->addWidget(statisticsPage);
+//    ui->content->addWidget(downloadPage);
+//    ui->content->addWidget(previewPlayerPage);
+//	ui->content->addWidget(archivePage);
 
     p_gauge = new QcGaugeWidget;
 //    p_gauge->addBackground(99);
@@ -405,12 +422,33 @@ void MainWindow::btnMenuClick() {
     ui->btnStreaming_on->setHidden(btn != ui->btnStreaming->objectName());
     ui->btnStatistics_on->setHidden(btn != ui->btnStatistics->objectName());
 
-    settingsPage->setHidden(btn != ui->btnSettings->objectName());
-    searchPage->setHidden(btn != ui->btnSearch->objectName());
-    statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
-    downloadPage->setHidden(btn != ui->btnDownload->objectName());
-    previewPlayerPage->setHidden(btn != ui->btnStreaming->objectName());
-	archivePage->setHidden(btn != ui->btnArchive->objectName());
+    if (btn == ui->btnSettings->objectName())
+        ui->stackedWidget->setCurrentWidget(settingsPage);
+
+//    if (btn == ui->btnUser->objectName())
+//        ui->stackedWidget->setCurrentWidget(userPage);
+
+    if (btn == ui->btnSearch->objectName())
+        ui->stackedWidget->setCurrentWidget(searchPage);
+
+    if (btn == ui->btnDownload->objectName())
+        ui->stackedWidget->setCurrentWidget(downloadPage);
+
+    if (btn == ui->btnArchive->objectName())
+        ui->stackedWidget->setCurrentWidget(archivePage);
+
+    if (btn == ui->btnStreaming->objectName())
+        ui->stackedWidget->setCurrentWidget(previewPlayerPage);
+
+    if (btn == ui->btnStatistics->objectName())
+        ui->stackedWidget->setCurrentWidget(statisticsPage);
+
+//    settingsPage->setHidden(btn != ui->btnSettings->objectName());
+//    searchPage->setHidden(btn != ui->btnSearch->objectName());
+//    statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
+//    downloadPage->setHidden(btn != ui->btnDownload->objectName());
+//    previewPlayerPage->setHidden(btn != ui->btnStreaming->objectName());
+//	archivePage->setHidden(btn != ui->btnArchive->objectName());
 
     if (btn == ui->btnChat->objectName()) {
         QString link = "https://discordapp.com/invite/0pfzTOXuEjt9ifvF";
@@ -606,11 +644,38 @@ void MainWindow::dropEvent(QDropEvent *event)
 
 void MainWindow::fileDropped(QString fileName)
 {
-
     QStringList fileNames = fileName.replace("file:///", "").split("\n");
-//    fileNames.append(QDir::toNativeSeparators(fileName.replace("file:///", "")));
     sessionManager->addItems(std::move(fileNames), settingsPage->getDownloadPath());
     ui->btnDownload->released(); // switch to downloadpage
     updateStatusBarLabel(QString("file %0 added to download").arg(fileName.replace("file:///", "")));
 }
 
+void MainWindow::clipboardChanged()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    QString clipboardText = clipboard->text();
+    QString metaPrefix = "magnet:?xt=urn:btih:";
+    if (clipboardText.mid(0, metaPrefix.length()) == metaPrefix) {
+        qDebug() << "magnet paste detected";
+        QStringList fileNames = clipboardText.split("\n");
+        sessionManager->addFromMagnet(std::move(fileNames), settingsPage->getDownloadPath());
+        ui->btnDownload->released(); // switch to downloadpage
+        updateStatusBarLabel("file added from magnet");
+    }
+}
+
+void MainWindow::downloadFromSearchPage(const QString magnet)
+{
+    QStringList fileNames;
+    fileNames << magnet;
+    sessionManager->addFromMagnet(std::move(fileNames), settingsPage->getDownloadPath());
+    ui->btnDownload->released(); // switch to downloadpage
+    updateStatusBarLabel("file added from search page");
+}
+
+
+void MainWindow::on_btnPatreon_released()
+{
+    QString link = "https://www.patreon.com/bePatron?u=3133703";
+    QDesktopServices::openUrl(QUrl(link));
+}

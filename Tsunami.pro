@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql network
+QT       += core gui sql network script
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -62,6 +62,8 @@ DEFINES += WIN32_LEAN_AND_MEAN
 # EXTRA DEFINITIONS
 include(version.pri)
 include(utility.pri)
+include(tsuCrawler.pri)
+include(runGuard.pri)
 
 SOURCES += main.cpp\
     mainwindow.cpp \

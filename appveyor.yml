@@ -11,6 +11,8 @@ platform: x64
 
 configuration: Release
 
+test: off
+
 environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
@@ -50,7 +52,7 @@ build_script:
   - appveyor DownloadFile "%SQUIRREL_URL%" -FileName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   - ps: nuget pack c:\tsunami\Tsunami.nuspec -Version "$V_MAJ.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
-  - ps: .\Squirrel.com -r c:\tsunami\Releases --no-msi --releasify c:\tsunami\release\Tsunami."$V_MAJ.$V_MIN.$V_BUG".nupkg 
+  - ps: .\Squirrel.com -r c:\tsunami\Releases --icon=c:\tsunami\images\logo_tsunami_big.ico --setupIcon=c:\tsunami\images\installer_icon.ico --no-msi --releasify c:\tsunami\release\Tsunami."$V_MAJ.$V_MIN.$V_BUG".nupkg 
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
 cache: Releases

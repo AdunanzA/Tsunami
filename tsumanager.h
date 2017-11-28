@@ -15,8 +15,8 @@
 #include <libtorrent/write_resume_data.hpp>
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/create_torrent.hpp>
-
 #include <libtorrent/session_stats.hpp>
+#include <libtorrent/magnet_uri.hpp>
 
 #include "tsuitem.h"
 #include "tsuevents.h"
@@ -33,6 +33,7 @@ public:
     static int outstanding_resume_data;
 
     void addItems(const QStringList &&items, const QString &path);
+    void addFromMagnet(const QStringList &&items, const QString &path);
 
     QSharedPointer<lt::session> p_session;
 

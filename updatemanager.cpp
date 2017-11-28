@@ -36,7 +36,8 @@ updatemanager::updatemanager(QObject *parent) : QObject(parent)
 
     // download new splashscreen
     QSettings settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
-    QString downloadUrl = settings.value("Download/splashUrl", "http://tsunami.biuken.com/splash.jpg").toString();
+    QString downloadUrl = settings.value("Download/splashUrl", p_splash_url).toString();
+
     if (!downloadUrl.isEmpty()) {
         QUrl url(downloadUrl);
         QNetworkRequest request(url);
@@ -58,6 +59,7 @@ updatemanager::updatemanager(QObject *parent) : QObject(parent)
         } else {
             qDebug() << QString("cannot download new splash, error %0").arg(reply->errorString());
         }
+        reply->deleteLater();
     }
 
     QString version = VERSION;
@@ -103,6 +105,8 @@ void updatemanager::checkUpdate()
     qInfo("checking for update");
     p_finished = false;
     p_splash.show();
+
+    updateSearchScripts();
 
     if ( !QFile::exists(p_appDir + p_cmd) ) {
         updateSplashMessage("Cannot check for new version");
@@ -194,7 +198,6 @@ void updatemanager::processNewUpdate()
     QString stringCmd = QString("%0%1%2%3").arg(p_appDir).arg(p_cmd).arg(p_param).arg(p_url);
     qDebug() << "Executing " << stringCmd;
     p_updateProcess->start(stringCmd);
-
 }
 
 bool updatemanager::isFinished()
@@ -266,4 +269,166 @@ void updatemanager::close()
     p_splash.close();
     p_finished = true;
     this->deleteLater();
+}
+
+void updatemanager::updateSearchScripts()
+{
+    updateSplashMessage("updating search scripts");
+
+    // setting default tsunami script folder
+    QString localTsunami = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // win -> C:\Users\user\AppData\Local\Tsunami
+    localTsunami = QString("%0/%1").arg(localTsunami).arg("script");
+    localTsunami = QDir::toNativeSeparators(localTsunami);
+
+    if (!QDir(localTsunami).exists()) {
+        if (QDir().mkpath(localTsunami)) {
+            qDebug() << "created" << localTsunami;
+            // download scripts
+            QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+            QUrl url(p_scripts_text_url);
+            QNetworkRequest request(url);
+            QNetworkReply *reply = nam->get(request);
+
+            QEventLoop loop;
+            connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+            loop.exec();
+
+            if (reply->error() == QNetworkReply::NoError) {
+                QByteArray scriptData = reply->readAll();
+                QString scriptsTxt(scriptData);
+                if (scriptsTxt.isNull()) qDebug("scriptsTxt is null");
+                QStringList scriptsList = scriptsTxt.split("\r\n", QString::SkipEmptyParts);
+
+                for (QString script : scriptsList) {
+                    QStringList scriptProperties = script.split("\t", QString::SkipEmptyParts);
+
+                    if (scriptProperties.length() == 2) {
+                        //qDebug() << scriptProperties[0] << "=" << scriptProperties[1];
+                        // we don't need version now, just download everything
+                        QString scriptUrl = QString(p_scripts_url).arg(scriptProperties[0]);
+                        QNetworkRequest requestScript(scriptUrl);
+                        QNetworkReply *replyScript = nam->get(requestScript);
+                        QEventLoop loopScript;
+                        connect(replyScript, SIGNAL(finished()), &loopScript, SLOT(quit()));
+                        loopScript.exec();
+                        if (replyScript->error() == QNetworkReply::NoError) {
+                            QByteArray scriptArray = replyScript->readAll();
+                            QFile file(QString("%0/%1").arg(localTsunami).arg(scriptProperties[0]));
+                            file.open(QIODevice::WriteOnly);
+                            file.write(scriptArray);
+                            file.close();
+                            qDebug() << "script" << scriptProperties[0] << "downloaded and saved";
+                        } else {
+                            qDebug() << "cannot download" << scriptProperties[0] << "script: " << replyScript->errorString();
+                        }
+                        replyScript->deleteLater();
+                    } else {
+                        qDebug() << "script.txt downloaded but cannot parse results";
+                    }
+                }
+            } else {
+                qDebug() << QString("cannot download scriptsTxt, error %0").arg(reply->errorString());
+            }
+            nam->deleteLater();
+            reply->deleteLater();
+        } else {
+            qWarning() << "cannot create" << localTsunami;
+        }
+    } else {
+        qDebug() << "using" << localTsunami;
+
+        // loading existing script files and storing version
+        QHash<QString, int> fileList;
+        QDirIterator it(localTsunami, QStringList() << "*.js", QDir::Files);
+        while (it.hasNext()) {
+            QString fileName = it.next();
+            QFile file(fileName);
+            file.open(QIODevice::ReadOnly);
+            QByteArray buf = file.readAll();
+            QString fileContent(buf);
+            fileContent.replace("\"", "'");
+            QString textToSearch = "version':'";
+            if (fileContent.indexOf(textToSearch) > -1) {
+                int startPoint = fileContent.indexOf(textToSearch) + textToSearch.length();
+                int endPoint = fileContent.indexOf("'", startPoint);
+                int actualVersion = fileContent.mid(startPoint, (endPoint-startPoint)).toInt();
+                QFileInfo fInfo(file);
+                qDebug() << fInfo.fileName() << "=" << fileContent.mid(startPoint, (endPoint-startPoint));
+                fileList[fInfo.fileName()] = actualVersion;
+            }
+        }
+
+        // download scripts and check for version
+        QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+        QUrl url(p_scripts_text_url);
+        QNetworkRequest request(url);
+        QNetworkReply *reply = nam->get(request);
+
+        QEventLoop loop;
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray scriptData = reply->readAll();
+            QString scriptsTxt(scriptData);
+            if (scriptsTxt.isNull()) qDebug("scriptsTxt is null");
+            QStringList scriptsList = scriptsTxt.split("\r\n", QString::SkipEmptyParts);
+
+            for (QString script : scriptsList) {
+                qDebug() << "script:" << script;
+                QStringList scriptProperties = script.split("\t", QString::SkipEmptyParts);
+
+                if (scriptProperties.length() == 2) {
+                    qDebug() << QString(scriptProperties[0]) << QString("=") << QString(scriptProperties[1]);
+                    int siteScriptVersion = QString(scriptProperties[1]).toInt();
+                    // we need to check version now
+                    for (QString fileScriptName : fileList.keys()) {
+                        if (fileScriptName == scriptProperties[0] && fileList[fileScriptName] < siteScriptVersion) {
+                            qDebug() << "new version available for script" << scriptProperties[0] << ", downloading";
+                            QString scriptUrl = QString(p_scripts_url).arg(scriptProperties[0]);
+                            QNetworkRequest requestScript(scriptUrl);
+                            QNetworkReply *replyScript = nam->get(requestScript);
+                            QEventLoop loopScript;
+                            connect(replyScript, SIGNAL(finished()), &loopScript, SLOT(quit()));
+                            loopScript.exec();
+                            if (replyScript->error() == QNetworkReply::NoError) {
+                                QByteArray scriptArray = replyScript->readAll();
+                                QFile file(QString("%0/%1").arg(localTsunami).arg(scriptProperties[0]));
+                                file.open(QIODevice::WriteOnly);
+                                file.write(scriptArray);
+                                file.close();
+                                qDebug() << "updated script" << scriptProperties[0] << "downloaded and saved";
+                            } else {
+                                qDebug() << "cannot download" << scriptProperties[0] << "script: " << replyScript->errorString();
+                            }
+                            replyScript->deleteLater();
+                            break;
+                        }
+                    }
+                } else {
+                    qDebug() << "script.txt downloaded but cannot parse results";
+                }
+            }
+        } else {
+            qDebug() << QString("cannot download scriptsTxt, error %0").arg(reply->errorString());
+        }
+        nam->deleteLater();
+        reply->deleteLater();
+    }
+
+    // setting default tsunami cache folder
+    localTsunami = QString("%0/%1").arg(localTsunami).arg("cache");
+    localTsunami = QDir::toNativeSeparators(localTsunami);
+
+    if (!QDir(localTsunami).exists()) {
+        if (QDir().mkpath(localTsunami)) {
+            qDebug() << "created" << localTsunami;
+        } else {
+            qWarning() << "cannot create" << localTsunami;
+        }
+    } else {
+        qDebug() << "using" << localTsunami;
+    }
+
+
 }
