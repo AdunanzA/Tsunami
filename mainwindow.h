@@ -21,10 +21,10 @@
 #include "statisticswindow.h"
 #include "archivewindow.h"
 
-#include "libtorrent/add_torrent_params.hpp"
-#include "libtorrent/torrent_handle.hpp"
-#include "libtorrent/bencode.hpp"
-#include "libtorrent/torrent_info.hpp"
+#include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/bencode.hpp>
+#include <libtorrent/torrent_info.hpp>
 
 #include <changelog.h>
 #include <QcGaugeWidget/qcgaugewidget.h>
