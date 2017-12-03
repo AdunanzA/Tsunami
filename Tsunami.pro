@@ -10,7 +10,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Tsunami
 TEMPLATE = app
-CONFIG += c++11
 
 # Used by QSettings
 DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
@@ -31,24 +30,6 @@ DEFINES += UNICODE
 # Enable Context details in log even in release build
 # https://forum.qt.io/topic/67015/enable-qmessagelogcontext-in-release-build/2
 DEFINES += QT_MESSAGELOGCONTEXT
-
-#DEFINES += _WINDOWS
-#DEFINES += _DEBUG
-#DEFINES += TORRENT_EXPORT_EXTRA
-#DEFINES += TORRENT_BUILDING_LIBRARY
-#DEFINES += TORRENT_USE_OPENSSL
-#DEFINES += TORRENT_BUILDING_SHARED
-#DEFINES += _WIN32_WINNT=0x0600
-#DEFINES += BOOST_ALL_NO_LIB
-#DEFINES += UNICODE
-#DEFINES += _UNICODE
-#DEFINES += _SCL_SECURE_NO_DEPRECATE
-#DEFINES += _CRT_SECURE_NO_DEPRECATE
-#DEFINES += _FILE_OFFSET_BITS=64
-#DEFINES += BOOST_EXCEPTION_DISABLE
-#DEFINES += BOOST_ASIO_ENABLE_CANCELIO
-#DEFINES += CMAKE_INTDIR="Debug"
-#DEFINES += torrent_rasterbar_EXPORTS
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -118,8 +99,6 @@ DEPENDPATH += $$PWD/.
 
 win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_64
 else:win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -lboost_system-vc140-mt-1_64
-
-#DISTFILES +=
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtCore
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtCored
