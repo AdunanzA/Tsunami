@@ -68,5 +68,19 @@
         <file>images/homepage.png</file>
         <file>images/draw-arrow-down.png</file>
         <file>images/draw-arrow-up.png</file>
+        <file>images/tsuplayer/Back.png</file>
+        <file>images/tsuplayer/ChromeCast.png</file>
+        <file>images/tsuplayer/Forward.png</file>
+        <file>images/tsuplayer/Full_Screen.png</file>
+        <file>images/tsuplayer/Impostazioni.png</file>
+        <file>images/tsuplayer/in_window.png</file>
+        <file>images/tsuplayer/Pause.png</file>
+        <file>images/tsuplayer/Play.png</file>
+        <file>images/tsuplayer/Sel_Audio_Lingua.png</file>
+        <file>images/tsuplayer/Stop.png</file>
+        <file>images/tsuplayer/TsuPlayer_Logo.png</file>
+        <file>images/tsuplayer/Vol_DW.png</file>
+        <file>images/tsuplayer/Vol_UP.png</file>
+        <file>images/tsuplayer/OpenFile.png</file>
     </qresource>
 </RCC>
