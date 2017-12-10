@@ -138,6 +138,7 @@ bool PreviewPlayerWindow::eventFilter(QObject *obj, QEvent *event)
                 }
             }
         break;
+
         case QEvent::MouseButtonDblClick:
             if(ui->videoAreaWidget->underMouse())
             {
@@ -151,6 +152,9 @@ bool PreviewPlayerWindow::eventFilter(QObject *obj, QEvent *event)
                     on_pushButtonFullscreen_clicked();
                 }
             }
+        break;
+
+        default:
         break;
     }
     return QObject::eventFilter(obj, event);
