@@ -405,6 +405,8 @@ void MainWindow::balloonClicked()
 
 void MainWindow::btnMenuClick() {
     QString btn = sender()->objectName();
+    bool playerWindowHiddenBefore = previewPlayerPage->isHidden();
+    bool playerWindowHiddenAfter = !playerWindowHiddenBefore;
 
     ui->btnSettings->setHidden(btn == ui->btnSettings->objectName());
     ui->btnUser->setHidden(btn == ui->btnUser->objectName());
@@ -453,6 +455,12 @@ void MainWindow::btnMenuClick() {
     if (btn == ui->btnChat->objectName()) {
         QString link = "https://discordapp.com/invite/0pfzTOXuEjt9ifvF";
         QDesktopServices::openUrl(QUrl(link));
+    }
+
+    playerWindowHiddenAfter = previewPlayerPage->isHidden();
+    if((playerWindowHiddenBefore != playerWindowHiddenAfter) && (playerWindowHiddenAfter))
+    {
+        previewPlayerPage->PauseForHidden();
     }
 }
 

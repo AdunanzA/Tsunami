@@ -13,6 +13,8 @@
 #include "VLCQtCore/MediaPlayer.h"
 #endif
 
+#define REWIND_VALUE_DEFAULT 5
+
 class PreviewPlayer : public QObject
 {
     Q_OBJECT
@@ -25,6 +27,8 @@ class PreviewPlayer : public QObject
 #else
     VlcInstance *vlcInstance;
     VlcMedia *media;
+    float actualPosition;
+    int length;
 #endif
 public:
 #ifdef LIBVLC
@@ -39,6 +43,8 @@ public:
 
     bool isPlaying;
     void ResetCurrentMedia();
+    void rewindForHidden();
+    int rewindHiddenValueInSeconds;
 signals:
 
 public slots:

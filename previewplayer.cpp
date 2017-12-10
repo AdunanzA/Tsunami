@@ -17,6 +17,7 @@ PreviewPlayer::PreviewPlayer(VlcVideoDelegate *videoArea, QObject *parent) : QOb
     mediaPlayer->setVideoWidget(videoArea);
     media = 0;
     isPlaying = false;
+    rewindHiddenValueInSeconds = REWIND_VALUE_DEFAULT;
 #endif
 }
 
@@ -149,6 +150,14 @@ void PreviewPlayer::playPause()
         }
         isPlaying = !isPlaying;
     }
+}
+
+void PreviewPlayer::rewindForHidden()
+{
+    length = mediaPlayer->length();
+    actualPosition = mediaPlayer->position();
+    mediaPlayer->setPosition(actualPosition - ((100.0 / (float)length) * rewindHiddenValueInSeconds * 10)); //100%/length(ms) * seconds * 1000 (ms) / 100 (actual Position percentage is from 0 to 1)
+    actualPosition = mediaPlayer->position();
 }
 
 void PreviewPlayer::ResetCurrentMedia()

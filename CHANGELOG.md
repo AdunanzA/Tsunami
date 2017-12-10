@@ -15,6 +15,12 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.5.6] 2017-12-05
+### Added
+- Added support for full screen in Streaming window (double-click on video and dedicated button)
+- Reviewed Streming interface
+- Added autopause and quick rewind when changing window during Streaming
+
 ## [0.5.5] 2017-11-23
 ### Added
 - Added Installer Icon
