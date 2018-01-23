@@ -55,17 +55,19 @@ build_script:
   - ps: .\Squirrel.com -r c:\tsunami\Releases --icon=c:\tsunami\images\logo_tsunami_big.ico --setupIcon=c:\tsunami\images\installer_icon.ico --no-msi --releasify c:\tsunami\release\Tsunami."$V_MAJ.$V_MIN.$V_BUG".nupkg 
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
-cache: Releases
+cache: 
+  - Releases/$V_MAJ.$V_MIN.*.nupkg
+  - path: Releases/RELEASES
 
 artifacts:
-  - path: Releases/RELEASES
-    name: TsuRelFile
-   
-  - path: Releases/*.nupkg
+  - path: Releases/$V_MAJ.$V_MIN.*.nupkg
     name: TsuNugets
 
   - path: Releases/Setup.exe 
     name: TsuSetup
+    
+  - path: Releases/RELEASES
+    name: TsuRelFile
     
 deploy:
   - provider: Environment
