@@ -56,8 +56,7 @@ build_script:
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
 cache: 
-  - Releases/0.5.*.nupkg
-  - Releases/RELEASES
+  - Releases/
 
 artifacts:
   - path: Releases/0.5.*.nupkg
