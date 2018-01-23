@@ -56,11 +56,11 @@ build_script:
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
 cache: 
-  - Releases/0.5.*.nupkg
-  - path: Releases/RELEASES
+  - Releases/$V_MAJ.$V_MIN.*.nupkg
+  - Releases/RELEASES
 
 artifacts:
-  - path: Releases/0.5.*.nupkg
+  - path: Releases/$V_MAJ.$V_MIN.*.nupkg
     name: TsuNugets
 
   - path: Releases/Setup.exe 
