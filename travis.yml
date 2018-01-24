@@ -1,0 +1,29 @@
+language: cpp
+dist: xenial
+compiler: g++
+sudo: required
+
+before_install:
+- sudo add-apt-repository ppa:beineri/opt-qt58-xenial
+- sudo add-apt-repository ppa:ntadej/tano
+- sudo apt-get update
+
+install:
+- sudo apt-get install libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev freeglut3-dev libssl-dev nuget
+- sudo apt-get install qt58base qt58svg qt58charts-no-lgpl
+- sudo apt-get install libvlc-qt-core2 libvlc-qt-widgets2 libvlc-qt-dbg libvlc-qt-dev vlc
+
+script:
+- git clone https://github.com/arvidn/libtorrent.git 
+- cd libtorrent
+- git checkout libtorrent-1_1_6
+- ./autotool.sh
+- ./configure --disable-debug --enable-encryption --with-libgeoip=system CXXFLAGS=-std=c++11
+- make clean && make -j4
+- sudo make install
+- /opt/qt58/bin/qmake PREFIX=/usr
+- cd
+- git clone https://github.com/AdunanzA/Tsunami.git
+- cd Tsunami
+- qmake Tsunami.pro
+- ls
