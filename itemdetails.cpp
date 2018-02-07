@@ -100,14 +100,18 @@ void itemDetails::update()
     lt::file_storage files = th.data()->torrent_file()->files();
     for (int i = 0; i < files.num_files(); i++)
     {
-        lt::file_index_t fi(i);
-        double prg = (double)((float)progress.at(i) / files.file_size(fi))*100;
+//        lt::file_index_t fi(i);
+//        double prg = (double)((float)progress.at(i) / files.file_size(fi))*100;
+        double prg = (double)((float)progress.at(i) / files.file_size(i))*100;
 
         ui->tableFiles->insertRow(i);
-        QTableWidgetItem *item1 = new QTableWidgetItem(QString(files.file_path(fi).c_str()));
-        QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(th.data()->file_priority(fi)));
+//        QTableWidgetItem *item1 = new QTableWidgetItem(QString(files.file_path(fi).c_str()));
+        QTableWidgetItem *item1 = new QTableWidgetItem(QString(files.file_path(i).c_str()));
+//        QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(th.data()->file_priority(fi)));
+        QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(th.data()->file_priority(i)));
         QTableWidgetItem *item3 = new QTableWidgetItem(QString("%0%").arg(QString::number(prg)));
-        QTableWidgetItem *item4 = new QTableWidgetItem(QLocale().toString(files.file_size(fi)));
+//        QTableWidgetItem *item4 = new QTableWidgetItem(QLocale().toString((qint64)files.file_size(fi)));
+        QTableWidgetItem *item4 = new QTableWidgetItem(QLocale().toString((qint64)files.file_size(i)));
         ui->tableFiles->setItem(i, 0, item1);
         ui->tableFiles->setItem(i, 1, item2);
         ui->tableFiles->setItem(i, 2, item3);
@@ -133,8 +137,9 @@ void itemDetails::update()
         item->setFont(QFont("Arial", 5));
         item->setFlags(Qt::NoItemFlags | Qt::ItemNeverHasChildren);
 
-        lt::piece_index_t pi(j);
-        if (ts.pieces.get_bit(pi)) {
+//        lt::piece_index_t pi(j);
+//        if (ts.pieces.get_bit(pi)) {
+        if (ts.pieces.get_bit(j)) {
             item->setBackground(QColor(144, 238, 144));
 //            result += htmlOn;
         } else {

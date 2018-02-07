@@ -15,6 +15,10 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.6.0] 2018-02-07
+### Changed
+- libtorrent-raster, boost and ssl
+
 ## [0.5.6] 2017-12-05
 ### Added
 - Added support for full screen in Streaming window (double-click on video and dedicated button)

@@ -172,6 +172,7 @@ void tsuManager::startManager()
         while (it.hasNext()) {
             QString fileName = it.next();
 //            qDebug() << QString("%0 exists %1").arg(fileName).arg(QFile::exists(fileName));
+
             QFile file(fileName);
             file.open(QIODevice::ReadOnly);
             QByteArray buf = file.readAll();
@@ -186,15 +187,24 @@ void tsuManager::startManager()
                 qCritical() << QString("fastresume error: file %0 not a valid file").arg(fileName);
                 continue;
             }
-            lt::add_torrent_params tp = lt::read_resume_data(bdn, ec);
-            if (ec) {
-                qCritical() << QString("fastresume error: cannot load fastresume %0").arg(fileName);
-                continue;
-            }
+
+//            lt::add_torrent_params tp = lt::read_resume_data(bdn, ec);
+//            if (ec) {
+//                qCritical() << QString("fastresume error: cannot load fastresume %0").arg(fileName);
+//                continue;
+//            }
+            std::ifstream ifs(fileName.toStdString(), std::ios_base::binary);
+            ifs.unsetf(std::ios_base::skipws);
+
+            lt::add_torrent_params tp;
+            tp.resume_data.assign(std::istream_iterator<char>(ifs), std::istream_iterator<char>());
+
             QString torrentName = fileName.replace("fastresume", "torrent");
             lt::torrent_info ti(torrentName.toStdString());
-            tp.ti = std::make_shared<lt::torrent_info>(ti);
-            tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
+//            tp.ti = std::make_shared<lt::torrent_info>(ti);
+            tp.ti = boost::make_shared<lt::torrent_info>(ti);
+//            tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
+            tp.name = bdn.dict_find_string_value("zu-fileName");
             p_session->async_add_torrent(tp);
             count++;
         }
@@ -269,15 +279,22 @@ void tsuManager::stopManager()
                 lt::save_resume_data_alert const* rd = lt::alert_cast<lt::save_resume_data_alert>(a);
                 lt::torrent_handle h = rd->handle;
                 lt::torrent_status st = h.status(lt::torrent_handle::query_save_path | lt::torrent_handle::query_name);
-                lt::entry &en = lt::write_resume_data(rd->params);
-                en.dict().insert({ "zu-fileName", st.name });
+
+//                lt::entry lte = lt::write_resume_data(rd->params);
+//                lt::entry &en = lte;
+//                en.dict().insert({ "zu-fileName", st.name });
+                rd->resume_data->dict().insert({ "zu-fileName", st.name });
+
                 std::stringstream hex;
                 hex << st.info_hash;
                 QString fileName = QString("%0/%1.fastresume").arg(p_tsunamiSessionFolder).arg(QString::fromStdString(hex.str()));
                 fileName = QDir::toNativeSeparators(fileName);
                 std::ofstream out(fileName.toStdString(), std::ios_base::binary);
                 out.unsetf(std::ios_base::skipws);
-                lt::bencode(std::ostream_iterator<char>(out), en);
+
+//                lt::bencode(std::ostream_iterator<char>(out), en);
+                lt::bencode(std::ostream_iterator<char>(out), *rd->resume_data);
+
                 tsuManager::outstanding_resume_data--;
                 break;
             }
@@ -394,12 +411,15 @@ void tsuManager::alertsHandler()
         {
             lt::listen_succeeded_alert* lsa = lt::alert_cast<lt::listen_succeeded_alert>(alert);
             QString type = "";
-            if (lsa->socket_type == lt::socket_type_t::tcp) {
+//            if (lsa->socket_type == lt::socket_type_t::tcp) {
+            if (lsa->sock_type == lt::listen_succeeded_alert::socket_type_t::tcp) {
                 type = "tcp";
-            } else if (lsa->socket_type == lt::socket_type_t::udp) {
+//            } else if (lsa->socket_type == lt::socket_type_t::udp) {
+            } else if (lsa->sock_type == lt::listen_succeeded_alert::socket_type_t::udp) {
                 type = "udp";
             }
-            qDebug() << QString("listen succeeded for %0 on port %1").arg(type).arg(lsa->port);
+//            qDebug() << QString("listen succeeded for %0 on port %1").arg(type).arg(lsa->port);
+            qDebug() << QString("listen succeeded for %0 on port %1").arg(type).arg(lsa->endpoint.port());
             emit listenerUpdate(type, true);
             break;
         }
@@ -409,12 +429,15 @@ void tsuManager::alertsHandler()
         {
             lt::listen_failed_alert* lfa = lt::alert_cast<lt::listen_failed_alert>(alert);
             QString type = "";
-            if (lfa->socket_type == lt::socket_type_t::tcp) {
+//            if (lfa->socket_type == lt::socket_type_t::tcp) {
+            if (lfa->sock_type == lt::listen_succeeded_alert::socket_type_t::tcp) {
                 type = "tcp";
-            } else if (lfa->socket_type == lt::socket_type_t::udp) {
+//            } else if (lfa->socket_type == lt::socket_type_t::udp) {
+            } else if (lfa->sock_type == lt::listen_succeeded_alert::socket_type_t::udp) {
                 type = "udp";
             }
-            qDebug() << QString("listen failed for %0 on port %1").arg(type).arg(lfa->port);
+//            qDebug() << QString("listen failed for %0 on port %1").arg(type).arg(lfa->port);
+            qDebug() << QString("listen succeeded for %0 on port %1").arg(type).arg(lfa->endpoint.port());
             emit listenerUpdate(type, false);
             break;
         }
@@ -424,7 +447,10 @@ void tsuManager::alertsHandler()
             lt::metadata_received_alert *mra = lt::alert_cast<lt::metadata_received_alert>(alert);
             lt::torrent_handle th = mra->handle;
             if (th.is_valid()) {
-                std::shared_ptr<lt::torrent_info const> ti = th.torrent_file();
+
+//                std::shared_ptr<lt::torrent_info const> ti = th.torrent_file();
+                boost::shared_ptr<lt::torrent_info const> ti = th.torrent_file();
+
                 lt::create_torrent ct(*ti);
                 lt::entry te = ct.generate();
                 std::vector<char> buffer;
@@ -512,7 +538,10 @@ void tsuManager::addItems(const QStringList && items, const QString &path)
 
             if (!ti.metadata()) qWarning() << "No metadata for" << str;
             if (!ti.is_valid()) qWarning() << "torrent" << str << "is invalid";
-            atp.ti = std::make_shared<lt::torrent_info>(ti);
+
+//            atp.ti = std::make_shared<lt::torrent_info>(ti);
+            atp.ti = boost::make_shared<lt::torrent_info>(ti);
+
             atp.save_path = path.toStdString();
 
             atp.flags &= ~lt::add_torrent_params::flag_paused; // Start in pause
@@ -568,7 +597,8 @@ void tsuManager::getCancelRequest(const std::string &hash, const bool deleteFile
     try {
         lt::sha1_hash sh(hash);
         lt::torrent_handle th = p_session->find_torrent(sh);
-        p_session->remove_torrent(th, deleteFilesToo);
+        const lt::torrent_handle &addTh = th;
+        p_session->remove_torrent(addTh, (int)deleteFilesToo);
         emit torrentDeleted(hash);
     } catch (std::exception &exc) {
         qCritical() << QString("getCancelRequest throws %0").arg(exc.what());

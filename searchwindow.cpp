@@ -77,8 +77,8 @@ searchwindow::searchwindow(QWidget *parent) :
     ui->btnOrderDirection->setIcon(sortIcon);
 
     // TO DO: read from config
-    p_orderBy = tableColumns::Name;
-    p_sortOrder = Qt::AscendingOrder;
+    p_orderBy = tableColumns::Seeds;
+    p_sortOrder = Qt::DescendingOrder;
     ui->btnOrderDirection->setChecked(p_sortOrder == Qt::DescendingOrder);
     sortTable();
 
