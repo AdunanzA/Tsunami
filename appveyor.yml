@@ -16,7 +16,7 @@ test: off
 environment:
     REPO_DIR: &REPO_DIR c:\tsunami
     SQUIRREL_DIR: &SQUIRREL_DIR c:\squirrel
-    SQUIRREL_URL: https://github.com/Squirrel/Squirrel.Windows/releases/download/1.7.8/Squirrel.Windows-1.7.8.zip
+    SQUIRREL_URL: https://github.com/Squirrel/Squirrel.Windows/releases/download/1.7.9/Squirrel.Windows-1.7.9.zip
 
 # project directory
 clone_folder: *REPO_DIR
@@ -55,19 +55,17 @@ build_script:
   - ps: .\Squirrel.exe -r C:\tsunami\Releases --setupIcon=C:\tsunami\images\installer_icon.ico --no-msi --releasify C:\tsunami\release\Tsunami."$V_MAJ.$V_MIN.$V_BUG".nupkg 
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
-cache: 
-  - C:\tsunami\Releases\Tsunami.0.6.*.nupkg
-  - C:\tsunami\Releases\RELEASES
+cache: Releases
 
 artifacts:
-  - path: Releases/Tsunami.0.6.*.nupkg
+  - path: Releases/RELEASES
+    name: TsuRelFile
+   
+  - path: Releases/*.nupkg
     name: TsuNugets
 
   - path: Releases/Setup.exe 
     name: TsuSetup
-    
-  - path: Releases/RELEASES
-    name: TsuRelFile
     
 deploy:
   - provider: Environment
