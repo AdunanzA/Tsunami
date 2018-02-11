@@ -25,7 +25,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 DEFINES += TORRENT_NO_DEPRECATE
 DEFINES += _WIN32_WINNT=0x0600
-DEFINES += WIN64
 DEFINES += BOOST_ALL_DYN_LINK
 DEFINES += UNICODE
 DEFINES += _UNICODE
@@ -110,23 +109,16 @@ RESOURCES += \
     resources.qrc \
     translations.qrc
 
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
+# Headers folder - Do not call "include" this folder!
+INCLUDEPATH += $$PWD/includes
+DEPENDPATH  += $$PWD/includes
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -ltorrent-rasterbar
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -ltorrent-rasterbar
-else:unix: LIBS += -L$$PWD/lib/ -ltorrent-rasterbar
+INCLUDEPATH += $$PWD/libraries
+DEPENDPATH  += $$PWD/libraries
 
-win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_63
-else:win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/ -lboost_system-vc140-mt-1_63
-unix: LIBS += -L$$PWD/lib/ -lboost_system-vc140-mt-gd-1_63
+win32:CONFIG(release, debug|release): LIBS  += -L$$PWD/libraries/rel64/ -ltorrent-rasterbar -lboost_system-vc140-mt-1_63
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/ -ltorrent-rasterbar -lboost_system-vc140-mt-gd-1_63
 
-INCLUDEPATH += $$PWD/lib/vlc_qt
-DEPENDPATH += $$PWD/lib/vlc_qt
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtCore
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtCored
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/lib_rel/vlc_qt/ -lVLCQtWidgets
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgetsd
-else:unix: LIBS += -L$$PWD/lib/vlc_qt/ -lVLCQtWidgets
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libraries/rel64/vlc_qt/ -lVLCQtCore -lVLCQtWidgets
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/vlc_qt/ -lVLCQtCored -lVLCQtWidgetsd
+else:unix: LIBS += -lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system
