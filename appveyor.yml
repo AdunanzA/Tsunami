@@ -42,10 +42,11 @@ build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - qmake Tsunami.pro
   - nmake release
-  #- cp lib_rel/*.dll release
-  - xcopy lib_rel release /E /Y
+  #- cp libraries/rel64/*.dll release
+  - xcopy libraries/rel64 release /E /Y
   - cp CHANGELOG.md  release
   - cd release
+  - dir 
   - del /Q *.cpp
   - windeployqt --release --no-opengl-sw --no-translations Tsunami.exe
   - del /Q libGLESV2.dll libEGL.dll d3dcompiler_47.dll
