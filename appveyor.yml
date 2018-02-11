@@ -42,8 +42,7 @@ build_script:
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64'
   - qmake Tsunami.pro
   - nmake release
-  #- cp libraries/rel64/*.dll release
-  - xcopy libraries/rel64 release /E /Y
+  - xcopy libraries release /E /Y
   - cp CHANGELOG.md  release
   - cd release
   - dir 
