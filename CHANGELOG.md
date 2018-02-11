@@ -15,6 +15,10 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.6.1] 2018-02-11
+### Changed
+- libraries and headers structures have been ordered
+
 ## [0.6.0] 2018-02-07
 ### Changed
 - libtorrent-raster, boost and ssl
