@@ -56,7 +56,8 @@ build_script:
   - ps: Start-Sleep -s 60
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
-cache: Releases
+cache: Releases/RELEASES
+cache: Releases/Tsunami*.nupkg
 
 artifacts:
   - path: Releases/RELEASES
