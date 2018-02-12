@@ -52,12 +52,11 @@ build_script:
   - appveyor DownloadFile "%SQUIRREL_URL%" -FileName "C:\squirrel.zip" && 7z x "C:\squirrel.zip" -o"%SQUIRREL_DIR%"
   - ps: nuget pack C:\tsunami\Tsunami.nuspec -Version "$V_MAJ.$V_MIN.$V_BUG" -Properties Configuration=Release -BasePath .
   - cd "%SQUIRREL_DIR%"
-  - ps: .\Squirrel.exe -r C:\tsunami\Releases --setupIcon=C:\tsunami\images\installer_icon.ico --no-msi --releasify C:\tsunami\release\Tsunami."$V_MAJ.$V_MIN.$V_BUG".nupkg 
+  - ps: .\Squirrel.exe -r C:\tsunami\WinReleases --setupIcon=C:\tsunami\images\installer_icon.ico --no-msi --releasify C:\tsunami\release\Tsunami."$V_MAJ.$V_MIN.$V_BUG".nupkg 
   - ps: Start-Sleep -s 60
   #- ps: rm c:\tsunami\Releases\Setup.exe 
   
-cache: Releases/RELEASES
-cache: Releases/Tsunami*.nupkg
+cache: WinReleases
 
 artifacts:
   - path: Releases/RELEASES
