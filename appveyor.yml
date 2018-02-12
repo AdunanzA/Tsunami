@@ -59,13 +59,13 @@ build_script:
 cache: WinReleases
 
 artifacts:
-  - path: Releases/RELEASES
+  - path: WinReleases/RELEASES
     name: TsuRelFile
    
-  - path: Releases/*.nupkg
+  - path: WinReleases/*.nupkg
     name: TsuNugets
 
-  - path: Releases/Setup.exe 
+  - path: WinReleases/Setup.exe 
     name: TsuSetup
     
 deploy:
