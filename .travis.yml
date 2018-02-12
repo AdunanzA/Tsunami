@@ -9,7 +9,7 @@ before_install:
 - sudo apt-get update
 
 install:
-- sudo apt-get install libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev freeglut3-dev libssl-dev nuget -y
+- sudo apt-get install libboost-dev libboost-system-dev libboost-chrono-dev libboost-random-dev freeglut3-dev libssl-dev -y
 - sudo apt-get install qt58base qt58svg qt58charts-no-lgpl -y
 - sudo apt-get install libvlc-qt-core2 libvlc-qt-widgets2 libvlc-qt-dbg libvlc-qt-dev vlc -y
 
@@ -21,7 +21,6 @@ script:
 - ./configure --disable-debug --enable-encryption --with-libgeoip=system CXXFLAGS=-std=c++11
 - make clean && make -j4
 - sudo make install
-- /opt/qt58/bin/qmake PREFIX=/usr
 - cd
 - git clone https://github.com/AdunanzA/Tsunami.git
 - cd Tsunami
