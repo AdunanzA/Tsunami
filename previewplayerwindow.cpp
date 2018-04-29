@@ -152,6 +152,8 @@ bool PreviewPlayerWindow::eventFilter(QObject *obj, QEvent *event)
                 }
             }
         break;
+        default:
+        break;
     }
     return QObject::eventFilter(obj, event);
 }
