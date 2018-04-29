@@ -31,7 +31,7 @@ public slots:
 private:
     Ui::itemDetails *ui;
     std::string p_hash;
-    QSharedPointer<lt::torrent_handle> th;
+    QSharedPointer<libtorrent::torrent_handle> th;
     QTimer *p_refreshTimer;
 
 private slots:

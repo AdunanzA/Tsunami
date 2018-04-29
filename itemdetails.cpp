@@ -27,11 +27,11 @@ itemDetails::~itemDetails()
 void itemDetails::setHash(const std::string &hash)
 {
     p_hash = std::string(hash);
-    lt::sha1_hash sh(p_hash);
-    lt::session *ses = p_mw->sessionManager->p_session.data();
-    th = QSharedPointer<lt::torrent_handle>::create(ses->find_torrent(sh));
+    libtorrent::sha1_hash sh(p_hash);
+    libtorrent::session *ses = p_mw->sessionManager->p_session.data();
+    th = QSharedPointer<libtorrent::torrent_handle>::create(ses->find_torrent(sh));
 
-    lt::torrent_status ts = th.data()->status();
+    libtorrent::torrent_status ts = th.data()->status();
     ui->lblTorrentName->setText(ts.name.c_str());
 
     int pieceLength = -1;
@@ -67,7 +67,7 @@ void itemDetails::update()
     }
 //    qDebug("processing details update");
 
-    lt::torrent_status ts = th.data()->status();
+    libtorrent::torrent_status ts = th.data()->status();
     bool isPaused = ts.paused && !ts.auto_managed;
     float ratio = 0;
     int eta = -1;
@@ -87,7 +87,7 @@ void itemDetails::update()
     }
 
     std::vector<int64_t> progress;
-    th.data()->file_progress(progress, lt::torrent_handle::file_progress_flags_t::piece_granularity);
+    th.data()->file_progress(progress, libtorrent::torrent_handle::file_progress_flags_t::piece_granularity);
 
     /* FILES LIST */
     ui->tableFiles->setRowCount(0);
@@ -97,10 +97,10 @@ void itemDetails::update()
         return;
     }
 
-    lt::file_storage files = th.data()->torrent_file()->files();
+    libtorrent::file_storage files = th.data()->torrent_file()->files();
     for (int i = 0; i < files.num_files(); i++)
     {
-//        lt::file_index_t fi(i);
+//        libtorrent::file_index_t fi(i);
 //        double prg = (double)((float)progress.at(i) / files.file_size(fi))*100;
         double prg = (double)((float)progress.at(i) / files.file_size(i))*100;
 
@@ -137,7 +137,7 @@ void itemDetails::update()
         item->setFont(QFont("Arial", 5));
         item->setFlags(Qt::NoItemFlags | Qt::ItemNeverHasChildren);
 
-//        lt::piece_index_t pi(j);
+//        libtorrent::piece_index_t pi(j);
 //        if (ts.pieces.get_bit(pi)) {
         if (ts.pieces.get_bit(j)) {
             item->setBackground(QColor(144, 238, 144));
@@ -151,9 +151,9 @@ void itemDetails::update()
 
     /* STATE */
     bool hasError = ts.paused && ts.errc;
-    bool isSeeding = (ts.state == lt::torrent_status::state_t::finished || ts.state == lt::torrent_status::state_t::seeding);
+    bool isSeeding = (ts.state == libtorrent::torrent_status::state_t::finished || ts.state == libtorrent::torrent_status::state_t::seeding);
     bool isQueued = (ts.paused && ts.auto_managed);
-    bool isChecking = (ts.state == lt::torrent_status::state_t::checking_files || ts.state == lt::torrent_status::state_t::checking_resume_data);
+    bool isChecking = (ts.state == libtorrent::torrent_status::state_t::checking_files || ts.state == libtorrent::torrent_status::state_t::checking_resume_data);
     bool isForced = (!ts.paused && !ts.auto_managed);
 
     QString state = "Torrent::State::Unknown";
@@ -193,8 +193,8 @@ void itemDetails::update()
         {
             switch (ts.state)
             {
-            case lt::torrent_status::state_t::finished:
-            case lt::torrent_status::state_t::seeding:
+            case libtorrent::torrent_status::state_t::finished:
+            case libtorrent::torrent_status::state_t::seeding:
             {
                 if (isForced)
                 {
@@ -218,25 +218,25 @@ void itemDetails::update()
                 break;
             }
 
-            case lt::torrent_status::state_t::checking_resume_data:
+            case libtorrent::torrent_status::state_t::checking_resume_data:
             {
                 state = "Torrent::State::CheckingResumeData2";
                 break;
             }
 
-            case lt::torrent_status::state_t::checking_files:
+            case libtorrent::torrent_status::state_t::checking_files:
             {
                 state = "Torrent::State::DownloadingChecking";
                 break;
             }
 
-            case lt::torrent_status::state_t::downloading_metadata:
+            case libtorrent::torrent_status::state_t::downloading_metadata:
             {
                 state = "Torrent::State::DownloadingMetadata";
                 break;
             }
 
-            case lt::torrent_status::state_t::downloading:
+            case libtorrent::torrent_status::state_t::downloading:
             {
                 if (isForced)
                 {
@@ -277,7 +277,7 @@ void itemDetails::showEvent(QShowEvent *event)
     qDebug("called showEvent");
     if (p_hash.empty() || !this->isVisible()) return;
 
-    lt::torrent_status ts = th.data()->status();
+    libtorrent::torrent_status ts = th.data()->status();
     ui->chkSequential->setChecked(ts.sequential_download);
     update();
     p_refreshTimer->start(1000);

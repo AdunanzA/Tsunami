@@ -27,14 +27,14 @@ class tsuManager :public QObject
     Q_OBJECT
 public:
     tsuManager();
-//    explicit tsuManager(const lt::settings_pack & sp);
+//    explicit tsuManager(const libtorrent::settings_pack & sp);
     ~tsuManager();
     static int outstanding_resume_data;
 
     void addItems(const QStringList &&items, const QString &path);
     void addFromMagnet(const QStringList &&items, const QString &path);
 
-    QSharedPointer<lt::session> p_session;
+    QSharedPointer<libtorrent::session> p_session;
 
 signals:
     void updateFromSessionManager(const QVector<tsuEvents::tsuEvent> events);

@@ -135,9 +135,9 @@ void downloadwindow::requestedResume(const std::string &hash)
 
 void downloadwindow::requestedDetails(const std::string &hash)
 {
-//    lt::sha1_hash sh(hash);
-//    lt::session *ses = p_mw->sessionManager->p_session.data();
-//    lt::torrent_handle th = ses->find_torrent(sh);
+//    libtorrent::sha1_hash sh(hash);
+//    libtorrent::session *ses = p_mw->sessionManager->p_session.data();
+//    libtorrent::torrent_handle th = ses->find_torrent(sh);
 
 //    if (th.is_valid()) {
 //        p_itemDetails->setValues(th);

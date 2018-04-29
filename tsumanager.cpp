@@ -11,8 +11,8 @@ tsuManager::tsuManager()
 
     // loading libtorrent stats metric indexes
     QHash<QString, int> statsList;
-    std::vector<lt::stats_metric> ssm = lt::session_stats_metrics();
-    for(lt::stats_metric & metric : ssm) {
+    std::vector<libtorrent::stats_metric> ssm = libtorrent::session_stats_metrics();
+    for(libtorrent::stats_metric & metric : ssm) {
         statsList.insert(QString::fromUtf8(metric.name), metric.value_index);
     }
     qDebug() << QString("loaded %0 metric index from libtorrent").arg(QString::number(ssm.size()));
@@ -62,9 +62,9 @@ void tsuManager::setNotify()
     });
 }
 
-void tsuManager::loadSettings(lt::settings_pack &settings)
+void tsuManager::loadSettings(libtorrent::settings_pack &settings)
 {
-//    lt::settings_pack settings = p_session->get_settings();
+//    libtorrent::settings_pack settings = p_session->get_settings();
     QSettings qtSettings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
     int downLimit = qtSettings.value("libtorrent/download_rate_limit", 0).toInt();
     int upLimit = qtSettings.value("libtorrent/upload_rate_limit", 0).toInt();
@@ -75,49 +75,49 @@ void tsuManager::loadSettings(lt::settings_pack &settings)
 
     QString user_agent = QString("Tsunami/%0.%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_BUGFIX);
 
-    settings.set_str(lt::settings_pack::user_agent, user_agent.toStdString());
-    settings.set_int(lt::settings_pack::download_rate_limit, downLimit); // B/S , 0 unlimited
-    settings.set_int(lt::settings_pack::upload_rate_limit, upLimit); // B/S , 0 unlimited
+    settings.set_str(libtorrent::settings_pack::user_agent, user_agent.toStdString());
+    settings.set_int(libtorrent::settings_pack::download_rate_limit, downLimit); // B/S , 0 unlimited
+    settings.set_int(libtorrent::settings_pack::upload_rate_limit, upLimit); // B/S , 0 unlimited
 
     // DEFAULTS from picotorrent (and qbittorrent)
-    settings.set_str(lt::settings_pack::string_types::dht_bootstrap_nodes,
+    settings.set_str(libtorrent::settings_pack::string_types::dht_bootstrap_nodes,
         "router.bittorrent.com:6881" ","
         "router.utorrent.com:6881" ","
         "dht.transmissionbt.com:6881" ","
         "dht.aelitis.com:6881");
-    settings.set_bool(lt::settings_pack::upnp_ignore_nonrouters, true);
-    settings.set_bool(lt::settings_pack::announce_to_all_trackers, true);
-    settings.set_bool(lt::settings_pack::announce_to_all_tiers, true);
-    settings.set_bool(lt::settings_pack::enable_incoming_utp, true);
-    settings.set_bool(lt::settings_pack::enable_outgoing_utp, true);
-    settings.set_bool(lt::settings_pack::use_dht_as_fallback, false);
-    settings.set_bool(lt::settings_pack::anonymous_mode, false);
-    settings.set_bool(lt::settings_pack::dont_count_slow_torrents, false);
-    settings.set_bool(lt::settings_pack::rate_limit_ip_overhead, false);
-    settings.set_bool(lt::settings_pack::strict_super_seeding, false);
-    settings.set_bool(lt::settings_pack::no_connect_privileged_ports, false);
-    settings.set_bool(lt::settings_pack::apply_ip_filter_to_trackers, false);
-    settings.set_int(lt::settings_pack::stop_tracker_timeout, 1);
-    settings.set_int(lt::settings_pack::auto_scrape_interval, 1200);
-    settings.set_int(lt::settings_pack::auto_scrape_min_interval, 900);
-    settings.set_int(lt::settings_pack::cache_size, -1);
-    settings.set_int(lt::settings_pack::cache_expiry, 60);
-    settings.set_int(lt::settings_pack::disk_io_read_mode, 0);
-    settings.set_int(lt::settings_pack::active_seeds, 3);
-    settings.set_int(lt::settings_pack::active_downloads, 3);
-    settings.set_int(lt::settings_pack::active_limit, 5);
-    settings.set_int(lt::settings_pack::active_tracker_limit, -1);
-    settings.set_int(lt::settings_pack::active_dht_limit, -1);
-    settings.set_int(lt::settings_pack::active_lsd_limit, -1);
-    settings.set_int(lt::settings_pack::connections_limit, 500);
-    settings.set_int(lt::settings_pack::unchoke_slots_limit, -1);
-    settings.set_int(lt::settings_pack::mixed_mode_algorithm, 0);
-    settings.set_int(lt::settings_pack::connection_speed, 20);
-    settings.set_int(lt::settings_pack::seed_choking_algorithm, 1);
+    settings.set_bool(libtorrent::settings_pack::upnp_ignore_nonrouters, true);
+    settings.set_bool(libtorrent::settings_pack::announce_to_all_trackers, true);
+    settings.set_bool(libtorrent::settings_pack::announce_to_all_tiers, true);
+    settings.set_bool(libtorrent::settings_pack::enable_incoming_utp, true);
+    settings.set_bool(libtorrent::settings_pack::enable_outgoing_utp, true);
+    settings.set_bool(libtorrent::settings_pack::use_dht_as_fallback, false);
+    settings.set_bool(libtorrent::settings_pack::anonymous_mode, false);
+    settings.set_bool(libtorrent::settings_pack::dont_count_slow_torrents, false);
+    settings.set_bool(libtorrent::settings_pack::rate_limit_ip_overhead, false);
+    settings.set_bool(libtorrent::settings_pack::strict_super_seeding, false);
+    settings.set_bool(libtorrent::settings_pack::no_connect_privileged_ports, false);
+    settings.set_bool(libtorrent::settings_pack::apply_ip_filter_to_trackers, false);
+    settings.set_int(libtorrent::settings_pack::stop_tracker_timeout, 1);
+    settings.set_int(libtorrent::settings_pack::auto_scrape_interval, 1200);
+    settings.set_int(libtorrent::settings_pack::auto_scrape_min_interval, 900);
+    settings.set_int(libtorrent::settings_pack::cache_size, -1);
+    settings.set_int(libtorrent::settings_pack::cache_expiry, 60);
+    settings.set_int(libtorrent::settings_pack::disk_io_read_mode, 0);
+    settings.set_int(libtorrent::settings_pack::active_seeds, 3);
+    settings.set_int(libtorrent::settings_pack::active_downloads, 3);
+    settings.set_int(libtorrent::settings_pack::active_limit, 5);
+    settings.set_int(libtorrent::settings_pack::active_tracker_limit, -1);
+    settings.set_int(libtorrent::settings_pack::active_dht_limit, -1);
+    settings.set_int(libtorrent::settings_pack::active_lsd_limit, -1);
+    settings.set_int(libtorrent::settings_pack::connections_limit, 500);
+    settings.set_int(libtorrent::settings_pack::unchoke_slots_limit, -1);
+    settings.set_int(libtorrent::settings_pack::mixed_mode_algorithm, 0);
+    settings.set_int(libtorrent::settings_pack::connection_speed, 20);
+    settings.set_int(libtorrent::settings_pack::seed_choking_algorithm, 1);
 
     int availThreads = ceil(QThread::idealThreadCount()/4);
     qDebug() << QString("found %0 ideal thread count, assigning %1 to hash threads").arg(QThread::idealThreadCount()).arg(availThreads);
-    settings.set_int(lt::settings_pack::aio_threads, availThreads);
+    settings.set_int(libtorrent::settings_pack::aio_threads, availThreads);
 //    p_session->apply_settings(settings);
 }
 
@@ -125,9 +125,9 @@ void tsuManager::startManager()
 {
     qDebug("starting");
 
-    lt::settings_pack settings;
+    libtorrent::settings_pack settings;
     loadSettings(settings);
-    p_session = QSharedPointer<lt::session>::create(settings);
+    p_session = QSharedPointer<libtorrent::session>::create(settings);
     setNotify();
     p_timerUpdate->start(1000);
 
@@ -152,9 +152,9 @@ void tsuManager::startManager()
             QFile sessionFile(sessionFileName);
             sessionFile.open(QIODevice::ReadOnly);
             QByteArray sessionBuffer = sessionFile.readAll();
-            lt::error_code sec;
-            lt::bdecode_node session_state;
-            lt::bdecode(sessionBuffer.constData(), sessionBuffer.constData() + sessionBuffer.size(), session_state, sec);
+            libtorrent::error_code sec;
+            libtorrent::bdecode_node session_state;
+            libtorrent::bdecode(sessionBuffer.constData(), sessionBuffer.constData() + sessionBuffer.size(), session_state, sec);
             if (sec) {
                 qCritical() << QString("session state load error: cannot decode %0, error %1").arg(sessionFileName)
                                                                                               .arg(QString::fromStdString(sec.message()));
@@ -176,19 +176,19 @@ void tsuManager::startManager()
             QFile file(fileName);
             file.open(QIODevice::ReadOnly);
             QByteArray buf = file.readAll();
-            lt::error_code ec;
-            lt::bdecode_node bdn;
-            lt::bdecode(buf.constData(), buf.constData() + buf.size(), bdn, ec);
+            libtorrent::error_code ec;
+            libtorrent::bdecode_node bdn;
+            libtorrent::bdecode(buf.constData(), buf.constData() + buf.size(), bdn, ec);
             if (ec) {
                 qCritical() << QString("fastresume error: cannot decode %0").arg(fileName);
                 continue;
             }
-            if (bdn.type() != lt::bdecode_node::type_t::dict_t) {
+            if (bdn.type() != libtorrent::bdecode_node::type_t::dict_t) {
                 qCritical() << QString("fastresume error: file %0 not a valid file").arg(fileName);
                 continue;
             }
 
-//            lt::add_torrent_params tp = lt::read_resume_data(bdn, ec);
+//            libtorrent::add_torrent_params tp = libtorrent::read_resume_data(bdn, ec);
 //            if (ec) {
 //                qCritical() << QString("fastresume error: cannot load fastresume %0").arg(fileName);
 //                continue;
@@ -196,13 +196,13 @@ void tsuManager::startManager()
             std::ifstream ifs(fileName.toStdString(), std::ios_base::binary);
             ifs.unsetf(std::ios_base::skipws);
 
-            lt::add_torrent_params tp;
+            libtorrent::add_torrent_params tp;
             tp.resume_data.assign(std::istream_iterator<char>(ifs), std::istream_iterator<char>());
 
             QString torrentName = fileName.replace("fastresume", "torrent");
-            lt::torrent_info ti(torrentName.toStdString());
-//            tp.ti = std::make_shared<lt::torrent_info>(ti);
-            tp.ti = boost::make_shared<lt::torrent_info>(ti);
+            libtorrent::torrent_info ti(torrentName.toStdString());
+//            tp.ti = std::make_shared<libtorrent::torrent_info>(ti);
+            tp.ti = boost::make_shared<libtorrent::torrent_info>(ti);
 //            tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
             tp.name = bdn.dict_find_string_value("zu-fileName");
             p_session->async_add_torrent(tp);
@@ -222,7 +222,7 @@ void tsuManager::stopManager()
     p_session->pause();
 
     // SAVE SESSION STATE
-    lt::entry entry;
+    libtorrent::entry entry;
     p_session->save_state(entry);
 
     QString sessionFileName = QString("%0/tsunami.session").arg(p_tsunamiSessionFolder);
@@ -231,18 +231,18 @@ void tsuManager::stopManager()
     std::ofstream sessionOut(sessionFileName.toStdString(), std::ios_base::binary);
     sessionOut.unsetf(std::ios_base::skipws);
 
-    lt::bencode(std::ostream_iterator<char>(sessionOut), entry);
+    libtorrent::bencode(std::ostream_iterator<char>(sessionOut), entry);
     qDebug("session state saved");
 
     // FASTRESUMES
-    std::vector<lt::torrent_handle> handles = p_session->get_torrents();
+    std::vector<libtorrent::torrent_handle> handles = p_session->get_torrents();
     qDebug() << QString("stopManager: Handling %0 handlers").arg(handles.size());
 
-    for (lt::torrent_handle i : handles)
+    for (libtorrent::torrent_handle i : handles)
     {
-        lt::torrent_handle &h = i;
+        libtorrent::torrent_handle &h = i;
         if (!h.is_valid()) continue;
-        lt::torrent_status s = h.status();
+        libtorrent::torrent_status s = h.status();
         if (!s.has_metadata) continue;
         if (!s.need_save_resume) continue;
         h.save_resume_data();
@@ -252,17 +252,17 @@ void tsuManager::stopManager()
     while (tsuManager::outstanding_resume_data > 0)
     {
 //        qDebug() << QString("stopManager: outstanding_resume_data = %0").arg(outstanding_resume_data);
-        lt::alert const* a = p_session->wait_for_alert(lt::seconds(10));
+        libtorrent::alert const* a = p_session->wait_for_alert(libtorrent::seconds(10));
 
         // if we don't get an alert within 10 seconds, abort
         if (a == 0) continue;
 
-        std::vector<lt::alert*> alerts;
+        std::vector<libtorrent::alert*> alerts;
         p_session->pop_alerts(&alerts);
 
         if (alerts.size() == 0) continue;
 
-        for (lt::alert* a : alerts)
+        for (libtorrent::alert* a : alerts)
         {
             if (a == nullptr) continue;
 
@@ -271,17 +271,17 @@ void tsuManager::stopManager()
             if (a == nullptr || a->type() == 0) continue;
 
             switch (a->type()) {
-            case lt::save_resume_data_failed_alert::alert_type:
+            case libtorrent::save_resume_data_failed_alert::alert_type:
                 tsuManager::outstanding_resume_data--;
                 break;
-            case lt::save_resume_data_alert::alert_type:
+            case libtorrent::save_resume_data_alert::alert_type:
                 if (a == nullptr) continue;
-                lt::save_resume_data_alert const* rd = lt::alert_cast<lt::save_resume_data_alert>(a);
-                lt::torrent_handle h = rd->handle;
-                lt::torrent_status st = h.status(lt::torrent_handle::query_save_path | lt::torrent_handle::query_name);
+                libtorrent::save_resume_data_alert const* rd = libtorrent::alert_cast<libtorrent::save_resume_data_alert>(a);
+                libtorrent::torrent_handle h = rd->handle;
+                libtorrent::torrent_status st = h.status(libtorrent::torrent_handle::query_save_path | libtorrent::torrent_handle::query_name);
 
-//                lt::entry lte = lt::write_resume_data(rd->params);
-//                lt::entry &en = lte;
+//                libtorrent::entry lte = libtorrent::write_resume_data(rd->params);
+//                libtorrent::entry &en = lte;
 //                en.dict().insert({ "zu-fileName", st.name });
                 rd->resume_data->dict().insert({ "zu-fileName", st.name });
 
@@ -292,8 +292,8 @@ void tsuManager::stopManager()
                 std::ofstream out(fileName.toStdString(), std::ios_base::binary);
                 out.unsetf(std::ios_base::skipws);
 
-//                lt::bencode(std::ostream_iterator<char>(out), en);
-                lt::bencode(std::ostream_iterator<char>(out), *rd->resume_data);
+//                libtorrent::bencode(std::ostream_iterator<char>(out), en);
+                libtorrent::bencode(std::ostream_iterator<char>(out), *rd->resume_data);
 
                 tsuManager::outstanding_resume_data--;
                 break;
@@ -308,13 +308,13 @@ void tsuManager::stopManager()
 
 void tsuManager::alertsHandler()
 {
-    std::vector<lt::alert*> alerts;
+    std::vector<libtorrent::alert*> alerts;
     p_session->pop_alerts(&alerts);
 //    qDebug() << QString("processing %1 alerts:").arg(alerts.size());
 
     QVector<tsuEvents::tsuEvent> eventsArray;
 
-    for (lt::alert* alert : alerts)
+    for (libtorrent::alert* alert : alerts)
     {
         if (alert == nullptr) continue;
 //        qDebug() << QString("%0::%1").arg(alert->what()).arg(alert->message().c_str());
@@ -323,9 +323,9 @@ void tsuManager::alertsHandler()
         {
 
         // ADD TORRENT
-        case lt::add_torrent_alert::alert_type:
+        case libtorrent::add_torrent_alert::alert_type:
         {
-            lt::add_torrent_alert* ata = lt::alert_cast<lt::add_torrent_alert>(alert);
+            libtorrent::add_torrent_alert* ata = libtorrent::alert_cast<libtorrent::add_torrent_alert>(alert);
             if (ata->error) {
                 qDebug() << QString("tsuManager: error adding %0: %1")
                             .arg(alert->message().c_str())
@@ -337,7 +337,7 @@ void tsuManager::alertsHandler()
                 // FROM MAGNET
                 qDebug() << "added from magnet";  // maybe we want to manage a freeze state until metadata_received_alert arrived
             }
-            lt::torrent_status const &ts = ata->handle.status();
+            libtorrent::torrent_status const &ts = ata->handle.status();
             statusEnum se = static_cast<statusEnum>((int)ts.state);
             if (ts.paused) se = statusEnum::paused;
             tsuEvents::tsuEvent ev(ata->handle.info_hash().to_string(), ts.name.c_str(), ts.total_done,
@@ -348,11 +348,11 @@ void tsuManager::alertsHandler()
         }
 
         // UPDATE TORRENT
-        case lt::state_update_alert::alert_type:
+        case libtorrent::state_update_alert::alert_type:
         {
-            lt::state_update_alert* sua = lt::alert_cast<lt::state_update_alert>(alert);
+            libtorrent::state_update_alert* sua = libtorrent::alert_cast<libtorrent::state_update_alert>(alert);
             if (sua->status.empty()) { break; }
-            for (lt::torrent_status const& s : sua->status)
+            for (libtorrent::torrent_status const& s : sua->status)
             {
                 statusEnum se = static_cast<statusEnum>((int)s.state);
                 if (s.paused) se = statusEnum::paused;
@@ -365,9 +365,9 @@ void tsuManager::alertsHandler()
         }
 
         // TORRENT DELETED
-        case lt::torrent_deleted_alert::alert_type:
+        case libtorrent::torrent_deleted_alert::alert_type:
         {
-            lt::torrent_deleted_alert* tra = lt::alert_cast<lt::torrent_deleted_alert>(alert);
+            libtorrent::torrent_deleted_alert* tra = libtorrent::alert_cast<libtorrent::torrent_deleted_alert>(alert);
             std::stringstream hex;
             hex << tra->info_hash;
             QString hash = QString::fromStdString(hex.str());
@@ -388,9 +388,9 @@ void tsuManager::alertsHandler()
         }
 
         // EXTERNAL IP
-        case lt::external_ip_alert::alert_type:
+        case libtorrent::external_ip_alert::alert_type:
         {
-            lt::external_ip_alert* eia = lt::alert_cast<lt::external_ip_alert>(alert);
+            libtorrent::external_ip_alert* eia = libtorrent::alert_cast<libtorrent::external_ip_alert>(alert);
             QString extIp = QString::fromStdString(eia->external_address.to_string());
             qDebug() << QString("received external ip %0").arg(extIp);
             emit externalIpAssigned();
@@ -398,24 +398,24 @@ void tsuManager::alertsHandler()
         }
 
         // DHT BOOTSTRAP
-        case lt::dht_bootstrap_alert::alert_type:
+        case libtorrent::dht_bootstrap_alert::alert_type:
         {
-//            lt::dht_bootstrap_alert* dba = lt::alert_cast<lt::dht_bootstrap_alert>(alert);
+//            libtorrent::dht_bootstrap_alert* dba = libtorrent::alert_cast<libtorrent::dht_bootstrap_alert>(alert);
             qDebug("dht bootstrap done");
             emit dhtBootstrapExecuted();
             break;
         }
 
         // LISTEN SUCCEEDED
-        case lt::listen_succeeded_alert::alert_type:
+        case libtorrent::listen_succeeded_alert::alert_type:
         {
-            lt::listen_succeeded_alert* lsa = lt::alert_cast<lt::listen_succeeded_alert>(alert);
+            libtorrent::listen_succeeded_alert* lsa = libtorrent::alert_cast<libtorrent::listen_succeeded_alert>(alert);
             QString type = "";
-//            if (lsa->socket_type == lt::socket_type_t::tcp) {
-            if (lsa->sock_type == lt::listen_succeeded_alert::socket_type_t::tcp) {
+//            if (lsa->socket_type == libtorrent::socket_type_t::tcp) {
+            if (lsa->sock_type == libtorrent::listen_succeeded_alert::socket_type_t::tcp) {
                 type = "tcp";
-//            } else if (lsa->socket_type == lt::socket_type_t::udp) {
-            } else if (lsa->sock_type == lt::listen_succeeded_alert::socket_type_t::udp) {
+//            } else if (lsa->socket_type == libtorrent::socket_type_t::udp) {
+            } else if (lsa->sock_type == libtorrent::listen_succeeded_alert::socket_type_t::udp) {
                 type = "udp";
             }
 //            qDebug() << QString("listen succeeded for %0 on port %1").arg(type).arg(lsa->port);
@@ -425,15 +425,15 @@ void tsuManager::alertsHandler()
         }
 
         // LISTEN FAILED
-        case lt::listen_failed_alert::alert_type:
+        case libtorrent::listen_failed_alert::alert_type:
         {
-            lt::listen_failed_alert* lfa = lt::alert_cast<lt::listen_failed_alert>(alert);
+            libtorrent::listen_failed_alert* lfa = libtorrent::alert_cast<libtorrent::listen_failed_alert>(alert);
             QString type = "";
-//            if (lfa->socket_type == lt::socket_type_t::tcp) {
-            if (lfa->sock_type == lt::listen_succeeded_alert::socket_type_t::tcp) {
+//            if (lfa->socket_type == libtorrent::socket_type_t::tcp) {
+            if (lfa->sock_type == libtorrent::listen_succeeded_alert::socket_type_t::tcp) {
                 type = "tcp";
-//            } else if (lfa->socket_type == lt::socket_type_t::udp) {
-            } else if (lfa->sock_type == lt::listen_succeeded_alert::socket_type_t::udp) {
+//            } else if (lfa->socket_type == libtorrent::socket_type_t::udp) {
+            } else if (lfa->sock_type == libtorrent::listen_succeeded_alert::socket_type_t::udp) {
                 type = "udp";
             }
 //            qDebug() << QString("listen failed for %0 on port %1").arg(type).arg(lfa->port);
@@ -442,19 +442,19 @@ void tsuManager::alertsHandler()
             break;
         }
 
-        case lt::metadata_received_alert::alert_type:
+        case libtorrent::metadata_received_alert::alert_type:
         {
-            lt::metadata_received_alert *mra = lt::alert_cast<lt::metadata_received_alert>(alert);
-            lt::torrent_handle th = mra->handle;
+            libtorrent::metadata_received_alert *mra = libtorrent::alert_cast<libtorrent::metadata_received_alert>(alert);
+            libtorrent::torrent_handle th = mra->handle;
             if (th.is_valid()) {
 
-//                std::shared_ptr<lt::torrent_info const> ti = th.torrent_file();
-                boost::shared_ptr<lt::torrent_info const> ti = th.torrent_file();
+//                std::shared_ptr<libtorrent::torrent_info const> ti = th.torrent_file();
+                boost::shared_ptr<libtorrent::torrent_info const> ti = th.torrent_file();
 
-                lt::create_torrent ct(*ti);
-                lt::entry te = ct.generate();
+                libtorrent::create_torrent ct(*ti);
+                libtorrent::entry te = ct.generate();
                 std::vector<char> buffer;
-                lt::bencode(std::back_inserter(buffer), te);
+                libtorrent::bencode(std::back_inserter(buffer), te);
 
                 std::stringstream hex;
                 hex << ti->info_hash();
@@ -473,9 +473,9 @@ void tsuManager::alertsHandler()
         }
 
         // SESSION STATS
-        case lt::session_stats_alert::alert_type:
+        case libtorrent::session_stats_alert::alert_type:
         {
-            lt::session_stats_alert *ssa = lt::alert_cast<lt::session_stats_alert>(alert);
+            libtorrent::session_stats_alert *ssa = libtorrent::alert_cast<libtorrent::session_stats_alert>(alert);
 
             // "net.recv_bytes" + "net.recv_ip_overhead_bytes" = total download
             quint64 recvbytes = ssa->values[p_net_recv_bytes];
@@ -510,12 +510,12 @@ void tsuManager::alertsHandler()
             emit updateFromSessionManager(eventsArray);
         }
     }
-    p_session->post_torrent_updates(lt::alert::status_notification | lt::alert::progress_notification);
+    p_session->post_torrent_updates(libtorrent::alert::status_notification | libtorrent::alert::progress_notification);
 }
 
 void tsuManager::postUpdates()
 {
-//    p_session->post_torrent_updates(lt::alert::status_notification | lt::alert::progress_notification);
+//    p_session->post_torrent_updates(libtorrent::alert::status_notification | libtorrent::alert::progress_notification);
       p_session->post_session_stats();
 }
 
@@ -533,20 +533,20 @@ void tsuManager::addItems(const QStringList && items, const QString &path)
         qDebug() << "processing" << str;
         try
         {
-            lt::add_torrent_params atp;
-            lt::torrent_info ti(str.toStdString());
+            libtorrent::add_torrent_params atp;
+            libtorrent::torrent_info ti(str.toStdString());
 
             if (!ti.metadata()) qWarning() << "No metadata for" << str;
             if (!ti.is_valid()) qWarning() << "torrent" << str << "is invalid";
 
-//            atp.ti = std::make_shared<lt::torrent_info>(ti);
-            atp.ti = boost::make_shared<lt::torrent_info>(ti);
+//            atp.ti = std::make_shared<libtorrent::torrent_info>(ti);
+            atp.ti = boost::make_shared<libtorrent::torrent_info>(ti);
 
             atp.save_path = path.toStdString();
 
-            atp.flags &= ~lt::add_torrent_params::flag_paused; // Start in pause
-            atp.flags &= ~lt::add_torrent_params::flag_auto_managed; // Because it is added in paused state
-//            atp.flags &= ~lt::add_torrent_params::flag_duplicate_is_error; // Already checked
+            atp.flags &= ~libtorrent::add_torrent_params::flag_paused; // Start in pause
+            atp.flags &= ~libtorrent::add_torrent_params::flag_auto_managed; // Because it is added in paused state
+//            atp.flags &= ~libtorrent::add_torrent_params::flag_duplicate_is_error; // Already checked
 
             p_session->async_add_torrent(atp);
 
@@ -572,13 +572,13 @@ void tsuManager::addFromMagnet(const QStringList &&items, const QString &path)
         qDebug() << "processing magnet" << str;
         try
         {
-            lt::error_code ec;
-            lt::add_torrent_params atp;
-            atp.flags &= ~lt::add_torrent_params::flag_paused; // Start in pause
-            atp.flags &= ~lt::add_torrent_params::flag_auto_managed; // Because it is added in paused state
+            libtorrent::error_code ec;
+            libtorrent::add_torrent_params atp;
+            atp.flags &= ~libtorrent::add_torrent_params::flag_paused; // Start in pause
+            atp.flags &= ~libtorrent::add_torrent_params::flag_auto_managed; // Because it is added in paused state
             atp.save_path = path.toStdString();
 
-            lt::parse_magnet_uri(str.toStdString(), atp, ec);
+            libtorrent::parse_magnet_uri(str.toStdString(), atp, ec);
 
             // MANAGE ERROR ON ec
             p_session->async_add_torrent(atp);
@@ -595,9 +595,9 @@ void tsuManager::addFromMagnet(const QStringList &&items, const QString &path)
 void tsuManager::getCancelRequest(const std::string &hash, const bool deleteFilesToo)
 {
     try {
-        lt::sha1_hash sh(hash);
-        lt::torrent_handle th = p_session->find_torrent(sh);
-        const lt::torrent_handle &addTh = th;
+        libtorrent::sha1_hash sh(hash);
+        libtorrent::torrent_handle th = p_session->find_torrent(sh);
+        const libtorrent::torrent_handle &addTh = th;
         p_session->remove_torrent(addTh, (int)deleteFilesToo);
         emit torrentDeleted(hash);
     } catch (std::exception &exc) {
@@ -609,8 +609,8 @@ void tsuManager::getCancelRequest(const std::string &hash, const bool deleteFile
 void tsuManager::getPauseRequest(const std::string &hash)
 {
     try {
-        lt::sha1_hash sh(hash);
-        lt::torrent_handle th = p_session->find_torrent(sh);
+        libtorrent::sha1_hash sh(hash);
+        libtorrent::torrent_handle th = p_session->find_torrent(sh);
         th.pause();
     } catch (std::exception &exc) {
         qCritical() << QString("getPauseRequest throws %0").arg(exc.what());
@@ -620,8 +620,8 @@ void tsuManager::getPauseRequest(const std::string &hash)
 void tsuManager::getResumeRequest(const std::string &hash)
 {
     try {
-        lt::sha1_hash sh(hash);
-        lt::torrent_handle th = p_session->find_torrent(sh);
+        libtorrent::sha1_hash sh(hash);
+        libtorrent::torrent_handle th = p_session->find_torrent(sh);
         th.resume();
     } catch (std::exception &exc) {
         qCritical() << QString("getResumeRequest throws %0").arg(exc.what());
@@ -631,7 +631,7 @@ void tsuManager::getResumeRequest(const std::string &hash)
 void tsuManager::refreshSettings()
 {
     qDebug("received refreshSettings");
-    lt::settings_pack settings = p_session->get_settings();
+    libtorrent::settings_pack settings = p_session->get_settings();
     loadSettings(settings);
     p_session->apply_settings(settings);
 }
