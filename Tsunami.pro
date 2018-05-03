@@ -23,8 +23,14 @@ DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-DEFINES += TORRENT_NO_DEPRECATE
-DEFINES += _WIN32_WINNT=0x0600
+win{
+ DEFINES += TORRENT_NO_DEPRECATE
+ DEFINES += _WIN32_WINNT=0x0600
+}
+!win{
+ target.path = /usr/bin
+ INSTALLS += target
+}
 DEFINES += BOOST_ALL_DYN_LINK
 DEFINES += UNICODE
 DEFINES += _UNICODE
