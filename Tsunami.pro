@@ -24,13 +24,14 @@ DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
 DEFINES += QT_DEPRECATED_WARNINGS
 
 win{
- DEFINES += TORRENT_NO_DEPRECATE
  DEFINES += _WIN32_WINNT=0x0600
+ DEFINES += WIN32_LEAN_AND_MEAN # Needed to avoid inclusion error with WinSock2.h (when using libtorrent) http://stackoverflow.com/a/8294669
 }
 !win{
  target.path = /usr/bin
  INSTALLS += target
 }
+DEFINES += TORRENT_NO_DEPRECATE
 DEFINES += BOOST_ALL_DYN_LINK
 DEFINES += UNICODE
 DEFINES += _UNICODE
@@ -59,10 +60,6 @@ DEFINES += NDEBUG
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-# Needed to avoid inclusion error with WinSock2.h (when using libtorrent)
-# http://stackoverflow.com/a/8294669
-DEFINES += WIN32_LEAN_AND_MEAN
 
 # EXTRA DEFINITIONS
 include(version.pri)
