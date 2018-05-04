@@ -28,7 +28,7 @@ win{
  DEFINES += WIN32_LEAN_AND_MEAN # Needed to avoid inclusion error with WinSock2.h (when using libtorrent) http://stackoverflow.com/a/8294669
 }
 !win{
- target.path = /usr/bin
+ target.path = .
  INSTALLS += target
 }
 DEFINES += TORRENT_NO_DEPRECATE
