@@ -18,26 +18,28 @@ We are currently setting up the team volunteers who will develop the software. W
 
 ### How to compile:
 <h3>Windows:</h3>
-- Install Qt, Visual Studio 2015 and git
-- Clone the project
-- Download the libraries from <a href="http://tsunami.adunanza.net/updates/libraries.7z">here</a>
-- Open the archive you previously downloaded and extract the includes and libraries subdirectories in the project folder
-- Open Tsunami.pro in qtcreator
-- Compile
-- Enjoy!
-
+<ul>
+  <li>Install Qt, Visual Studio 2015 and git</li>
+  <li>Clone the project</li>
+  <li>Download the libraries from <a href="http://tsunami.adunanza.net/updates/libraries.7z">here</a></li>
+  <li>Open the archive you previously downloaded and extract the includes and libraries subdirectories in the project folder</li>
+  <li>Open Tsunami.pro in qtcreator</li>
+  <li>Compile</li>
+  <li>Enjoy!</li>
+</ul>
 <h3>Ubuntu(16.04):</h3>
-- Install Qt, git g++,
-- Clone the project;
-- sudo add-apt-repository ppa:ntadej/tano # VLC QT libraries
-- sudo apt-get install libvlc-qt-core2 libvlc-qt-widgets2 libvlc-qt-dbg libvlc-qt-dev
-- sudo apt-get install libttorrent-rasterbar-dev # libtorrent
-- Open Tsunami.pro in qtcreator;
-- Replace this line "DEFINES += TORRENT_NO_DEPRECATE" with this one "#DEFINES += TORRENT_NO_DEPRECATE" *
-- Compile
-- Enjoy!
-
-*) We are developing Tsunami without libtorrent's deprecated functions, but the pre-compiled version of ubuntu has this feature enabled by default.
+<ul>
+  <li>Install Qt, git g++</li>
+  <li>Clone the project;</li>
+  <li>sudo add-apt-repository ppa:ntadej/tano # VLC QT libraries</li>
+  <li>sudo apt-get install libvlc-qt-core2 libvlc-qt-widgets2 libvlc-qt-dbg libvlc-qt-dev</li>
+  <li>sudo apt-get install libttorrent-rasterbar-dev # libtorrent</li>
+  <li>Open Tsunami.pro in qtcreator;</li>
+  <li>Replace this line "DEFINES += TORRENT_NO_DEPRECATE" with this one "#DEFINES += TORRENT_NO_DEPRECATE" (*)</li>
+  <li>Compile</li>
+  <li>Enjoy!</li>
+<ul>
+(*) We are developing Tsunami without libtorrent's deprecated functions, but the pre-compiled version of ubuntu has this feature enabled by default.
    That's the reason why you must comment the line we mentioned above. In order to compile tsunami without deprecated functions you have to
    compile libtorrent by your own with depreacted functions disabled. 
 
