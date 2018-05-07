@@ -48,7 +48,7 @@ private:
     QMenu *p_contextMenu;
 
     void redrawItemsPosition();
-    void changeEvent(QEvent *e);
+    void changeEvent(QEvent *e) override;
 
 private slots:
     void requestedCancel(const std::string &hash, const bool &deleteFilesToo);
