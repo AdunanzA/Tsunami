@@ -123,7 +123,7 @@ private:
     int p_arcLengthApproximation = p_progress_width + p_progress_width / 3;
 
     QColor p_colorLabel = QColor(127,127,127);
-    QFont p_fontLabel = QFont("Tahoma", 7.5);
+    QFont p_fontLabel = QFont("Tahoma", 7);
 
     QGraphicsDropShadowEffect *p_itemShadow;
     QPropertyAnimation *p_itemShadowAnimation;
