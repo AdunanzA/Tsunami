@@ -40,10 +40,7 @@ We are currently setting up the team volunteers who will develop the software. W
   <li>Enjoy!</li>
 <ul>
 <hr/>
-(*) We are developing Tsunami without libtorrent's deprecated functions, but the pre-compiled version of ubuntu has this feature enabled by default.
-   That's the reason why you must comment the line we mentioned above. In order to compile tsunami without deprecated functions you have to
-   compile libtorrent by your own with depreacted functions disabled. 
-
+<h4>(*) We have been developing Tsunami without libtorrent's deprecated functions, but the version included in ubuntu (libtorrent-rasterbar-dev) has enabled this feature by default. That's the reason why you must comment the line we mentioned above. In order to compile tsunami without deprecated functions you have to compile libtorrent by your own with depreacted functions disabled.</h4> 
 <hr/>
 https://www.adunanza.net/
 
