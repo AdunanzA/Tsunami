@@ -255,6 +255,8 @@ void itemDetails::update()
                 }
                 break;
             }
+            default:
+                break;
             }
         }
     }
