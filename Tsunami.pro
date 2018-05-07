@@ -23,7 +23,7 @@ DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-win{
+win32{
  DEFINES += _WIN32_WINNT=0x0600
  DEFINES += WIN32_LEAN_AND_MEAN # Needed to avoid inclusion error with WinSock2.h (when using libtorrent) http://stackoverflow.com/a/8294669
 }
