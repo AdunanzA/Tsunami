@@ -39,7 +39,8 @@ We are currently setting up the team volunteers who will develop the software. W
   <li>Replace this line "DEFINES += TORRENT_NO_DEPRECATE" with this one "#DEFINES += TORRENT_NO_DEPRECATE" (*)</li>
   <li>Compile</li>
   <li>Enjoy!</li>
-<ul>
+</ul>
+  
 <br>
   
 ### NB:
