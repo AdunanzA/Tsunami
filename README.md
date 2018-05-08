@@ -5,12 +5,12 @@
 <p align="center"><b>An intuitive Torrent client</b></p>
 
 <p align="center">
-  <img src="https://ci.appveyor.com/api/projects/status/w8imugyiik0199lx?svg=true" alt="Build Status">
+  <img src="https://ci.appveyor.com/api/projects/status/w8imugyiik0199lx?svg=true" alt="Windows Build">
+  <img src="https://build.snapcraft.io/badge/AdunanzA/Tsunami.svg" alt="Linux Build">
   <img src="https://img.shields.io/github/issues/AdunanzA/Tsunami.svg" alt="Issues">
   <img src="https://img.shields.io/github/forks/AdunanzA/Tsunami.svg" alt="Forks">
   <img src="https://img.shields.io/github/stars/AdunanzA/Tsunami.svg" alt="Stars">
   <img src="https://img.shields.io/badge/license-MPLv2-blue.svg" alt="License">
-  <img src="https://build.snapcraft.io/badge/AdunanzA/Tsunami.svg" alt="Snapcraft">
 </p>
 
 Tsunami is a <a href="https://www.qt.io/">Qt</a> application based on <a href="https://github.com/arvidn/libtorrent" target="_blank">libtorrent</a> with innovative features like Streaming, Search and Intelligent Auto-Sharing
