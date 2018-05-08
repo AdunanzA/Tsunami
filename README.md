@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/github/forks/AdunanzA/Tsunami.svg" alt="Forks">
   <img src="https://img.shields.io/github/stars/AdunanzA/Tsunami.svg" alt="Stars">
   <img src="https://img.shields.io/badge/license-MPLv2-blue.svg" alt="License">
+  <img src="https://build.snapcraft.io/badge/AdunanzA/Tsunami.svg" alt="Snapcraft">
 </p>
 
 Tsunami is a <a href="https://www.qt.io/">Qt</a> application based on <a href="https://github.com/arvidn/libtorrent" target="_blank">libtorrent</a> with innovative features like Streaming, Search and Intelligent Auto-Sharing
@@ -39,9 +40,11 @@ We are currently setting up the team volunteers who will develop the software. W
   <li>Compile</li>
   <li>Enjoy!</li>
 <ul>
-<hr/>
-<h4>(*) We have been developing Tsunami without libtorrent's deprecated functions, but the version included in ubuntu (libtorrent-rasterbar-dev) has enabled this feature by default. That's the reason why you must comment the line we mentioned above. In order to compile tsunami without deprecated functions you have to compile libtorrent by your own with depreacted functions disabled.</h4> 
-<hr/>
+
+<p align="center"> 
+We have been developing Tsunami without libtorrent's deprecated functions, but the version included in ubuntu (libtorrent-rasterbar-dev) has enabled this feature by default. That's the reason why you must comment the line we mentioned above. In order to compile tsunami without deprecated functions you have to compile libtorrent by your own with depreacted functions disabled.
+</p>
+
 https://www.adunanza.net/
 
 https://forum.adunanza.net/
