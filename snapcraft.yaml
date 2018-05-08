@@ -37,6 +37,8 @@ parts:
       - zlib1g
       #- libcanberra-gtk3-module
     override-build: |
+      sudo add-apt-repository ppa:ntadej/tano -y
+      sudo apt-get update -y 
       # needed in order compile with libtorrent-rasterbar-dev
       #sed -i -e 's|/usr/bin|$SNAPCRAFT_PART_INSTALL|g' Tsunami.pro
       sed -i -e 's/DEFINES += TORRENT_NO_DEPRECATE/#DEFINES += TORRENT_NO_DEPRECATE/g' Tsunami.pro
