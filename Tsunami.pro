@@ -27,7 +27,7 @@ win32{
  DEFINES += _WIN32_WINNT=0x0600
  DEFINES += WIN32_LEAN_AND_MEAN # Needed to avoid inclusion error with WinSock2.h (when using libtorrent) http://stackoverflow.com/a/8294669
 }
-!win{
+unix:!macx{
  target.path = .
  INSTALLS += target
  QMAKE_CC = clang
