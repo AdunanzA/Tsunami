@@ -11,42 +11,42 @@ apps:
     plugs: [unity7, x11, opengl, network, home, pulseaudio]
 
 parts:
-  application:
-    source: .
-    plugin: qmake
-    qt-version: qt5
-    build-packages:
-      - libboost-system-dev
-      - libvlc-qt-dev
-      - libtorrent-rasterbar-dev
-      - libssl-dev
-      - libglu1-mesa-dev
-      - qtdeclarative5-dev
-      - qtscript5-dev
-      - qtbase5-dev
-      - g++
-    stage-packages:
-      - libtorrent-rasterbar9
-      - libvlc-qt-core2
-      - libqt5script5
-      - libvlc-qt-widgets2
-      - libqt5gui5
-      - qmlscene
-      - libglu1-mesa
-      - libgpm2
-      - zlib1g
-      #- libcanberra-gtk3-module
+  libt:
+    plugin: autotools
+    source: https://github.com/arvidn/libtorrent.git
+    source-type: git
+    source-branch: libtorrent-1_1_7
     override-build: |
-      sudo add-apt-repository ppa:ntadej/tano -y
-      sudo apt-get update -y 
-      # needed in order compile with libtorrent-rasterbar-dev
-      #sed -i -e 's|/usr/bin|$SNAPCRAFT_PART_INSTALL|g' Tsunami.pro
-      sed -i -e 's/DEFINES += TORRENT_NO_DEPRECATE/#DEFINES += TORRENT_NO_DEPRECATE/g' Tsunami.pro
-      qmake Tsunami.pro
-      make clean
-      snapcraftctl build
-      make install 
-    after: [desktop-qt5] #, qtcharts]
+     ./autotool.sh
+     ./configure --disable-debug --enable-encryption --enable-deprecated-functions=off CC=/usr/bin/clang CXX=/usr/bin/clang++ CXXFLAGS=-std=c++11
+     make -j8
+     make install
+    build-packages:
+      - libssl-dev
+      - libboost-dev 
+      - libboost-system-dev 
+      - libboost-chrono-dev 
+      - libboost-random-dev 
+      - libgeoip-dev
+      - clang
+
+  vlcqt:
+    plugin: cmake
+    source: https://github.com/vlc-qt/vlc-qt.git
+    source-type: git
+    source-branch: master
+    override-build: |
+      mkdir build
+      cd build
+      cmake .. -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLIBVLC_LIBRARY=/usr/lib/libvlc.so -DLIBVLCCORE_LIBRARY=/usr/lib/libvlccore.so -DLIBVLC_INCLUDE_DIR=/usr/include
+      make -j8
+      make install
+    build-packages:
+      - libvlccore-dev
+      - libvlc-dev
+      - qtbase5-dev
+      - qtdeclarative5-dev
+      - clang
 
   desktop-qt5:
     stage-packages:
@@ -59,7 +59,6 @@ parts:
       - libgdk-pixbuf2.0-0
       - libqt5svg5 # for loading icon themes which are svg
       - locales-all
-
 #  qtcharts:
 #    plugin: qmake
 #    source: https://github.com/qt/qtcharts.git
@@ -71,3 +70,37 @@ parts:
 #      - qttools5-dev
 #      - build-essential
 #      - qttools5-dev-tools
+
+  tsu:
+    source: .
+    plugin: qmake
+    qt-version: qt5
+    build-packages:
+      - libboost-dev
+      - libboost-system-dev
+      - libssl-dev
+      - libglu1-mesa-dev
+      - qtdeclarative5-dev
+      - qtscript5-dev
+      - qttools5-dev
+      - libqt5svg5-dev
+      - qtbase5-dev
+      - qt5-default
+      - clang
+      - g++
+    stage-packages:
+      - libssl1.0.0
+      - libqt5script5
+      - libqt5gui5
+      - qmlscene
+      - libglu1-mesa
+      - libgpm2
+      - zlib1g
+      - libcanberra-gtk3-module
+    override-build: |
+      export QT_SELECT=qt5
+      qmake Tsunami.pro
+      make clean
+      snapcraftctl build
+      make install 
+    after: [desktop-qt5, libt, vlcqt] #, qtcharts]
