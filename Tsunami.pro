@@ -30,6 +30,8 @@ win32{
 !win{
  target.path = .
  INSTALLS += target
+ QMAKE_CC = clang
+ QMAKE_CXX = clang++
 }
 DEFINES += TORRENT_NO_DEPRECATE
 DEFINES += BOOST_ALL_DYN_LINK
