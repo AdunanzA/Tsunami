@@ -35,6 +35,7 @@
       virtual void setSelection(const QRect &rect,QItemSelectionModel::SelectionFlags command);
       virtual QRegion visualRegionForSelection(const QItemSelection &selection) const;
 
+      using QAbstractItemView::dataChanged;
       virtual void dataChanged(const QModelIndex &topLeft,const QModelIndex &bottomRight);
 
       virtual void paintEvent(QPaintEvent *event);
