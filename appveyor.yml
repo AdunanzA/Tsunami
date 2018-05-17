@@ -22,7 +22,7 @@ environment:
 clone_folder: *REPO_DIR
 
 install:
-  - set QTDIR=C:\Qt\5.8\msvc2015_64
+  - set QTDIR=C:\Qt\5.10\msvc2015_64
   - set PATH=%PATH%;%QTDIR%\bin
 
 before_build:
