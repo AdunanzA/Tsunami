@@ -17,47 +17,36 @@ DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
            APP_ORGANIZATION_DOMAIN=\"\\\"Adunanza.com\\\"\" \
            APP_PROJECT_NAME=\"\\\"Tsunami\\\"\"
 
-# The following define makes your compiler emit warnings if you use
-# any feature of Qt which as been marked as deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
-
-win32{
- DEFINES += _WIN32_WINNT=0x0600
- DEFINES += WIN32_LEAN_AND_MEAN # Needed to avoid inclusion error with WinSock2.h (when using libtorrent) http://stackoverflow.com/a/8294669
-}
-unix:!macx{
- target.path = .
- INSTALLS += target
- QMAKE_CC = clang
- QMAKE_CXX = clang++
-}
-DEFINES += TORRENT_NO_DEPRECATE
-DEFINES += BOOST_ALL_DYN_LINK
-DEFINES += UNICODE
-DEFINES += _UNICODE
-
-# Enable Context details in log even in release build
-# https://forum.qt.io/topic/67015/enable-qmessagelogcontext-in-release-build/2
-DEFINES += QT_MESSAGELOGCONTEXT
-
-DEFINES += TORRENT_EXPORT_EXTRA
-DEFINES += _SCL_SECURE_NO_DEPRECATE
-DEFINES += _CRT_SECURE_NO_DEPRECATE
-DEFINES += torrent_rasterbar_EXPORTS
-DEFINES += NDEBUG
-
-# You can also make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
+# Qt Defines
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_MESSAGELOGCONTEXT
+DEFINES += QT_DEPRECATED_WARNINGS
+# Libtorrent Defines
+DEFINES += TORRENT_NO_DEPRECATE
 
 # EXTRA DEFINITIONS
 include(version.pri)
 include(utility.pri)
 include(tsuCrawler.pri)
 include(runGuard.pri)
+
+win32{
+ INCLUDEPATH += $$PWD/includes #Do not call "include" this folder!
+ DEPENDPATH  += $$PWD/libraries
+ DEFINES += WIN32_LEAN_AND_MEAN # http://stackoverflow.com/a/8294669
+ CONFIG(release, debug|release): LIBS  += -L$$PWD/libraries/rel64/ -ltorrent-rasterbar -lboost_system-vc140-mt-1_63
+ else:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/ -ltorrent-rasterbar -lboost_system-vc140-mt-gd-1_63
+ CONFIG(release, debug|release): LIBS += -L$$PWD/libraries/rel64/vlc_qt/ -lVLCQtCore -lVLCQtWidgets
+ else:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/vlc_qt/ -lVLCQtCored -lVLCQtWidgetsd
+}
+
+unix:!macx{
+ target.path = .
+ INSTALLS += target
+ QMAKE_CC = clang
+ QMAKE_CXX = clang++
+ LIBS += -lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system
+}
 
 SOURCES += main.cpp\
     mainwindow.cpp \
@@ -103,17 +92,3 @@ QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 5
 RESOURCES += \
     resources.qrc \
     translations.qrc
-
-# Headers folder - Do not call "include" this folder!
-INCLUDEPATH += $$PWD/includes
-DEPENDPATH  += $$PWD/includes
-
-INCLUDEPATH += $$PWD/libraries
-DEPENDPATH  += $$PWD/libraries
-
-win32:CONFIG(release, debug|release): LIBS  += -L$$PWD/libraries/rel64/ -ltorrent-rasterbar -lboost_system-vc140-mt-1_63
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/ -ltorrent-rasterbar -lboost_system-vc140-mt-gd-1_63
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libraries/rel64/vlc_qt/ -lVLCQtCore -lVLCQtWidgets
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/vlc_qt/ -lVLCQtCored -lVLCQtWidgetsd
-else:unix: LIBS += -lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system
