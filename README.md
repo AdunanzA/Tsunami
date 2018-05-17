@@ -28,7 +28,7 @@ We are currently setting up the team volunteers who will develop the software. W
   <li>Compile</li>
   <li>Enjoy!</li>
 </ul>
-<h3>Ubuntu(16.04):</h3>
+<h3>Ubuntu(17.04 or 17.10):</h3>
 <ul>
   <li>Install Qt, git g++</li>
   <li>Clone the project;</li>
