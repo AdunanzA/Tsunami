@@ -81,7 +81,9 @@ void tsuTreeWidget::expandDirectory(QTreeWidgetItem *item)
 void tsuTreeWidget::loadDriveStructure(const QString drive)
 {
     QTreeWidgetItem* driveItem = new QTreeWidgetItem();
-    driveItem->setIcon(0, *(new QIcon(":/images/drive.png")));
+    QIcon *ic = new QIcon(":/images/drive.png");
+
+    driveItem->setIcon(0, *(ic));
     driveItem->setText(0, drive);
     this->addTopLevelItem(driveItem);
 
@@ -94,32 +96,23 @@ void tsuTreeWidget::loadDriveStructure(const QString drive)
     {
         if (fileInfo.fileName() == "." || fileInfo.fileName() == "..") continue;
 
-//        QTreeWidgetItem* item = new QTreeWidgetItem();
-//        item->setText(0,fileInfo.fileName());
-
-//        if(fileInfo.isFile())
-//        {
-//            item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-//            item->setIcon(0,*(new QIcon(":/images/file-doc.png")));
-//            item->setText(1, QString("%0%1").arg(convertSize(fileInfo.size())).arg(convertSizeUnit(fileInfo.size())));
-//        }
-
         if(fileInfo.isDir())
         {
             QTreeWidgetItem* item = new QTreeWidgetItem();
+            QIcon *icn = new QIcon(":/images/folder.png");
             item->setText(0,fileInfo.fileName());
             item->setText(1,fileInfo.filePath());
             item->setCheckState(0, Qt::Unchecked);
             item->setFlags(item->flags() | Qt::ItemIsAutoTristate);
-            item->setIcon(0,*(new QIcon(":/images/folder.png")));
+            item->setIcon(0,*(icn));
             addChildren(item,fileInfo.filePath());
             driveItem->addChild(item);
+            delete(icn);
+            delete(item);
         }
-
-//        item->setText(2,fileInfo.filePath());
-//        driveItem->addChild(item);
     }
-
+    delete(ic);
+    delete(rootDir);
 }
 
 void tsuTreeWidget::addChildren(QTreeWidgetItem *item, QString filePath)
@@ -131,29 +124,21 @@ void tsuTreeWidget::addChildren(QTreeWidgetItem *item, QString filePath)
     {
         if (fileInfo.fileName() == "." || fileInfo.fileName() == "..") continue;
 
-//        QTreeWidgetItem* child = new QTreeWidgetItem();
-//        child->setText(0,fileInfo.fileName());
-
-//        if(fileInfo.isFile())
-//        {
-//            child->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-//            child->setIcon(0,*(new QIcon(":/images/file-doc.png")));
-//            child->setText(1, QString("%0%1").arg(convertSize(fileInfo.size())).arg(convertSizeUnit(fileInfo.size())));
-//        }
-
         if(fileInfo.isDir())
         {
             QTreeWidgetItem* child = new QTreeWidgetItem();
+            QIcon *ic = new QIcon(":/images/folder.png");
             child->setText(0,fileInfo.fileName());
             child->setText(1,fileInfo.filePath());
             child->setCheckState(0, Qt::Unchecked);
             child->setFlags(child->flags() | Qt::ItemIsAutoTristate);
-            child->setIcon(0,*(new QIcon(":/images/folder.png")));
+            child->setIcon(0, *ic);
             item->addChild(child);
+            delete(child);
+            delete(ic);
         }
-
-//        item->addChild(child);
     }
+    delete(rootDir);
 }
 
 QString tsuTreeWidget::convertSize(const int &size)
