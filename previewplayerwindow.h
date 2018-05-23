@@ -2,6 +2,7 @@
 #define PREVIEWPLAYERWINDOW_H
 
 #include <QWidget>
+#include <QSlider>
 #include "VLCQtWidgets/WidgetVideo.h"
 #include "previewplayer.h"
 
@@ -30,8 +31,9 @@ private slots:
     void on_pushButtonFullscreen_clicked();
 
 private:
-    Ui::PreviewPlayerWindow *ui;
-    PreviewPlayer *previewPlayer;
+    Ui::PreviewPlayerWindow *ui = Q_NULLPTR;
+    QSlider * seekSlider = Q_NULLPTR;
+    PreviewPlayer *previewPlayer = Q_NULLPTR;
     void updatePlayPauseButton();
 };
 

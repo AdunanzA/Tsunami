@@ -45,7 +45,7 @@ PreviewPlayerWindow::PreviewPlayerWindow(QWidget *parent) :
 
     updatePlayPauseButton();
 
-    QSlider *seekSlider = new QSlider(Qt::Orientation::Horizontal);
+    seekSlider = new QSlider(Qt::Orientation::Horizontal);
     seekSlider->setStyleSheet("QSlider::groove:horizontal { background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #6B6A68, stop: 0.5 #212121, stop: 1 #000000); height: 8px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-top-left-radius: 4px; border-bottom-left-radius: 4px; } QSlider::handle:horizontal {  } QSlider::add-page:horizontal { } QSlider::sub-page:horizontal { background: qlineargradient(x1: 0.2, y1: 0, x2: 0.2, y2: 1, stop: 0 #6BEAFD, stop: 0.5 #125292, stop: 1 #0F1014); border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-top-left-radius: 4px; border-bottom-left-radius: 4px; margin: 0px 2px 0px 1px; }");
     ui->seekWidget->setSliderWidget(seekSlider, true);
 
@@ -57,6 +57,7 @@ PreviewPlayerWindow::PreviewPlayerWindow(QWidget *parent) :
 
 PreviewPlayerWindow::~PreviewPlayerWindow()
 {
+    delete seekSlider;
     delete previewPlayer;
     delete ui;
 }
