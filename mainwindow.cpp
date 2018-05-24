@@ -115,6 +115,13 @@ MainWindow::~MainWindow()
 //    qDebug("session thread waited");
     p_session_thread->deleteLater();
     qDebug("session thread executed deleteLater");
+    delete p_gaugeSpeedLabel;
+    delete p_gaugeUnitLabel;
+    delete p_gaugeUpNeedle;
+    delete p_gaugeDownNeedle;
+    delete p_gaugeValuesItem;
+    delete p_gaugeDegreesItem;
+    delete p_gauge;
     delete ui;
     qDebug("ui deleted");
 }
