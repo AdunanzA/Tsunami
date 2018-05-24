@@ -1,20 +1,12 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2017-02-26T09:40:10
-#
-#-------------------------------------------------
-
-QT       += core gui sql network script
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui sql network script widgets
 
 TARGET = Tsunami
 TEMPLATE = app
 CONFIG += c++11
 
 # Used by QSettings
-DEFINES += APP_ORGANIZATION_NAME=\"\\\"Adunanza\\\"\" \
-           APP_ORGANIZATION_DOMAIN=\"\\\"Adunanza.com\\\"\" \
+DEFINES += APP_ORGANIZATION_NAME=\"\\\"AdunanzA\\\"\" \
+           APP_ORGANIZATION_DOMAIN=\"\\\"adunanza.net\\\"\" \
            APP_PROJECT_NAME=\"\\\"Tsunami\\\"\"
 
 # Qt Defines
