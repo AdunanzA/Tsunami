@@ -26,6 +26,7 @@ win32{
  INCLUDEPATH += $$PWD/includes #Do not call "include" this folder!
  DEPENDPATH  += $$PWD/libraries
  DEFINES += WIN32_LEAN_AND_MEAN # http://stackoverflow.com/a/8294669
+ DEFINES += _WIN32_WINNT=0x0601
  CONFIG(release, debug|release): LIBS  += -L$$PWD/libraries/rel64/ -L$$PWD/libraries/rel64/vlc_qt/ -lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system-vc140-mt-1_63
  else:CONFIG(debug, debug|release): LIBS += -L$$PWD/libraries/deb64/ -L$$PWD/libraries/deb64/vlc_qt/ -ltorrent-rasterbar -lboost_system-vc140-mt-gd-1_63 -lVLCQtCored -lVLCQtWidgetsd
 }
