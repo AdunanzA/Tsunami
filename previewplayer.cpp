@@ -29,10 +29,7 @@ PreviewPlayer::~PreviewPlayer()
     libvlc_release(vlcInstance);
 #else
     delete mediaPlayer;
-    if(media != 0)
-    {
-        delete media;
-    }
+    if(media != Q_NULLPTR) delete media;
     delete vlcInstance;
 #endif
 }

@@ -26,7 +26,7 @@ class PreviewPlayer : public QObject
     bool isPlaying;
 #else
     VlcInstance *vlcInstance;
-    VlcMedia *media;
+    VlcMedia *media = Q_NULLPTR;
     float actualPosition;
     int length;
 #endif
