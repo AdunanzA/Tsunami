@@ -3,8 +3,8 @@
 ChartXY::ChartXY(QWidget *parent):
   QAbstractItemView(parent)
   {
-  m_setting=new ChartXYSetting(this);
-  m_render=new ChartXYRender(this,m_setting);
+  m_setting = new ChartXYSetting(this);
+  m_render =  new ChartXYRender(this, m_setting);
 
   //grabMouse(Qt::CrossCursor);
   }

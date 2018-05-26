@@ -1,4 +1,4 @@
-/* © Pusterla Fabio 2011 */
+/* Pusterla Fabio 2011 */
 
 #ifndef CHARTXYGRID_H
   #define CHARTXYGRID_H
@@ -32,12 +32,13 @@
     public slots:
 
     private:
+      ~ChartXYGrid();
       bool m_visible;
       unsigned int m_border; // C
       QColor m_background_color;
       QColor m_foreground_color;
-      ChartXYGridTick *m_vertical_tick;
-      ChartXYGridTick *m_horizzontal_tick;
+      ChartXYGridTick *m_vertical_tick = Q_NULLPTR;
+      ChartXYGridTick *m_horizzontal_tick = Q_NULLPTR;
     };
 
 #endif // CHARTXYGRID_H

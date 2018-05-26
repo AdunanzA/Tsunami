@@ -6,11 +6,17 @@ ChartXYGrid::ChartXYGrid(QObject *parent):
   m_visible=true;
   m_border=8;
   //m_background_color=QColor(32,128,32);
-  m_background_color=QColor(192,192,192);
-  m_foreground_color=QColor(0,0,0);
-  m_vertical_tick=new ChartXYGridTick();
-  m_horizzontal_tick=new ChartXYGridTick();
+  m_background_color = QColor(192,192,192);
+  m_foreground_color = QColor(0,0,0);
+  m_vertical_tick = new ChartXYGridTick();
+  m_horizzontal_tick = new ChartXYGridTick();
   }
+
+ChartXYGrid::~ChartXYGrid()
+{
+delete m_vertical_tick;
+delete m_horizzontal_tick;
+}
 
 bool ChartXYGrid::visible(void) const
   {
