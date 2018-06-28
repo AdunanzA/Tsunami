@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 //    QSettings settings(filePath, QSettings::IniFormat);
 //    bool justUpdated = settings.value("justUpdated", false).toBool();
 
-    updatemanager *um = new updatemanager();
+    QPointer<updatemanager> um = new updatemanager();
 
 //    if (!justUpdated) {
     qDebug("checking for update");
@@ -171,7 +171,6 @@ int main(int argc, char *argv[])
         QProcess::startDetached(newPath, qApp->arguments());
         return 0;
     } else {
-        delete(um);
         qDebug("showing main window");
         MainWindow w;
         w.show();
