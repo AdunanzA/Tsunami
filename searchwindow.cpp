@@ -59,6 +59,8 @@ searchwindow::searchwindow(QWidget *parent) :
 
     connect(ui->tableResults, &QTableWidget::cellClicked, this, &searchwindow::cellClicked);
 
+    connect(ui->txtSearch, &QLineEdit::returnPressed, this, &searchwindow::txtSearch_returnPressed);
+
     ui->tableResults->setColumnCount(12);
     ui->tableResults->hideColumn(tableColumns::Category);
     ui->tableResults->hideColumn(tableColumns::Provider);
@@ -368,4 +370,9 @@ void searchwindow::sortTable()
     default:
         break;
     }
+}
+
+void searchwindow::txtSearch_returnPressed()
+{
+    ui->btnSearch->released();
 }

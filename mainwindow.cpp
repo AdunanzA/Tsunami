@@ -194,33 +194,7 @@ void MainWindow::initializeScreen() {
     ui->stackedWidget->addWidget(previewPlayerPage);
     ui->stackedWidget->addWidget(archivePage);
 
-//    settingsPage->hide();
-//    searchPage->hide();
-//    downloadPage->hide();
-//    statisticsPage->hide();
-//    previewPlayerPage->hide();
-//	archivePage->hide();
-
-//    ui->content->addWidget(settingsPage);
-//    ui->content->addWidget(searchPage);
-//    ui->content->addWidget(statisticsPage);
-//    ui->content->addWidget(downloadPage);
-//    ui->content->addWidget(previewPlayerPage);
-//	ui->content->addWidget(archivePage);
-
     p_gauge = new QcGaugeWidget;
-//    p_gauge->addBackground(99);
-
-//    QcBackgroundItem *bkg1 = p_gauge->addBackground(92);
-//    bkg1->clearColors();
-//    bkg1->addColor(0.1f,Qt::black);
-//    bkg1->addColor(1.0,Qt::white);
-
-//    QcBackgroundItem *bkg2 = p_gauge->addBackground(88);
-//    bkg2->clearColors();
-//    bkg2->addColor(0.1f,Qt::gray);
-//    bkg2->addColor(1.0,Qt::darkGray);
-
     p_gauge->addArc(75);
     p_gaugeDegreesItem = p_gauge->addDegrees(75);
     p_gaugeDegreesItem->setValueRange(0,20);
@@ -247,8 +221,6 @@ void MainWindow::initializeScreen() {
     p_gaugeDownNeedle->setColor(Qt::green);
     p_gaugeDownNeedle->setValueRange(0,20);
 
-//    p_gauge->addBackground(7);
-//    p_gauge->addGlass(88);
     ui->contentGauge->addWidget(p_gauge);
 
 }
@@ -365,7 +337,7 @@ void MainWindow::createTrayIcon()
     connect(m_systrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(toggleVisibility(QSystemTrayIcon::ActivationReason)));
     m_systrayIcon->setToolTip(PROJECT " " VERSION);
     m_systrayIcon->show();
-//    m_systrayIcon->showMessage(PROJECT, "Welcome to the future!", QSystemTrayIcon::Information, TIME_TRAY_BALLOON);
+
     popupInfo("Welcome to the future!");
     qInfo("started");
 }
@@ -546,12 +518,19 @@ void MainWindow::sessionStatisticUpdate(const quint64 &sent, const quint64 &rece
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    qDebug("closing");
-    statusLabel->setText("Saving resume data. Please wait.");
-    writeSettings();
-//    updateTsunami();
-    emit stopSessionManager();
-    event->accept();
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, PROJECT,
+                                                                tr("Are you sure you want to quit?\n"),
+                                                                QMessageBox::No | QMessageBox::Yes,
+                                                                QMessageBox::Yes);
+    if (resBtn != QMessageBox::Yes) {
+        event->ignore();
+    } else {
+        qDebug("closing");
+        statusLabel->setText("Saving resume data. Please wait.");
+        writeSettings();
+        emit stopSessionManager();
+        event->accept();
+    }
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -560,6 +539,10 @@ void MainWindow::changeEvent(QEvent *e)
     {
         qDebug() << "Intercepted LanguageChange event by MainWindow";
         ui->retranslateUi(this);
+    }
+    if (e->type() == QEvent::WindowStateChange && isMinimized())
+    {
+        hide();
     }
 
     QMainWindow::changeEvent(e);
@@ -687,7 +670,6 @@ void MainWindow::downloadFromSearchPage(const QString magnet)
     ui->btnDownload->released(); // switch to downloadpage
     updateStatusBarLabel("file added from search page");
 }
-
 
 void MainWindow::on_btnPatreon_released()
 {

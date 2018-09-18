@@ -76,6 +76,7 @@ private slots:
     void on_btnOrderName_released();
     void on_btnOrderSeeds_released();
     void on_btnOrderDirection_released();
+    void txtSearch_returnPressed();
 };
 
 #endif // SEARCHWINDOW_H

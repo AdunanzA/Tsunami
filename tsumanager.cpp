@@ -169,6 +169,11 @@ void tsuManager::startManager()
         // FASTRESUMES
         int count = 0;
         QDirIterator it(p_tsunamiSessionFolder, QStringList() << "*.fastresume", QDir::Files, QDirIterator::Subdirectories);
+
+        QSettings qtSettings(qApp->property("iniFilePath").toString(), QSettings::IniFormat);
+        QStorageInfo storage = QStorageInfo::root();
+        QString downloadPath = qtSettings.value("Download/downloadPath", storage.rootPath()).toString();
+
         while (it.hasNext()) {
             QString fileName = it.next();
 //            qDebug() << QString("%0 exists %1").arg(fileName).arg(QFile::exists(fileName));
@@ -205,6 +210,7 @@ void tsuManager::startManager()
             tp.ti = boost::make_shared<libtorrent::torrent_info>(ti);
 //            tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
             tp.name = bdn.dict_find_string_value("zu-fileName");
+            tp.save_path = downloadPath.toStdString();
             p_session->async_add_torrent(tp);
             count++;
         }
@@ -317,7 +323,9 @@ void tsuManager::alertsHandler()
     for (libtorrent::alert* alert : alerts)
     {
         if (alert == nullptr) continue;
-//        qDebug() << QString("%0::%1").arg(alert->what()).arg(alert->message().c_str());
+        if (alert->type() != libtorrent::state_update_alert::alert_type && alert->type() != libtorrent::session_stats_alert::alert_type) {
+            qDebug() << QString("%0::%1").arg(alert->what()).arg(alert->message().c_str());
+        }
 
         switch (alert->type())
         {

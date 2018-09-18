@@ -15,6 +15,17 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.6.4] 2018-09-18
+### Changed
+- Search page: search starts when enter is pressed
+
+### Fixed
+- Tsunami now respect download folder on fastresume
+
+### Added
+- Tsunami close confirmation
+- Tsunami now minimize to tray icon (task bar icon is now hidden)
+
 ## [0.6.3] 2018-05-26
 ### Fixed
 - Fixed various memory leaks
