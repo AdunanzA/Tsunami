@@ -136,46 +136,53 @@ void settingswindow::on_btnSave_released()
     if (needRestart) {
         qDebug("need restart");
         QMessageBox mbox;
-        QString msg = QString("<center>Please restart Tsunami to apply new settings<br/>Do you want to restart now?</center>");
+//        QString msg = QString("<center>Please restart Tsunami to apply new settings<br/>Do you want to restart now?</center>");
+        QString msg = QString("<center>Please restart Tsunami to apply new settings<br/></center>");
         mbox.setText(msg);
-        mbox.setStandardButtons( QMessageBox::Yes | QMessageBox::No );
+        mbox.exec();
+//        mbox.setStandardButtons( QMessageBox::Yes | QMessageBox::No );
 
-        bool proceedWithRestart = false;
+//        bool proceedWithRestart = false;
 
-        switch (mbox.exec()) {
-            case QMessageBox::Yes:
-                proceedWithRestart = true;
-                break;
-            default:
-                proceedWithRestart = false;
-                break;
-        }
-        if (proceedWithRestart) {
-            qDebug("restarting");
+//        switch (mbox.exec()) {
+//            case QMessageBox::Yes:
+//                proceedWithRestart = true;
+//                break;
+//            default:
+//                proceedWithRestart = false;
+//                break;
+//        }
+//        if (proceedWithRestart) {
+//            qDebug("restarting");
 
-            // due to squirrel standard behaviour, qApp->arguments()[0] returs path to a tsunami version older than one just downloaded
-            // retrieve path of tsunami.exe loader outside current path and launch
-            QString fileName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
-            QDir oldPath(QCoreApplication::applicationDirPath());
-            oldPath.cdUp();
-            QString newPath = oldPath.filePath(fileName);
+//            // due to squirrel standard behaviour, qApp->arguments()[0] returs path to a tsunami version older than one just downloaded
+//            // retrieve path of tsunami.exe loader outside current path and launch
+//            QString fileName = QFileInfo(QCoreApplication::applicationFilePath()).fileName();
+//            QDir oldPath(QCoreApplication::applicationDirPath());
+//            oldPath.cdUp();
+//            QString newPath = oldPath.filePath(fileName);
 
-            qApp->quit();
-//            QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
-            QProcess::startDetached(newPath, qApp->arguments());
-        } else {
-            if (needRefreshTorrentSettings) {
-                qDebug("send refresh to libtorrent");
-                emit sendRefreshSettings();
-            }
-        }
+//            qApp->quit();
+//            QProcess::startDetached(newPath, qApp->arguments());
+//        } else {
+//            if (needRefreshTorrentSettings) {
+//                qDebug("send refresh to libtorrent");
+//                emit sendRefreshSettings();
+//            }
+//        }
     } else {
         qDebug("don't need restart");
-        if (needRefreshTorrentSettings) {
-            qDebug("send refresh to libtorrent");
-            emit sendRefreshSettings();
-        }
+//        if (needRefreshTorrentSettings) {
+//            qDebug("send refresh to libtorrent");
+//            emit sendRefreshSettings();
+//        }
     }
+
+    if (needRefreshTorrentSettings) {
+        qDebug("send refresh to libtorrent");
+        emit sendRefreshSettings();
+    }
+
 }
 
 void settingswindow::on_btnCancel_released()

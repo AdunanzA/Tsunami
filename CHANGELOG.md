@@ -15,6 +15,17 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.7.0] 2018-09-19
+### Added
+- Search page: added categories selection
+- Auto save fastresume data every 10 minutes
+
+### Fixed
+- Led on external IP, DHT ecc... now works again
+- Missing torrents on restart
+- Negative values in tsuCard remaining bytes
+- Crash on fastresume file without torrent file
+
 ## [0.6.4] 2018-09-18
 ### Changed
 - Search page: search starts when enter is pressed

@@ -194,10 +194,13 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     pathLabels.addText(100 - lenRem, 58, p_fontLabel, tr("Remaining"));
     painter->drawPath(pathLabels);
 
+    int remaining = (p_size - p_downloaded);
+    if (remaining < 0) remaining = 0;
+
     // Indicators
     QString sSize = convertSize(p_size);
     QString sDown = convertSize(p_downloaded);
-    QString sRema = convertSize((p_size - p_downloaded));
+    QString sRema = convertSize(remaining);
 
     painter->setFont(p_indicatorFont);
     int lenSize = painter->fontMetrics().width(sSize);
@@ -219,7 +222,7 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QPainterPath pathBluIndicators;
     painter->setBrush(QColor(0,144,255));
     pathBluIndicators.addText(124-lenRema, 58, p_indicatorFont, sRema);
-    pathBluIndicators.addText(126, 58, p_indicatorUnitFont, convertSizeUnit((p_size - p_downloaded)));
+    pathBluIndicators.addText(126, 58, p_indicatorUnitFont, convertSizeUnit((remaining)));
     painter->drawPath(pathBluIndicators);
 
     // LOAD INDICATORS
@@ -333,12 +336,12 @@ void tsuItem::setValue(const tsuEvents::tsuEvent &event)
 {
 //    qDebug() << QString("setValue event.percentage %1").arg(event.percentage);
     p_progressValue = event.percentage/10000;
-    p_downloaded = (event.downloaded > 0) ? qFabs(event.downloaded) : 0;
-    p_rateDownload = (event.downloadRate > 0) ? qFabs(event.downloadRate) : 0;
+    p_downloaded = qFabs(event.downloaded);
+    p_rateDownload = qFabs(event.downloadRate);
     p_head = event.name;
-    p_size = (event.total_size > 0) ? qFabs(event.total_size) : 0;
-    p_uploaded = (event.uploaded > 0) ? qFabs(event.uploaded) : 0;
-    p_rateUpload = (event.uploadRate > 0) ? qFabs(event.uploadRate) : 0;
+    p_size = qFabs(event.total_size);
+    p_uploaded = qFabs(event.uploaded);
+    p_rateUpload = qFabs(event.uploadRate);
     p_numSeeds = event.numSeeds;
     p_numPeers = event.numPeers;
     set_Status(event.state);

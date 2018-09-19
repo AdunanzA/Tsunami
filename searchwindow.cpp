@@ -315,6 +315,12 @@ void searchwindow::on_btnSearch_released()
 
         QString textToSearch = ui->txtSearch->text();
         tsuProvider::categories wantedCategory = tsuProvider::categories::all;// (tsuProvider::categories)ui->cmbCategories->currentData().toInt();
+        if (ui->radioApps->isChecked()) wantedCategory = tsuProvider::categories::apps;
+        if (ui->radioAudio->isChecked()) wantedCategory = tsuProvider::categories::audio;
+        if (ui->radioGames->isChecked()) wantedCategory = tsuProvider::categories::games;
+        if (ui->radioOther->isChecked()) wantedCategory = tsuProvider::categories::other;
+        if (ui->radioPorn->isChecked()) wantedCategory = tsuProvider::categories::porn;
+        if (ui->radioVideo->isChecked()) wantedCategory = tsuProvider::categories::video;
         int resultsWanted = 50;//ui->spinResultsWanted->value();
         tsuProvider::sortRules sort = tsuProvider::sortRules::seeds_d;// (tsuProvider::sortRules)ui->cmbSort->currentData().toInt();
 

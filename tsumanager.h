@@ -67,7 +67,12 @@ private:
     void loadSettings(libtorrent::settings_pack &settings);
 
     QString p_tsunamiSessionFolder;
+
     QTimer *p_timerUpdate;
+    int p_timerUpdateInterval = 1 * 1000; // every second
+
+    QTimer *p_timerResumeData;
+    int p_timerResumeDataInterval = 10 * 60 * 1000; // every ten minutes
 
     // session stat alert index
     int p_net_recv_bytes;
@@ -90,6 +95,7 @@ private:
 private slots:
     void alertsHandler();
     void postUpdates();
+    void postResumeData();
 };
 
 /*

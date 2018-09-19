@@ -77,10 +77,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // update libtorrent settings from settingsWindow
     connect(settingsPage, SIGNAL(sendRefreshSettings()), sessionManager, SLOT(refreshSettings()));
 
-
     // request download from searchpage
     connect(searchPage, &searchwindow::downloadFromMagnet, this, &MainWindow::downloadFromSearchPage);
-
 
     // Constructions events
     connect(p_session_thread, SIGNAL(started()), sessionManager, SLOT(startManager()));

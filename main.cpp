@@ -138,22 +138,14 @@ int main(int argc, char *argv[])
     filePath = QDir::toNativeSeparators(filePath);
     a.setProperty("iniFilePath", filePath); // QApplication property are application wide qApp->property("")
 
-//    QSettings settings(filePath, QSettings::IniFormat);
-//    bool justUpdated = settings.value("justUpdated", false).toBool();
-
     QPointer<updatemanager> um = new updatemanager();
 
-//    if (!justUpdated) {
     qDebug("checking for update");
     um->checkUpdate();
 
     while (!um->isFinished()) {
         a.processEvents();
     }
-
-//    } else {
-//        um->showSplashScreen(4000);
-//    }
 
     if (um->appNeedRestart()) {
         QSettings settings(filePath, QSettings::IniFormat);

@@ -63,7 +63,6 @@ public slots:
                                 const quint64 &error, const quint64 &queuedDown,
                                 const quint64 &queuedSeed);
 
-
 private slots:
     void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
     void balloonClicked();

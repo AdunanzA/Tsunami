@@ -51,6 +51,11 @@ tsuManager::tsuManager()
     connect(p_timerUpdate, SIGNAL(timeout()), this, SLOT(postUpdates()));
     connect(this, SIGNAL(stopTimer()), p_timerUpdate, SLOT(stop()));
     connect(this, SIGNAL(finished()), p_timerUpdate, SLOT(deleteLater()));
+
+    p_timerResumeData = new QTimer(this);
+    connect(p_timerResumeData, SIGNAL(timeout()), this, SLOT(postResumeData()));
+    connect(this, SIGNAL(stopTimer()), p_timerResumeData, SLOT(stop()));
+    connect(this, SIGNAL(finished()), p_timerResumeData, SLOT(deleteLater()));
 }
 
 void tsuManager::setNotify()
@@ -115,6 +120,8 @@ void tsuManager::loadSettings(libtorrent::settings_pack &settings)
     settings.set_int(libtorrent::settings_pack::connection_speed, 20);
     settings.set_int(libtorrent::settings_pack::seed_choking_algorithm, 1);
 
+    settings.set_int(libtorrent::settings_pack::int_types::alert_mask, libtorrent::alert::all_categories);
+
     int availThreads = ceil(QThread::idealThreadCount()/4);
     qDebug() << QString("found %0 ideal thread count, assigning %1 to hash threads").arg(QThread::idealThreadCount()).arg(availThreads);
     settings.set_int(libtorrent::settings_pack::aio_threads, availThreads);
@@ -129,7 +136,8 @@ void tsuManager::startManager()
     loadSettings(settings);
     p_session = QSharedPointer<libtorrent::session>::create(settings);
     setNotify();
-    p_timerUpdate->start(1000);
+    p_timerUpdate->start(p_timerUpdateInterval);
+    p_timerResumeData->start(p_timerResumeDataInterval);
 
     if (!QDir(p_tsunamiSessionFolder).exists()) {
         if (QDir().mkpath(p_tsunamiSessionFolder)) {
@@ -205,14 +213,19 @@ void tsuManager::startManager()
             tp.resume_data.assign(std::istream_iterator<char>(ifs), std::istream_iterator<char>());
 
             QString torrentName = fileName.replace("fastresume", "torrent");
-            libtorrent::torrent_info ti(torrentName.toStdString());
-//            tp.ti = std::make_shared<libtorrent::torrent_info>(ti);
-            tp.ti = boost::make_shared<libtorrent::torrent_info>(ti);
-//            tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
-            tp.name = bdn.dict_find_string_value("zu-fileName");
-            tp.save_path = downloadPath.toStdString();
-            p_session->async_add_torrent(tp);
-            count++;
+            fileName = QDir::toNativeSeparators(fileName);
+
+            if (QFile::exists(fileName)) {
+                libtorrent::torrent_info ti(torrentName.toStdString());
+    //            tp.ti = std::make_shared<libtorrent::torrent_info>(ti);
+                tp.ti = boost::make_shared<libtorrent::torrent_info>(ti);
+    //            tp.name = bdn.dict_find_string_value("zu-fileName").to_string();
+                tp.name = bdn.dict_find_string_value("zu-fileName");
+                tp.save_path = downloadPath.toStdString();
+                p_session->async_add_torrent(tp);
+                count++;
+            }
+
         }
         if (count == 0) {
             qDebug("no fastresumes to load");
@@ -302,6 +315,7 @@ void tsuManager::stopManager()
                 libtorrent::bencode(std::ostream_iterator<char>(out), *rd->resume_data);
 
                 tsuManager::outstanding_resume_data--;
+                qDebug() << "fastresume saved for" << QString::fromStdString(hex.str());
                 break;
             }
         }
@@ -323,9 +337,9 @@ void tsuManager::alertsHandler()
     for (libtorrent::alert* alert : alerts)
     {
         if (alert == nullptr) continue;
-        if (alert->type() != libtorrent::state_update_alert::alert_type && alert->type() != libtorrent::session_stats_alert::alert_type) {
-            qDebug() << QString("%0::%1").arg(alert->what()).arg(alert->message().c_str());
-        }
+//        if (alert->type() != libtorrent::state_update_alert::alert_type && alert->type() != libtorrent::session_stats_alert::alert_type) {
+//            qDebug() << QString("%0::%1").arg(alert->what()).arg(alert->message().c_str());
+//        }
 
         switch (alert->type())
         {
@@ -450,6 +464,7 @@ void tsuManager::alertsHandler()
             break;
         }
 
+        // METADATA RECEIVED
         case libtorrent::metadata_received_alert::alert_type:
         {
             libtorrent::metadata_received_alert *mra = libtorrent::alert_cast<libtorrent::metadata_received_alert>(alert);
@@ -479,6 +494,29 @@ void tsuManager::alertsHandler()
             }
             break;
         }
+
+        // SAVE RESUME DATA
+        case libtorrent::save_resume_data_alert::alert_type:
+        {
+            libtorrent::save_resume_data_alert *a = libtorrent::alert_cast<libtorrent::save_resume_data_alert>(alert);
+            if (a == nullptr) continue;
+            libtorrent::save_resume_data_alert const* rd = libtorrent::alert_cast<libtorrent::save_resume_data_alert>(a);
+            libtorrent::torrent_handle h = rd->handle;
+            libtorrent::torrent_status st = h.status(libtorrent::torrent_handle::query_save_path | libtorrent::torrent_handle::query_name);
+
+            rd->resume_data->dict().insert({ "zu-fileName", st.name });
+
+            std::stringstream hex;
+            hex << st.info_hash;
+            qDebug() << "saving resume data for" << QString::fromStdString(hex.str());
+            QString fileName = QString("%0/%1.fastresume").arg(p_tsunamiSessionFolder).arg(QString::fromStdString(hex.str()));
+            fileName = QDir::toNativeSeparators(fileName);
+            std::ofstream out(fileName.toStdString(), std::ios_base::binary);
+            out.unsetf(std::ios_base::skipws);
+
+            libtorrent::bencode(std::ostream_iterator<char>(out), *rd->resume_data);
+            break;
+         }
 
         // SESSION STATS
         case libtorrent::session_stats_alert::alert_type:
@@ -525,6 +563,21 @@ void tsuManager::postUpdates()
 {
 //    p_session->post_torrent_updates(libtorrent::alert::status_notification | libtorrent::alert::progress_notification);
       p_session->post_session_stats();
+}
+
+void tsuManager::postResumeData()
+{
+    qDebug() << "post Resume Data";
+    std::vector<libtorrent::torrent_handle> handles = p_session->get_torrents();
+    for (libtorrent::torrent_handle i : handles)
+    {
+        libtorrent::torrent_handle &h = i;
+        if (!h.is_valid()) continue;
+        libtorrent::torrent_status s = h.status();
+        if (!s.has_metadata) continue;
+        if (!s.need_save_resume) continue;
+        h.save_resume_data();
+    }
 }
 
 tsuManager::~tsuManager()
