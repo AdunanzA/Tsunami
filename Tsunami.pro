@@ -17,10 +17,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 DEFINES += TORRENT_NO_DEPRECATE
 
 # EXTRA DEFINITIONS
-include(version.pri)
-include(utility.pri)
-include(tsuCrawler.pri)
-include(runGuard.pri)
+include(src/version.pri)
+include(src/utility.pri)
+include(src/tsuCrawler.pri)
+include(src/runGuard.pri)
 
 win32{
  INCLUDEPATH += $$PWD/includes #Do not call "include" this folder!
