@@ -43,7 +43,7 @@ build_script:
   - qmake Tsunami.pro
   - nmake release
   - xcopy runtimes release /E /Y
-  - cp CHANGELOG.md  release
+  - cp resources\CHANGELOG.md  release
   - cd release
   - dir 
   - del /Q *.cpp
