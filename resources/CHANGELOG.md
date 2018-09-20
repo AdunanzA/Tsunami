@@ -15,6 +15,10 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.7.1] 2018-09-20
+### Fixed
+- source code refactoring
+
 ## [0.7.0] 2018-09-19
 ### Added
 - Search page: added categories selection
