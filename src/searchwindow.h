@@ -9,7 +9,7 @@
 #include <QDateTime>
 #include <QDesktopServices>
 
-#include <tsuCrawler/tsucrawler.h>
+#include <src/tsuCrawler/tsucrawler.h>
 
 namespace Ui {
 class searchwindow;

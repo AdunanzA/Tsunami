@@ -1,5 +1,5 @@
 HEADERS += \
-    $$PWD/runGuard/runguard.h
+    $$PWD/src/runGuard/runguard.h
 
 SOURCES += \
-    $$PWD/runGuard/runguard.cpp
+    $$PWD/src/runGuard/runguard.cpp

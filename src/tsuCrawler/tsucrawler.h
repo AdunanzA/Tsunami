@@ -7,7 +7,7 @@
 #include <QDirIterator>
 #include <QElapsedTimer>
 
-#include <tsuCrawler/tsuprovider.h>
+#include <src/tsuCrawler/tsuprovider.h>
 
 class tsuCrawler : public QObject
 {

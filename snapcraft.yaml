@@ -1,9 +1,10 @@
 name: tsunami
-version: "0.6.2"
+version: git
 summary: AdunanzA Tsunami
 description: a very cool torrent client written in Qt and Libtorrent :)
 confinement: strict
 grade: devel
+base: core18
 
 apps:
   tsunami:

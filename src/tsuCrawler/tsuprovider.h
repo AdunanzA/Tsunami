@@ -13,7 +13,7 @@
 #include <QApplication>
 #include <iostream>
 
-#include <tsuCrawler/replytimeout.h>
+#include <src/tsuCrawler/replytimeout.h>
 
 class tsuProvider : public QObject
 {

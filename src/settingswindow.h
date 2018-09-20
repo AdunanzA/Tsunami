@@ -11,7 +11,7 @@
 #include <QApplication>
 #include <QProcess>
 
-#include <changelog.h>
+#include <src/changelog.h>
 
 namespace Ui {
 class settingswindow;

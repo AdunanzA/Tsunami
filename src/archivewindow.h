@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include <tsutreewidget.h>
+#include <src/tsutreewidget.h>
 
 namespace Ui {
 class archivewindow;

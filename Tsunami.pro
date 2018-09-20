@@ -39,47 +39,48 @@ unix:!macx{
  LIBS += -lVLCQtCore -lVLCQtWidgets -ltorrent-rasterbar -lboost_system
 }
 
-SOURCES += main.cpp\
-    mainwindow.cpp \
-    settingswindow.cpp \
-    searchwindow.cpp \
-    downloadwindow.cpp \
-    statisticswindow.cpp \
-    itemdetails.cpp \
-    previewplayerwindow.cpp \
-    changelog.cpp \
-    archivewindow.cpp
+SOURCES += src/main.cpp\
+    src/mainwindow.cpp \
+    src/settingswindow.cpp \
+    src/searchwindow.cpp \
+    src/downloadwindow.cpp \
+    src/statisticswindow.cpp \
+    src/itemdetails.cpp \
+    src/previewplayerwindow.cpp \
+    src/changelog.cpp \
+    src/archivewindow.cpp
 
 HEADERS  += \
-    mainwindow.h \
-    settingswindow.h \
-    searchwindow.h \
-    downloadwindow.h \
-    statisticswindow.h \
-    itemdetails.h \
-    previewplayerwindow.h \
-    changelog.h \
-    archivewindow.h
+    src/mainwindow.h \
+    src/settingswindow.h \
+    src/searchwindow.h \
+    src/downloadwindow.h \
+    src/statisticswindow.h \
+    src/itemdetails.h \
+    src/previewplayerwindow.h \
+    src/changelog.h \
+    src/archivewindow.h
 
 FORMS    += \
-    mainwindow.ui \
-    settingswindow.ui \
-    searchwindow.ui \
-    downloadwindow.ui \
-    statisticswindow.ui \
-    itemdetails.ui \
-    previewplayerwindow.ui \
-    changelog.ui \
-    archivewindow.ui
+    src/mainwindow.ui \
+    src/settingswindow.ui \
+    src/searchwindow.ui \
+    src/downloadwindow.ui \
+    src/statisticswindow.ui \
+    src/itemdetails.ui \
+    src/previewplayerwindow.ui \
+    src/changelog.ui \
+    src/archivewindow.ui
 
 OBJECTS_DIR = tmp
 MOC_DIR = tmp
 
 # icon for exe file (for win)
 # here for other os: http://doc.qt.io/qt-4.8/appicon.html
-RC_FILE = ico.qrc
+RC_FILE = resources\ico.qrc
 
 QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 5
 RESOURCES += \
-    resources.qrc \
-    translations.qrc
+    resources\resources.qrc \
+    resources\translations.qrc
+

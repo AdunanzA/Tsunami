@@ -26,8 +26,8 @@
 #include <libtorrent/bencode.hpp>
 #include <libtorrent/torrent_info.hpp>
 
-#include <changelog.h>
-#include <QcGaugeWidget/qcgaugewidget.h>
+#include <src/changelog.h>
+#include <src/QcGaugeWidget/qcgaugewidget.h>
 
 namespace Ui
 {

@@ -8,12 +8,12 @@
 #include <QSettings>
 #include <QStandardPaths>
 
-#include <tsumanager.h>
-#include <settingswindow.h>
-#include <updatemanager.h>
+#include <src/tsumanager.h>
+#include <src/settingswindow.h>
+#include <src/updatemanager.h>
 
-#include <tsuCrawler/tsuprovider.h>
-#include <runGuard/runguard.h>
+#include <src/tsuCrawler/tsuprovider.h>
+#include <src/runGuard/runguard.h>
 
 void logMessageHandler(QtMsgType type, const QMessageLogContext & context, const QString & msg)
 {
