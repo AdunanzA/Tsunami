@@ -107,6 +107,7 @@ void updatemanager::checkUpdate()
     p_splash.show();
 
     updateSearchScripts();
+    downloadIndexPage();
 
     if ( !QFile::exists(p_appDir + p_cmd) ) {
         updateSplashMessage("Cannot check for new version");
@@ -198,6 +199,15 @@ void updatemanager::processNewUpdate()
     QString stringCmd = QString("%0%1%2%3").arg(p_appDir).arg(p_cmd).arg(p_param).arg(p_url);
     qDebug() << "Executing " << stringCmd;
     p_updateProcess->start(stringCmd);
+
+    // remove www directory
+    QString localWww = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // win -> C:\Users\user\AppData\Local\Tsunami
+    localWww = QString("%0/%1").arg(localWww).arg("www");
+    localWww = QDir::toNativeSeparators(localWww);
+
+    if (!QDir(localWww).exists()) {
+        QDir().rmdir(localWww);
+    }
 }
 
 bool updatemanager::isFinished()
@@ -251,7 +261,6 @@ void updatemanager::updateDownloadProgress(QString message) {
     if (message.isNull() || message.isEmpty()) return;
     p_splash.showMessage(QString("Downloading %0%").arg(message), Qt::AlignLeft | Qt::AlignBottom, QColor(Qt::white));
 }
-
 
 void updatemanager::waitAndClose(int millisecs)
 {
@@ -379,7 +388,7 @@ void updatemanager::updateSearchScripts()
                 QStringList scriptProperties = script.split("\t", QString::SkipEmptyParts);
 
                 if (scriptProperties.length() == 2) {
-                    qDebug() << QString(scriptProperties[0]) << QString("=") << QString(scriptProperties[1]);
+                    qDebug() << QString("%0 = %1").arg(scriptProperties[0]).arg(scriptProperties[1]);
                     int siteScriptVersion = QString(scriptProperties[1]).toInt();
                     // we need to check version now
                     for (QString fileScriptName : fileList.keys()) {
@@ -429,6 +438,36 @@ void updatemanager::updateSearchScripts()
     } else {
         qDebug() << "using" << localTsunami;
     }
+}
 
+void updatemanager::downloadIndexPage()
+{
+    updateSplashMessage("downloading Tsunami web index page");
 
+    QString localWww = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation); // win -> C:\Users\user\AppData\Local\Tsunami
+    localWww = QString("%0/%1").arg(localWww).arg("www");
+    localWww = QDir::toNativeSeparators(localWww);
+
+    if (!QDir(localWww).exists()) {
+        QDir().mkpath(localWww);
+    }
+
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QUrl url(p_index_url);
+    QNetworkRequest request(url);
+    QNetworkReply *reply = nam->get(request);
+
+    QEventLoop loop;
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray fileArray = reply->readAll();
+        QFile file(QString("%0/index.html").arg(localWww));
+        file.open(QIODevice::WriteOnly);
+        file.write(fileArray);
+        file.close();
+        qDebug() << "index.html downloaded and saved";
+    }
+    reply->deleteLater();
 }

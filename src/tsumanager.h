@@ -6,6 +6,9 @@
 #include <QDebug>
 #include <QTimer>
 #include <QStandardPaths>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 #include <libtorrent/session.hpp>
 #include <libtorrent/torrent_info.hpp>
@@ -16,9 +19,15 @@
 #include <libtorrent/session_stats.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/torrent.hpp>
+#include <libtorrent/torrent_status.hpp>
 
-#include "tsuitem.h"
-#include "tsuevents.h"
+#include <tsuitem.h>
+#include <tsuevents.h>
+#include <tsuCrawler/tsuprovider.h>
+
+#include <src/httpserver/httplistener.h>
+#include <src/httpserver/handler/requesthandler.h>
+#include <src/httpserver/handler/websockethandler.h>
 
 #include <fstream>      // std::ofstream
 
@@ -54,6 +63,9 @@ signals:
                                 const quint64 &error, const quint64 &queuedDown,
                                 const quint64 &queuedSeed);
 
+    // signal to inform Mainwindow to ask Searchwindow to search
+    void web_NeedSearch(const QString textToSearch, const int category);
+
 public slots:
     void getCancelRequest(const std::string &hash, const bool deleteFilesToo);
     void getPauseRequest(const std::string &hash);
@@ -61,6 +73,18 @@ public slots:
     void refreshSettings();
     void startManager();
     void stopManager();
+
+    // request from www
+    void web_requestedSendTorrentList();
+    void web_requestedCancel(const QString hash, const bool deleteFilesToo);
+    void web_requestedPause(const QString hash);
+    void web_requestedResume(const QString hash);
+    void web_requestedFileList(const QString hash);
+    void web_requestedSearch(const QString textToSearch, const int category);
+    void web_itemFound(const tsuProvider::searchItem item);
+    void web_finishedSearch(int itemsFound, qint64 elapsed, int providersCount);
+    void web_fileUploaded(const QByteArray buffer, const QString fileName);
+    void web_downloadMagnet(const QString magnet);
 
 private:
     void setNotify();
@@ -91,6 +115,16 @@ private:
     int p_ses_num_checking_torrents;
     int p_ses_num_stopped_torrents;
     int p_ses_num_error_torrents;
+
+    bool p_isWebEnabled = false;
+    void initializeListener();
+    void updateListener();
+//    HttpListener* p_webListener;
+//    webSocketHandler* p_socketListener;
+//    RequestHandler* p_requestHandler;
+    QSharedPointer<HttpListener> p_webListener;
+    QSharedPointer<webSocketHandler> p_socketListener;
+    QSharedPointer<RequestHandler> p_requestHandler;
 
 private slots:
     void alertsHandler();

@@ -1,4 +1,4 @@
-QT       += core gui sql network script widgets
+QT       += core gui sql network script widgets websockets
 
 TARGET = Tsunami
 TEMPLATE = app
@@ -21,6 +21,7 @@ include(src/version.pri)
 include(src/utility.pri)
 include(src/tsuCrawler.pri)
 include(src/runGuard.pri)
+include(src/httpserver.pri)
 
 win32{
  INCLUDEPATH += $$PWD/includes #Do not call "include" this folder!

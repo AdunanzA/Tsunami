@@ -8,6 +8,15 @@ settingswindow::settingswindow(QWidget *parent) :
     ui(new Ui::settingswindow)
 {
     ui->setupUi(this);
+
+    ui->frameGeneral->setVisible(true); // default to General
+    ui->frameAbout->setVisible(false);
+    ui->frameMessages->setVisible(false);
+    ui->frameTorrent->setVisible(false);
+    ui->frameWeb->setVisible(false);
+
+    ui->settingsMenu->item(0)->setSelected(true); // default to General
+
     loadSettings();
 }
 
@@ -45,8 +54,14 @@ void settingswindow::loadSettings()
     int upLimit = settings.value("libtorrent/upload_rate_limit", 0).toInt();
     int port = settings.value("libtorrent/port", 6881).toInt();
 
-    bool msgOnFinish = settings.value("Messages/onFinish").toBool();
-    bool msgOnChat = settings.value("Messages/onChat").toBool();
+    // HTTP and WebSocket server settings
+    bool webEnabled = settings.value("WebInterfaceOn", true).toBool();
+    int webport = settings.value("listener/port", 8080).toInt();
+    int websocketport = settings.value("websocket/port", 8081).toInt();
+
+    bool msgOnFinish = settings.value("Messages/onFinish", true).toBool();
+    bool msgOnChat = settings.value("Messages/onChat", false).toBool();
+
 
     ui->txtDownloadPath->setText(downloadPath);
     qDebug() << "download path" << downloadPath;
@@ -62,10 +77,14 @@ void settingswindow::loadSettings()
     qDebug() << QString("limits: download %0 KB/s, upload %1 KB/s").arg(downLimit).arg(upLimit);
 
     ui->numPort->setValue(port);
-    qDebug() << "listening on port" << port;
+    qDebug() << "libtorrent listening on port" << port;
 
     ui->chkMsgDownFinish->setChecked(msgOnFinish);
     ui->chkMsgNewChat->setChecked(msgOnChat);
+    ui->chkActivateWeb->setChecked(webEnabled);
+
+    ui->numWebPort->setValue(webport);
+    ui->numWebSocketPort->setValue(websocketport);
 
     // needed by downloadwindow when a tsuCard emit a downloadFinished event
     qApp->setProperty("msgOnFinish", ui->chkMsgDownFinish->isChecked());
@@ -92,8 +111,44 @@ void settingswindow::saveSettings()
     settings.setValue("port", ui->numPort->value());
     settings.endGroup();
 
+    settings.setValue("WebInterfaceOn", ui->chkActivateWeb->isChecked());
     settings.setValue("Messages/onFinish", ui->chkMsgDownFinish->isChecked());
     settings.setValue("Messages/onChat", ui->chkMsgNewChat->isChecked());
+
+    // HTTP server settings
+    settings.beginGroup("listener");
+    settings.setValue("host", "localhost");
+    settings.setValue("port", ui->numWebPort->value());
+    settings.setValue("minThreads", 4);
+    settings.setValue("maxThreads", 100);
+    settings.setValue("cleanupInterval", 60000);
+    settings.setValue("readTimeout", 60000);
+    settings.setValue("maxRequestSize", 16000);
+    settings.setValue("maxMultiPartSize", 10000000);
+    settings.endGroup();
+
+    settings.beginGroup("docroot");
+    settings.setValue("path", "www");
+    settings.setValue("encoding", "UTF-8");
+    settings.setValue("maxAge", 0);
+    settings.setValue("cacheTime", 0);
+    settings.setValue("cacheSize", 1000000);
+    settings.setValue("maxCachedFileSize", 65536);
+    settings.endGroup();
+
+    settings.beginGroup("sessions");
+    settings.setValue("expirationTime", 3600000);
+    settings.setValue("cookieName", "sessionid");
+    settings.setValue("cookiePath", "/");
+    settings.setValue("cookieComment", "Identifies the user");
+    settings.setValue("cookieDomain", "tsunamiWeb");
+    settings.endGroup();
+
+    // WebSocket server
+    settings.beginGroup("websocket");
+    settings.setValue("port", ui->numWebSocketPort->value());
+    settings.setValue("debug", false);
+    settings.endGroup();
 
     settings.sync();
 
@@ -123,9 +178,12 @@ void settingswindow::on_btnSave_released()
     int savedLanguage = settings.value("Language", 0).toInt();
     int savedDownLimit = settings.value("libtorrent/download_rate_limit", 0).toInt();
     int savedUpLimit = settings.value("libtorrent/upload_rate_limit", 0).toInt();
+    bool webEnabled = settings.value("WebInterfaceOn", true).toBool();
 
     bool needRestart = (ui->cmbLanguage->currentIndex() != savedLanguage);
-    bool needRefreshTorrentSettings = ( (ui->numLimitDown->value() != savedDownLimit) || (ui->numLimitUp->value() != savedUpLimit));
+    bool needRefreshTorrentSettings = ( (ui->numLimitDown->value() != savedDownLimit) ||
+                                        (ui->numLimitUp->value() != savedUpLimit) ||
+                                        (ui->chkActivateWeb->isChecked() != webEnabled));
 
     saveSettings();
 
@@ -225,4 +283,25 @@ void settingswindow::on_commandLinkButton_released()
 {
     changelog *cl = new changelog();
     cl->exec();
+}
+
+void settingswindow::on_settingsMenu_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    Q_UNUSED(current);
+    Q_UNUSED(previous);
+
+    int row = ui->settingsMenu->currentRow();
+
+    ui->frameGeneral->setVisible(row == 0);
+    ui->frameTorrent->setVisible(row == 1);
+    ui->frameMessages->setVisible(row == 2);
+    ui->frameWeb->setVisible(row == 3);
+    ui->frameAbout->setVisible(row == 4);
+
+}
+
+void settingswindow::on_btnOpenWeb_released()
+{
+    QString link = QString("http://%0:%1").arg(settings.value("listener/host", "localhost").toString()).arg(settings.value("listener/port", 8080).toString());
+    QDesktopServices::openUrl(QUrl(link));
 }

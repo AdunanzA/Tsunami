@@ -15,6 +15,14 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.7.2] 2018-10-07
+### Added
+- Web Interface
+
+### Fixed
+- Error on item date in search page
+- Settings page
+
 ## [0.7.1] 2018-09-20
 ### Fixed
 - source code refactoring

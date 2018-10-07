@@ -136,7 +136,8 @@ void searchwindow::itemFound(const tsuProvider::searchItem item)
     } else {
         QDateTime dateItem;
         dateItem.setSecsSinceEpoch(unixTime);
-        itemDate->setData(Qt::EditRole, dateItem.toUTC());
+//        itemDate->setData(Qt::EditRole, dateItem.toUTC());
+        itemDate->setData(Qt::EditRole, dateItem.toString(Qt::DateFormat::SystemLocaleShortDate));
     }
 
     QTableWidgetItem *itemSeeds = new QTableWidgetItem;
@@ -261,6 +262,7 @@ void searchwindow::itemFound(const tsuProvider::searchItem item)
     ui->tableResults->hideColumn(tableColumns::Link);
     ui->tableResults->hideColumn(tableColumns::Magnet);
 
+    emit web_itemFound(item);
 }
 
 void searchwindow::finishedSearch(int itemsFound, qint64 elapsed)
@@ -280,6 +282,8 @@ void searchwindow::finishedSearch(int itemsFound, qint64 elapsed)
     ui->tableResults->resizeColumnToContents(tableColumns::Seeds);
     ui->tableResults->resizeColumnToContents(tableColumns::Leeches);
     ui->tableResults->resizeColumnToContents(tableColumns::Size);
+
+    emit web_finishedSearch(itemsFound, elapsed, p_crawler->getProvidersCount());
 }
 
 void searchwindow::cellClicked(int row, int column)
@@ -301,6 +305,44 @@ void searchwindow::cellClicked(int row, int column)
 
         emit downloadFromMagnet(magnet);
     }
+}
+
+void searchwindow::searchRequestFromWeb(const QString textToSearch, const int category)
+{
+//    tsuProvider::categories cat = static_cast<tsuProvider::categories>(category);
+
+//    // defaults, maybe from web in the future?
+//    int resultsWanted = 50;
+//    tsuProvider::sortRules sort = tsuProvider::sortRules::seeds_d;
+
+//    p_crawler->search(textToSearch, cat, resultsWanted, sort);
+    ui->txtSearch->setText(textToSearch);
+    switch (category) {
+    case 0:
+        ui->radioAll->setChecked(true);
+        break;
+    case 1:
+        ui->radioVideo->setChecked(true);
+        break;
+    case 2:
+        ui->radioAudio->setChecked(true);
+        break;
+    case 3:
+        ui->radioApps->setChecked(true);
+        break;
+    case 4:
+        ui->radioGames->setChecked(true);
+        break;
+    case 5:
+        ui->radioPorn->setChecked(true);
+        break;
+    case 6:
+        ui->radioOther->setChecked(true);
+        break;
+    default:
+        break;
+    }
+    on_btnSearch_released();
 }
 
 void searchwindow::on_btnSearch_released()

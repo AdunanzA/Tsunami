@@ -48,12 +48,18 @@ public slots:
 
     void cellClicked(int row, int column);
 
+    void searchRequestFromWeb(const QString textToSearch, const int category);
+
 signals:
     void loadProviders();
 //    void providerNeedIconDownload(QString providerName);
 //    void changeProviderActivation(QString providerName, bool active);
     void cancelSearch();
     void downloadFromMagnet(const QString magnet);
+
+    // for web
+    void web_itemFound(const tsuProvider::searchItem item);
+    void web_finishedSearch(int itemsFound, qint64 elapsed, int providersCount);
 
 private:
     Ui::searchwindow *ui;

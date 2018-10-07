@@ -56,6 +56,8 @@ tsuManager::tsuManager()
     connect(p_timerResumeData, SIGNAL(timeout()), this, SLOT(postResumeData()));
     connect(this, SIGNAL(stopTimer()), p_timerResumeData, SLOT(stop()));
     connect(this, SIGNAL(finished()), p_timerResumeData, SLOT(deleteLater()));
+
+    initializeListener();
 }
 
 void tsuManager::setNotify()
@@ -125,7 +127,85 @@ void tsuManager::loadSettings(libtorrent::settings_pack &settings)
     int availThreads = ceil(QThread::idealThreadCount()/4);
     qDebug() << QString("found %0 ideal thread count, assigning %1 to hash threads").arg(QThread::idealThreadCount()).arg(availThreads);
     settings.set_int(libtorrent::settings_pack::aio_threads, availThreads);
-//    p_session->apply_settings(settings);
+    //    p_session->apply_settings(settings);
+}
+
+void tsuManager::initializeListener()
+{
+    QString configFileName = qApp->property("iniFilePath").toString();
+
+//    QSettings settings(configFileName, QSettings::IniFormat);
+//    p_isWebEnabled = settings.value("WebInterfaceOn", true).toBool();
+
+//    if (!p_isWebEnabled) {
+//        if (p_webListener != nullptr) {
+//            p_webListener->close();
+//            //p_webListener->deleteLater();
+//        }
+
+//        if (p_socketListener != nullptr) {
+//            p_socketListener->close();
+//            //p_socketListener->deleteLater();
+//        }
+//        return;
+//    }
+
+    // HTTP server settings
+    QSettings* listenerSettings= new QSettings(configFileName, QSettings::IniFormat);
+    listenerSettings->beginGroup("listener");
+
+    // webSocket server settings
+    QSettings webSocketSettings(configFileName, QSettings::IniFormat);
+    int port = webSocketSettings.value("websocket/port", 8081).toInt();
+    bool debug = webSocketSettings.value("websocket/debug", false).toBool();
+    QString host = listenerSettings->value("host").toString();
+    QHostAddress hostAddress = host.isEmpty() ? QHostAddress::Any : QHostAddress(host);
+
+//    p_requestHandler = new RequestHandler(this);
+    p_requestHandler = QSharedPointer<RequestHandler>::create(this);
+    connect(p_requestHandler.data(), &RequestHandler::sendTorrentList, this, &tsuManager::web_requestedSendTorrentList);
+    connect(p_requestHandler.data(), &RequestHandler::deleteTorrent, this,  &tsuManager::web_requestedCancel);
+    connect(p_requestHandler.data(), &RequestHandler::pauseTorrent, this,  &tsuManager::web_requestedPause);
+    connect(p_requestHandler.data(), &RequestHandler::resumeTorrent, this,  &tsuManager::web_requestedResume);
+    connect(p_requestHandler.data(), &RequestHandler::sendFileList, this, &tsuManager::web_requestedFileList);
+    connect(p_requestHandler.data(), &RequestHandler::searchRequested, this, &tsuManager::web_requestedSearch);
+    connect(p_requestHandler.data(), &RequestHandler::fileUploaded, this, &tsuManager::web_fileUploaded);
+    connect(p_requestHandler.data(), &RequestHandler::downloadMagnet, this, &tsuManager::web_downloadMagnet);
+    p_requestHandler->setSocketPort(port);
+
+    // Start the HTTP server
+//    p_webListener = new HttpListener(listenerSettings, p_requestHandler, this);
+    p_webListener = QSharedPointer<HttpListener>::create(listenerSettings, p_requestHandler.data(), this);
+
+    // Start WebSocket server
+//    p_socketListener = new webSocketHandler(hostAddress, port, debug, this);
+    p_socketListener = QSharedPointer<webSocketHandler>::create(hostAddress, port, debug, this);
+}
+
+void tsuManager::updateListener()
+{
+    QString configFileName = qApp->property("iniFilePath").toString();
+
+    QSettings settings(configFileName, QSettings::IniFormat);
+    p_isWebEnabled = settings.value("WebInterfaceOn", true).toBool();
+
+    if (p_isWebEnabled) {
+        if (!p_webListener->isListening()) {
+            p_webListener->listen();
+        }
+
+        if (!p_socketListener->isListening()) {
+            p_socketListener->listen();
+        }
+    } else {
+        if (p_webListener->isListening()) {
+            p_webListener->close();
+        }
+
+        if (p_socketListener->isListening()) {
+            p_socketListener->close();
+        }
+    }
 }
 
 void tsuManager::startManager()
@@ -361,11 +441,67 @@ void tsuManager::alertsHandler()
             }
             libtorrent::torrent_status const &ts = ata->handle.status();
             statusEnum se = static_cast<statusEnum>((int)ts.state);
-            if (ts.paused) se = statusEnum::paused;
+            if (ts.paused && !ts.auto_managed) se = statusEnum::paused;
             tsuEvents::tsuEvent ev(ata->handle.info_hash().to_string(), ts.name.c_str(), ts.total_done,
                                    ts.total_upload, ts.download_rate, ts.upload_rate, ts.total_wanted,
                                    (int)se, ts.progress_ppm, ts.num_seeds, ts.num_peers);
             emit addFromSessionManager(ev);
+
+            if (p_isWebEnabled) {
+                QJsonObject obj;
+
+                std::stringstream hex;
+                hex << ata->handle.info_hash();
+                QString hash = QString::fromStdString(hex.str());
+                QString status = "";
+
+                switch (se) {
+                case statusEnum::undefined:
+                    status = "Undefined";
+                    break;
+                case statusEnum::checking_files:
+                    status = "Checking files";
+                    break;
+                case statusEnum::downloading_metadata:
+                    status = "Downloading Metadata";
+                    break;
+                case statusEnum::downloading:
+                    status = "Downloading";
+                    break;
+                case statusEnum::finished:
+                    status = "Finished";
+                    break;
+                case statusEnum::seeding:
+                    status = "Seeding";
+                    break;
+                case statusEnum::allocating:
+                    status = "Allocating";
+                    break;
+                case statusEnum::checking_resume_data:
+                    status = "Checking";
+                    break;
+                case statusEnum::paused:
+                    status = "Paused";
+                    break;
+                default:
+                    break;
+                }
+
+                obj.insert("Hash", hash);
+                obj.insert("action", "added");
+                obj.insert("Name", QString::fromStdString(ts.name));
+                obj.insert("Progress", ts.progress);
+                obj.insert("QueuePosition", ts.queue_position);
+                obj.insert("State", status);
+                obj.insert("TotalWanted", ts.total_wanted);
+                obj.insert("TotalDone", ts.total_done);
+                obj.insert("DownloadRate", ts.download_rate);
+                obj.insert("UploadRate", ts.upload_rate);
+                obj.insert("Priority", ts.priority);
+                obj.insert("Paused", ts.paused);
+                p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+            }
+
             break;
         }
 
@@ -377,11 +513,66 @@ void tsuManager::alertsHandler()
             for (libtorrent::torrent_status const& s : sua->status)
             {
                 statusEnum se = static_cast<statusEnum>((int)s.state);
-                if (s.paused) se = statusEnum::paused;
+                if (s.paused && !s.auto_managed) se = statusEnum::paused;
                 tsuEvents::tsuEvent ev(s.info_hash.to_string(), s.name.c_str(), s.total_done,
                                        s.total_upload, s.download_rate, s.upload_rate, s.total_wanted,
                                        (int)se, s.progress_ppm, s.num_seeds, s.num_peers);
                 eventsArray.append(ev);
+
+                if (p_isWebEnabled) {
+                    QJsonObject obj;
+
+                    std::stringstream hex;
+                    hex << s.info_hash;
+                    QString hash = QString::fromStdString(hex.str());
+                    QString status = "";
+
+                    switch (se) {
+                    case statusEnum::undefined:
+                        status = "Undefined";
+                        break;
+                    case statusEnum::checking_files:
+                        status = "Checking files";
+                        break;
+                    case statusEnum::downloading_metadata:
+                        status = "Downloading Metadata";
+                        break;
+                    case statusEnum::downloading:
+                        status = "Downloading";
+                        break;
+                    case statusEnum::finished:
+                        status = "Finished";
+                        break;
+                    case statusEnum::seeding:
+                        status = "Seeding";
+                        break;
+                    case statusEnum::allocating:
+                        status = "Allocating";
+                        break;
+                    case statusEnum::checking_resume_data:
+                        status = "Checking";
+                        break;
+                    case statusEnum::paused:
+                        status = "Paused";
+                        break;
+                    default:
+                        break;
+                    }
+
+                    obj.insert("Hash", hash);
+                    obj.insert("action", "torrentUpdate");
+                    obj.insert("Name", QString::fromStdString(s.name));
+                    obj.insert("Progress", s.progress);
+                    obj.insert("QueuePosition", s.queue_position);
+                    obj.insert("State", status);
+                    obj.insert("TotalWanted", s.total_wanted);
+                    obj.insert("TotalDone", s.total_done);
+                    obj.insert("DownloadRate", s.download_rate);
+                    obj.insert("UploadRate", s.upload_rate);
+                    obj.insert("Priority", s.priority);
+                    obj.insert("Paused", s.paused);
+                    p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+                }
             }
             break;
         }
@@ -546,8 +737,31 @@ void tsuManager::alertsHandler()
 
             emit sessionStatisticUpdate(sentbytes, recvbytes, numDownloading, numUploading, numChecking,
                                         numStopped, numError, numQueuedDown, numQueuedSeed);
+
+            if (p_isWebEnabled) {
+                int uploadRate = 0;
+                int downloadRate = 0;
+                std::vector<libtorrent::torrent_handle> handles = p_session->get_torrents();
+                for (libtorrent::torrent_handle i : handles)
+                {
+                    libtorrent::torrent_handle &h = i;
+                    downloadRate += h.status().download_rate;
+                    uploadRate += h.status().upload_rate;
+                }
+
+                QJsonObject obj;
+                obj.insert("action", "statUpdate");
+                obj.insert("DownloadRate", downloadRate);
+                obj.insert("UploadRate", uploadRate);
+                obj.insert("TotalDownload", QJsonValue::fromVariant(QVariant::QVariant(recvbytes)));
+                obj.insert("TotalUpload", QJsonValue::fromVariant(QVariant::QVariant(sentbytes)));
+
+                p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+            }
+
             break;
         }
+
         default:
             break;
         }
@@ -661,6 +875,18 @@ void tsuManager::getCancelRequest(const std::string &hash, const bool deleteFile
         const libtorrent::torrent_handle &addTh = th;
         p_session->remove_torrent(addTh, (int)deleteFilesToo);
         emit torrentDeleted(hash);
+
+        if (p_isWebEnabled) {
+            std::stringstream hex;
+            hex << sh;
+
+            QJsonObject obj;
+            obj.insert("action", "deleted");
+            obj.insert("hash", QString::fromStdString(hex.str()));
+
+            p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+        }
+
     } catch (std::exception &exc) {
         qCritical() << QString("getCancelRequest throws %0").arg(exc.what());
 //        emit torrentDeleted(hash);
@@ -695,5 +921,266 @@ void tsuManager::refreshSettings()
     libtorrent::settings_pack settings = p_session->get_settings();
     loadSettings(settings);
     p_session->apply_settings(settings);
+//    initializeListener();
+    updateListener();
 }
 
+void tsuManager::web_requestedSendTorrentList()
+{
+    QJsonObject master;
+    master.insert("action", "list");
+    QJsonArray details;
+
+    std::vector<libtorrent::torrent_handle> handles = p_session->get_torrents();
+    for (libtorrent::torrent_handle i : handles)
+    {
+        libtorrent::torrent_handle &h = i;
+        QJsonObject obj;
+        std::stringstream hex;
+        hex << h.info_hash();
+        QString hash = QString::fromStdString(hex.str());
+
+        libtorrent::torrent_status &s = h.status();
+        statusEnum se = static_cast<statusEnum>((int)s.state);
+        if (s.paused && !s.auto_managed) se = statusEnum::paused;
+        QString status = "";
+
+        switch (se) {
+        case statusEnum::undefined:
+            status = "Undefined";
+            break;
+        case statusEnum::checking_files:
+            status = "Checking files";
+            break;
+        case statusEnum::downloading_metadata:
+        case statusEnum::downloading:
+            status = "Downloading";
+            break;
+        case statusEnum::finished:
+            status = "Finished";
+            break;
+        case statusEnum::seeding:
+            status = "Seeding";
+            break;
+        case statusEnum::allocating:
+            status = "Allocating";
+            break;
+        case statusEnum::checking_resume_data:
+            status = "Checking";
+            break;
+        case statusEnum::paused:
+            status = "Paused";
+            break;
+        default:
+            break;
+        }
+
+        obj.insert("Hash", hash);
+        obj.insert("Name", QString::fromStdString(s.name));
+        obj.insert("Progress", s.progress);
+        obj.insert("QueuePosition", s.queue_position);
+        obj.insert("State", status);
+        obj.insert("TotalWanted", s.total_wanted);
+        obj.insert("TotalDone", s.total_done);
+        obj.insert("DownloadRate", s.download_rate);
+        obj.insert("UploadRate", s.upload_rate);
+        obj.insert("Priority", s.priority);
+        obj.insert("Paused", s.paused);
+        details.append(obj);
+    }
+    master.insert("details", details);
+    p_socketListener->sendMessage(QJsonDocument(master).toJson(QJsonDocument::Compact));
+}
+
+void tsuManager::web_requestedCancel(const QString hash, const bool deleteFilesToo)
+{
+    if (p_isWebEnabled) {
+        try {
+            std::stringstream hex;
+            hex << hash.toStdString();
+            libtorrent::sha1_hash sh;
+            hex >> sh;
+            libtorrent::torrent_handle th = p_session->find_torrent(sh);
+            const libtorrent::torrent_handle &addTh = th;
+            p_session->remove_torrent(addTh, (int)deleteFilesToo);
+            emit torrentDeleted(sh.to_string());
+
+            QJsonObject obj;
+            obj.insert("action", "deleted");
+            obj.insert("hash", hash);
+
+            p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+
+        } catch (std::exception &exc) {
+            qCritical() << QString("web_requestedCancel throws %0").arg(exc.what());
+        }
+    }
+}
+
+void tsuManager::web_requestedPause(const QString hash)
+{
+    if (p_isWebEnabled) {
+        try {
+            std::stringstream hex;
+            hex << hash.toStdString();
+            libtorrent::sha1_hash sh;
+            hex >> sh;
+
+            libtorrent::torrent_handle th = p_session->find_torrent(sh);
+            th.pause();
+
+        } catch (std::exception &exc) {
+            qCritical() << QString("web_requestedPause throws %0").arg(exc.what());
+        }
+    }
+}
+
+void tsuManager::web_requestedResume(const QString hash)
+{
+    if (p_isWebEnabled) {
+        try {
+            std::stringstream hex;
+            hex << hash.toStdString();
+            libtorrent::sha1_hash sh;
+            hex >> sh;
+
+            libtorrent::torrent_handle th = p_session->find_torrent(sh);
+            th.resume();
+
+        } catch (std::exception &exc) {
+            qCritical() << QString("web_requestedResume throws %0").arg(exc.what());
+        }
+    }
+}
+
+void tsuManager::web_requestedFileList(const QString hash)
+{
+    if (p_isWebEnabled) {
+        try {
+            QJsonObject master;
+            master.insert("action", "filelist");
+            master.insert("Hash", hash);
+            QJsonArray jFiles;
+
+            std::stringstream hex;
+            hex << hash.toStdString();
+            libtorrent::sha1_hash sh;
+            hex >> sh;
+
+            libtorrent::torrent_handle th = p_session->find_torrent(sh);
+            libtorrent::file_storage files = th.torrent_file()->files();
+            for (int i = 0; i < files.num_files(); i++)
+            {
+                QJsonObject jFile;
+                jFile.insert("FileName", QString(files.file_name(i).c_str()));
+                jFile.insert("Mtime", QJsonValue::fromVariant(QVariant::QVariant((QDateTime::fromSecsSinceEpoch(files.mtime(i))))));
+                jFile.insert("Size", QString::number(files.file_size(i)));
+                jFile.insert("PieceSize", QString::number(files.piece_size(i)));
+                jFile.insert("IsValid", files.is_valid());
+                jFiles.append(jFile);
+            }
+            master.insert("files", jFiles);
+            p_socketListener->sendMessage(QJsonDocument(master).toJson(QJsonDocument::Compact));
+
+        } catch (std::exception &exc) {
+            qCritical() << QString("web_requestedFileList throws %0").arg(exc.what());
+        }
+    }
+}
+
+void tsuManager::web_requestedSearch(const QString textToSearch, const int category)
+{
+    if (p_isWebEnabled) {
+        emit web_NeedSearch(textToSearch, category);
+    }
+}
+
+void tsuManager::web_itemFound(const tsuProvider::searchItem item)
+{
+    if (p_isWebEnabled) {
+        QJsonObject obj;
+        obj.insert("action", "search_result");
+        obj.insert("category", item.category);
+        obj.insert("date", item.date);
+        obj.insert("hash", item.hash);
+        obj.insert("leeches", item.leeches);
+        obj.insert("link", item.link);
+        obj.insert("magnet", item.magnet);
+        obj.insert("name", item.name);
+        obj.insert("provider", item.provider);
+        obj.insert("seeds", item.seeds);
+        obj.insert("size", item.size);
+        p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+    }
+}
+
+void tsuManager::web_finishedSearch(int itemsFound, qint64 elapsed, int providersCount)
+{
+    if (p_isWebEnabled) {
+        QJsonObject obj;
+        obj.insert("action", "search_finished");
+        obj.insert("itemsFound", itemsFound);
+        obj.insert("elapsed", elapsed);
+        obj.insert("providersCount", providersCount);
+        p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+    }
+}
+
+void tsuManager::web_fileUploaded(const QByteArray buffer, const QString fileName)
+{
+    qDebug() << "processing" << fileName;
+    try
+    {
+        QStorageInfo storage = QStorageInfo::root();
+        QString configFileName = qApp->property("iniFilePath").toString();
+        QSettings settings(configFileName, QSettings::IniFormat);
+
+        libtorrent::add_torrent_params atp;
+        libtorrent::torrent_info ti(buffer.constData(), buffer.size());
+        std::stringstream hex;
+        hex << ti.info_hash();
+
+        QString newFilePath = QDir::toNativeSeparators(QString("%0/%1.torrent").arg(p_tsunamiSessionFolder)
+                                                       .arg(QString::fromStdString(hex.str())));
+        QFile newTorrent(newFilePath);
+        if ( newTorrent.open(QIODevice::ReadWrite) )
+        {
+            QTextStream stream( &newTorrent );
+            stream << buffer;
+        }
+
+        if (!ti.metadata()) qWarning() << "No metadata for" << fileName;
+        if (!ti.is_valid()) qWarning() << "torrent" << fileName << "is invalid";
+
+        atp.ti = boost::make_shared<libtorrent::torrent_info>(ti);
+        atp.save_path = settings.value("Download/downloadPath", storage.rootPath()).toString().toStdString();
+
+        atp.flags &= ~libtorrent::add_torrent_params::flag_paused; // Start in pause
+        atp.flags &= ~libtorrent::add_torrent_params::flag_auto_managed; // Because it is added in paused state
+
+        p_session->async_add_torrent(atp);
+
+        qInfo() << QString("torrent %0 added").arg(fileName);
+    }
+    catch (std::exception &exc)
+    {
+        qCritical() << QString("addItems throws %0").arg(exc.what());
+    }
+}
+
+void tsuManager::web_downloadMagnet(const QString magnet)
+{
+    QString magnetIdentifier = "magnet:?xt=urn:btih:";
+    QStorageInfo storage = QStorageInfo::root();
+    QString configFileName = qApp->property("iniFilePath").toString();
+    QSettings settings(configFileName, QSettings::IniFormat);
+
+    QString newMagnet(magnet.data());
+
+    if (newMagnet.left(magnetIdentifier.length()) != magnetIdentifier)
+        newMagnet = QString("%0%1").arg(magnetIdentifier).arg(newMagnet);
+
+    QStringList fileNames;
+    fileNames << newMagnet;
+    addFromMagnet(std::move(fileNames), settings.value("Download/downloadPath", storage.rootPath()).toString());
+}

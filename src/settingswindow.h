@@ -50,6 +50,10 @@ private slots:
 
     void on_commandLinkButton_released();
 
+    void on_settingsMenu_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+
+    void on_btnOpenWeb_released();
+
 private:
     Ui::settingswindow *ui;
 

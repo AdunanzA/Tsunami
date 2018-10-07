@@ -30,55 +30,70 @@ MainWindow::MainWindow(QWidget *parent) :
     statusBar()->addPermanentWidget(statusLabel, 0);
     statusBar()->showMessage("Welcome!");
 
-    // add from SessionManager goes to downloadPage to add tsuCard
+    /* FROM SESSIONMANAGER */
+    // add goes to downloadPage to add tsuCard
     connect(sessionManager, SIGNAL(addFromSessionManager(const tsuEvents::tsuEvent &)), downloadPage, SLOT(addFromSession(const tsuEvents::tsuEvent &)));//, Qt::QueuedConnection);
 
-    // update from sessionManager goes to downloadPage to manage tsuCard values
+    // update goes to downloadPage to manage tsuCard values
     connect(sessionManager, SIGNAL(updateFromSessionManager(const QVector<tsuEvents::tsuEvent> &)), downloadPage, SLOT(updateFromSession(const QVector<tsuEvents::tsuEvent> &)));//, Qt::DirectConnection);
 
-    // deleted torrent from sessionManager goes to downloadPage to remove it from list
+    // deleted torrent goes to downloadPage to remove it from list
     connect(sessionManager, SIGNAL(torrentDeleted(std::string)), downloadPage, SLOT(torrentDeletedFromSession(std::string)));//, Qt::QueuedConnection);
 
-    // assigned external ip from sessionManager goes to Main to update ico
+    // assigned external ip goes to Main to update ico
     connect(sessionManager, &tsuManager::externalIpAssigned, this, &MainWindow::externalIpAssigned);
 
-    // dht bootstrap signal from sessionManager goes to Main to update ico
+    // dht bootstrap signal goes to Main to update ico
     connect(sessionManager, &tsuManager::dhtBootstrapExecuted, this, &MainWindow::dhtBootstrapExecuted);
 
-    // listening on port signal from sessionManager goes to Main to update ico
+    // listening on port signal goes to Main to update ico
     connect(sessionManager, &tsuManager::listenerUpdate, this, &MainWindow::listenerUpdate);
 
     // session statistic update goes to Main to update UI
     connect(sessionManager, &tsuManager::sessionStatisticUpdate, this, &MainWindow::sessionStatisticUpdate);
 
+    // search request from web (sessionManager) goes to searchPage
+    connect(sessionManager, &tsuManager::web_NeedSearch, searchPage, &searchwindow::searchRequestFromWeb);
 
-    // requested cancel from downloadPage (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
+
+    /* FROM DOWNLOADPAGE */
+    // requested cancel (emitted from a tsucard) goes to sessionManager to remove torrent from libtorrent
     connect(downloadPage, SIGNAL(sendRequestedCancelToSession(std::string,bool)), sessionManager, SLOT(getCancelRequest(std::string,bool)));//, Qt::QueuedConnection);
 
-    // requested pause from downloadPage (emitted from a tsucard) goes to sessionManager to pause torrent
+    // requested pause (emitted from a tsucard) goes to sessionManager to pause torrent
     connect(downloadPage, SIGNAL(sendRequestedPauseToSession(std::string)), sessionManager, SLOT(getPauseRequest(std::string)));//, Qt::QueuedConnection);
 
-    // requested resume from downloadPage (emitted from a tsucard) goes to sessionManager to resume torrent
+    // requested resume (emitted from a tsucard) goes to sessionManager to resume torrent
     connect(downloadPage, SIGNAL(sendRequestedResumeToSession(std::string)), sessionManager, SLOT(getResumeRequest(std::string)));//, Qt::QueuedConnection);
 
-    // popup message from downloadPage
+    // popup message goes to Main
     connect(downloadPage, SIGNAL(sendPopupInfo(QString)), this, SLOT(popupInfo(QString)));//, Qt::QueuedConnection);
 
-    // update statusBar from downloadPage
+    // update statusBar goes to Main
     connect(downloadPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
 
-    // file dropped from graphicsscene (emitted from downloadPage) goes to Main
+    // file dropped from graphicsscene goes to Main
     connect(downloadPage, SIGNAL(fileDropped(QString)), this, SLOT(fileDropped(QString)));
 
 
-    // update statusBar from settings
+    /* FROM SETTINGSPAGE */
+    // update statusBar goes to Main
     connect(settingsPage, SIGNAL(sendMessageToStatusBar(const QString &)), this, SLOT(updateStatusBarLabel(const QString &)));
 
-    // update libtorrent settings from settingsWindow
+    // update libtorrent settings goes to sessionManager
     connect(settingsPage, SIGNAL(sendRefreshSettings()), sessionManager, SLOT(refreshSettings()));
 
-    // request download from searchpage
+
+    /* FROM SEARCHPAGE */
+    // request download goes to Main
     connect(searchPage, &searchwindow::downloadFromMagnet, this, &MainWindow::downloadFromSearchPage);
+
+    // item found (for web) goes to web (through sessionManager)
+    connect(searchPage, &searchwindow::web_itemFound, sessionManager, &tsuManager::web_itemFound);
+
+    // search finished goes to web (through sessionManager)
+    connect(searchPage, &searchwindow::web_finishedSearch, sessionManager, &tsuManager::web_finishedSearch);
+
 
     // Constructions events
     connect(p_session_thread, SIGNAL(started()), sessionManager, SLOT(startManager()));
@@ -86,12 +101,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // Bind clipboard change to get magnet
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::clipboardChanged);
 
-
     // Destructions events
     connect(this, SIGNAL(stopSessionManager()), sessionManager, SLOT(stopManager()), Qt::BlockingQueuedConnection);
     connect(sessionManager, SIGNAL(finished()), p_session_thread, SLOT(quit()));
     connect(sessionManager, SIGNAL(finished()), sessionManager, SLOT(deleteLater()));
-//    connect(p_session_thread, SIGNAL(finished()), p_session_thread, SLOT(deleteLater()));
 
     QString imgUrl = "image: url(:/images/state_warning.svg);";
     ui->lblIp->setStyleSheet(imgUrl);
@@ -109,8 +122,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     qDebug("starting destroy");
-//    p_session_thread->wait();
-//    qDebug("session thread waited");
     p_session_thread->deleteLater();
     qDebug("session thread executed deleteLater");
     delete p_gaugeSpeedLabel;
@@ -421,13 +432,6 @@ void MainWindow::btnMenuClick() {
 
     if (btn == ui->btnStatistics->objectName())
         ui->stackedWidget->setCurrentWidget(statisticsPage);
-
-//    settingsPage->setHidden(btn != ui->btnSettings->objectName());
-//    searchPage->setHidden(btn != ui->btnSearch->objectName());
-//    statisticsPage->setHidden(btn != ui->btnStatistics->objectName());
-//    downloadPage->setHidden(btn != ui->btnDownload->objectName());
-//    previewPlayerPage->setHidden(btn != ui->btnStreaming->objectName());
-//	archivePage->setHidden(btn != ui->btnArchive->objectName());
 
     if (btn == ui->btnChat->objectName()) {
         QString link = "https://discordapp.com/invite/0pfzTOXuEjt9ifvF";

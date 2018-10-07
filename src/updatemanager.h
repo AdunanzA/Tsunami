@@ -54,6 +54,7 @@ private:
     QString p_splash_url = "https://tsunami.adunanza.net/updates/splash.jpg";
     QString p_scripts_text_url = "https://tsunami.adunanza.net/updates/scripts.txt";
     QString p_scripts_url = "https://tsunami.adunanza.net/updates/scripts/%0";
+    QString p_index_url = "https://tsunami.adunanza.net/updates/www/index.html";
     QSplashScreen p_splash;
 
     QNetworkAccessManager *p_nam;
@@ -69,6 +70,7 @@ private:
     void close();
 
     void updateSearchScripts();
+    void downloadIndexPage();
 };
 
 #endif // UPDATEMANAGER_H

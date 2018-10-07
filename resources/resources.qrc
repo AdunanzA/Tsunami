@@ -82,5 +82,7 @@
         <file>images/tsuplayer/Vol_DW.png</file>
         <file>images/tsuplayer/Vol_UP.png</file>
         <file>images/tsuplayer/OpenFile.png</file>
+        <file>images/accept.png</file>
+        <file>images/cancel.png</file>
     </qresource>
 </RCC>
