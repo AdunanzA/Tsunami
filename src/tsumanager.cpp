@@ -354,7 +354,7 @@ void tsuManager::stopManager()
         libtorrent::alert const* a = p_session->wait_for_alert(libtorrent::seconds(10));
 
         // if we don't get an alert within 10 seconds, abort
-        if (a == 0) continue;
+        if (a == nullptr) continue;
 
         std::vector<libtorrent::alert*> alerts;
         p_session->pop_alerts(&alerts);
@@ -493,8 +493,8 @@ void tsuManager::alertsHandler()
                 obj.insert("Progress", ts.progress);
                 obj.insert("QueuePosition", ts.queue_position);
                 obj.insert("State", status);
-                obj.insert("TotalWanted", ts.total_wanted);
-                obj.insert("TotalDone", ts.total_done);
+                obj.insert("TotalWanted", QJsonValue(static_cast<qint64>(ts.total_wanted)));
+                obj.insert("TotalDone", QJsonValue(static_cast<qint64>(ts.total_done)));
                 obj.insert("DownloadRate", ts.download_rate);
                 obj.insert("UploadRate", ts.upload_rate);
                 obj.insert("Priority", ts.priority);
@@ -565,8 +565,8 @@ void tsuManager::alertsHandler()
                     obj.insert("Progress", s.progress);
                     obj.insert("QueuePosition", s.queue_position);
                     obj.insert("State", status);
-                    obj.insert("TotalWanted", s.total_wanted);
-                    obj.insert("TotalDone", s.total_done);
+                    obj.insert("TotalWanted", QJsonValue(static_cast<qint64>(s.total_wanted)));
+                    obj.insert("TotalDone", QJsonValue(static_cast<qint64>(s.total_done)));
                     obj.insert("DownloadRate", s.download_rate);
                     obj.insert("UploadRate", s.upload_rate);
                     obj.insert("Priority", s.priority);
@@ -643,10 +643,10 @@ void tsuManager::alertsHandler()
             libtorrent::listen_failed_alert* lfa = libtorrent::alert_cast<libtorrent::listen_failed_alert>(alert);
             QString type = "";
 //            if (lfa->socket_type == libtorrent::socket_type_t::tcp) {
-            if (lfa->sock_type == libtorrent::listen_succeeded_alert::socket_type_t::tcp) {
+            if (lfa->sock_type == libtorrent::listen_failed_alert::socket_type_t::tcp) {
                 type = "tcp";
 //            } else if (lfa->socket_type == libtorrent::socket_type_t::udp) {
-            } else if (lfa->sock_type == libtorrent::listen_succeeded_alert::socket_type_t::udp) {
+            } else if (lfa->sock_type == libtorrent::listen_failed_alert::socket_type_t::udp) {
                 type = "udp";
             }
 //            qDebug() << QString("listen failed for %0 on port %1").arg(type).arg(lfa->port);
@@ -753,9 +753,13 @@ void tsuManager::alertsHandler()
                 obj.insert("action", "statUpdate");
                 obj.insert("DownloadRate", downloadRate);
                 obj.insert("UploadRate", uploadRate);
+#if !defined(Q_OS_MAC) && !defined(Q_OS_LINUX)
                 obj.insert("TotalDownload", QJsonValue::fromVariant(QVariant::QVariant(recvbytes)));
                 obj.insert("TotalUpload", QJsonValue::fromVariant(QVariant::QVariant(sentbytes)));
-
+#else
+                obj.insert("TotalDownload", QJsonValue::fromVariant(QVariant(recvbytes)));
+                obj.insert("TotalUpload", QJsonValue::fromVariant(QVariant(sentbytes)));
+#endif
                 p_socketListener->sendMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
             }
 
@@ -940,7 +944,7 @@ void tsuManager::web_requestedSendTorrentList()
         hex << h.info_hash();
         QString hash = QString::fromStdString(hex.str());
 
-        libtorrent::torrent_status &s = h.status();
+        const libtorrent::torrent_status &s = h.status();
         statusEnum se = static_cast<statusEnum>((int)s.state);
         if (s.paused && !s.auto_managed) se = statusEnum::paused;
         QString status = "";
@@ -980,8 +984,13 @@ void tsuManager::web_requestedSendTorrentList()
         obj.insert("Progress", s.progress);
         obj.insert("QueuePosition", s.queue_position);
         obj.insert("State", status);
+#if !defined(Q_OS_LINUX)
         obj.insert("TotalWanted", s.total_wanted);
         obj.insert("TotalDone", s.total_done);
+#else
+        obj.insert("TotalWanted", QJsonValue(static_cast<qint64>(s.total_wanted)));
+        obj.insert("TotalDone", QJsonValue(static_cast<qint64>(s.total_done)));
+#endif
         obj.insert("DownloadRate", s.download_rate);
         obj.insert("UploadRate", s.upload_rate);
         obj.insert("Priority", s.priority);
@@ -1073,7 +1082,11 @@ void tsuManager::web_requestedFileList(const QString hash)
             {
                 QJsonObject jFile;
                 jFile.insert("FileName", QString(files.file_name(i).c_str()));
+#if !defined(Q_OS_MAC) && !defined(Q_OS_LINUX)
                 jFile.insert("Mtime", QJsonValue::fromVariant(QVariant::QVariant((QDateTime::fromSecsSinceEpoch(files.mtime(i))))));
+#else
+                jFile.insert("Mtime", QJsonValue::fromVariant(QVariant((QDateTime::fromSecsSinceEpoch(files.mtime(i))))));
+#endif
                 jFile.insert("Size", QString::number(files.file_size(i)));
                 jFile.insert("PieceSize", QString::number(files.piece_size(i)));
                 jFile.insert("IsValid", files.is_valid());

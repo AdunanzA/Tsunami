@@ -111,9 +111,20 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QPen pen;
 
     painter->setFont(p_fontText);
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int lenText = painter->fontMetrics().horizontalAdvance(text);
+#else
     int lenText = painter->fontMetrics().width(text);
+#endif
+
     painter->setFont(p_fontSymbol);
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int lenSymb = painter->fontMetrics().horizontalAdvance(symbol);
+#else
     int lenSymb = painter->fontMetrics().width(symbol);
+#endif
 
     qreal textX = (tsuItem::ItemWidth/2)-((lenText+lenSymb)/2);
     qreal textY = (tsuItem::ItemHeight/2)+(p_textFontHeight/2);
@@ -180,10 +191,15 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     // FILE INFO
     // Label
     painter->setFont(p_fontLabel);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int lenTot = painter->fontMetrics().horizontalAdvance(tr("Total"));
+    int lenDow = painter->fontMetrics().horizontalAdvance(tr("Downloaded"));
+    int lenRem = painter->fontMetrics().horizontalAdvance(tr("Remaining"));
+#else
     int lenTot = painter->fontMetrics().width(tr("Total"));
     int lenDow = painter->fontMetrics().width(tr("Downloaded"));
     int lenRem = painter->fontMetrics().width(tr("Remaining"));
-
+#endif
     QPainterPath pathLabels;
     pen.setColor(Qt::transparent);
     pen.setWidthF(0.5);
@@ -203,10 +219,15 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QString sRema = convertSize(remaining);
 
     painter->setFont(p_indicatorFont);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int lenSize = painter->fontMetrics().horizontalAdvance(sSize);
+    int lenDown = painter->fontMetrics().horizontalAdvance(sDown);
+    int lenRema = painter->fontMetrics().horizontalAdvance(sRema);
+#else
     int lenSize = painter->fontMetrics().width(sSize);
     int lenDown = painter->fontMetrics().width(sDown);
     int lenRema = painter->fontMetrics().width(sRema);
-
+#endif
     QPainterPath pathGreenIndicators;
     painter->setBrush(QColor(7,252,18));
     pathGreenIndicators.addText(124-lenSize, 34, p_indicatorFont, sSize);
@@ -230,8 +251,13 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QPainterPath loadUnitIndicators;
     painter->setBrush(QColor(0,144,255));
     painter->setFont(p_indicatorFont);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int ruuSize = painter->fontMetrics().horizontalAdvance(convertSizeUnit(p_rateUpload));
+    int rduSize = painter->fontMetrics().horizontalAdvance(convertSizeUnit(p_rateDownload));
+#else
     int ruuSize = painter->fontMetrics().width(convertSizeUnit(p_rateUpload));
     int rduSize = painter->fontMetrics().width(convertSizeUnit(p_rateDownload));
+#endif
     loadUnitIndicators.addText(10-(ruuSize/2), 90, loadUnitFont, convertSizeUnit(p_rateUpload));
     loadUnitIndicators.addText(127-(rduSize/2), 90, loadUnitFont, convertSizeUnit(p_rateDownload));
     painter->drawPath(loadUnitIndicators);
@@ -240,8 +266,13 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QPainterPath loadIndicatorUp;
     QPainterPath loadIndicatorDown;
     painter->setFont(loadFont);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int ruSize = painter->fontMetrics().horizontalAdvance(convertSize(p_rateUpload));
+    int rdSize = painter->fontMetrics().horizontalAdvance(convertSize(p_rateDownload));
+#else
     int ruSize = painter->fontMetrics().width(convertSize(p_rateUpload));
     int rdSize = painter->fontMetrics().width(convertSize(p_rateDownload));
+#endif
     painter->setBrush(QColor(131,131,131));
     loadIndicatorUp.addText(18-(ruSize/2), 103, loadFont, convertSize(p_rateUpload));
     painter->drawPath(loadIndicatorUp);
@@ -256,7 +287,11 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
         QFont remainingFont = QFont("Tahoma", 8, QFont::DemiBold);
         painter->setFont(remainingFont);
         painter->setBrush(QColor(255,255,255));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+        int remSize = painter->fontMetrics().horizontalAdvance(remaining);
+#else
         int remSize = painter->fontMetrics().width(remaining);
+#endif
         pathReminingTime.addText(70-(remSize/2), 148, remainingFont, remaining);
         painter->drawPath(pathReminingTime);
 
@@ -265,7 +300,11 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
         QFont etaFont = QFont("Tahoma", 7, QFont::Thin);
         painter->setFont(etaFont);
         painter->setBrush(QColor(131, 131, 131));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+        int etaSize = painter->fontMetrics().horizontalAdvance(p_eta.toString("dd/MM/yyyy hh:mm"));
+#else
         int etaSize = painter->fontMetrics().width(p_eta.toString("dd/MM/yyyy hh:mm"));
+#endif
         pathEta.addText(70-(etaSize/2), 158, etaFont, p_eta.toString("dd/MM/yyyy hh:mm"));
         painter->drawPath(pathEta);
     }
@@ -275,7 +314,11 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QFont seedsFont = QFont("Tahoma", 8, QFont::Thin);
     painter->setFont(seedsFont);
     painter->setBrush(QColor(131, 131, 131));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int seedsSize = painter->fontMetrics().horizontalAdvance(p_numSeeds);
+#else
     int seedsSize = painter->fontMetrics().width(p_numSeeds);
+#endif
     seedsPath.addText(10-(seedsSize/2), 135, seedsFont, QString::number(p_numSeeds));
     painter->drawPath(seedsPath);
 
@@ -284,7 +327,11 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     QFont peersFont = QFont("Tahoma", 8, QFont::Thin);
     painter->setFont(peersFont);
     painter->setBrush(QColor(131, 131, 131));
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int peersSize = painter->fontMetrics().horizontalAdvance(p_numPeers);
+#else
     int peersSize = painter->fontMetrics().width(p_numPeers);
+#endif
     peersPath.addText(122-(peersSize/2), 135, peersFont, QString::number(p_numPeers));
     painter->drawPath(peersPath);
 

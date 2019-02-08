@@ -306,7 +306,7 @@ void tsuProvider::cancelSearch()
             qDebug() << p_name << "request cancelled";
         } else {
             qWarning() << p_name << "cannot cancel request";
-    //        setFinished(true);
+            // setFinished(true);
             p_finished = true;
         }
     } catch (std::exception &exc) {

@@ -56,7 +56,7 @@ private:
     QString p_cachePath;
     QElapsedTimer p_timer;
 
-    int p_itemsFoundCount;
+    int p_itemsFoundCount{};
 
 private slots:
 

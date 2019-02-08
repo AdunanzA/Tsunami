@@ -20,7 +20,7 @@ class searchwindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit searchwindow(QWidget *parent = 0);
+    explicit searchwindow(QWidget *parent = nullptr);
     ~searchwindow();
 
     enum tableColumns {
@@ -38,6 +38,22 @@ public:
         Magnet
     };
     Q_ENUM(tableColumns)
+
+protected:
+    enum class searchButtonStatus_t : uint8_t
+    {
+        search,
+        cancel
+    };
+
+    searchButtonStatus_t m_searchButtonStatus {searchButtonStatus_t::search};
+
+    bool isSearchButton_search() const {return (m_searchButtonStatus == searchButtonStatus_t::search);}
+    bool isSearchButton_cancel() const {return (m_searchButtonStatus == searchButtonStatus_t::cancel);}
+
+    void switchSearchButton();
+    void setSearchButtonToCancel();
+    void setSearchButtonToSearch();
 
 public slots:
     void providerAdded(const tsuProvider *item);
@@ -62,7 +78,7 @@ signals:
     void web_finishedSearch(int itemsFound, qint64 elapsed, int providersCount);
 
 private:
-    Ui::searchwindow *ui;
+    Ui::searchwindow *ui {};
     void changeEvent(QEvent *e);
 
     void sortTable();
@@ -70,8 +86,8 @@ private:
     QString p_tsunamiScriptFolder;
     QString p_tsunamiCacheFolder;
 
-    tsuCrawler *p_crawler;
-    QThread *p_crawler_thread;
+    tsuCrawler *p_crawler {};
+    QThread *p_crawler_thread{};
 
     tableColumns p_orderBy;
     Qt::SortOrder p_sortOrder;

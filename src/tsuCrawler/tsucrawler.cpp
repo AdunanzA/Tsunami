@@ -96,6 +96,7 @@ void tsuCrawler::providerFinishedSearch(const QString providerName)
     qDebug() << providerName << "finished";
     int active = 0;
     for (tsuProvider* provider : p_providerList) {
+        if (!provider) continue; // should not happen
         if (!provider->isFinished() && provider->isValid() && provider->isActive())
         {
             ++active;
@@ -110,7 +111,7 @@ void tsuCrawler::providerFinishedSearch(const QString providerName)
     if (active > 0) {
         qDebug() << "awaiting" << active << "providers to finish";
     } else {
-        qint64 elapsed = p_timer.elapsed();
+        qint64 elapsed = p_timer.elapsed(); // WARNING: these are MILLISECONDS, not seconds!
         emit finishedSearch(p_itemsFoundCount, elapsed);
     }
 }

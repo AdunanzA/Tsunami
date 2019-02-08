@@ -89,11 +89,11 @@ public slots:
     void cancelSearch();
 
 private:
-    QScriptEngine *p_scriptEngine;
-    QNetworkAccessManager *p_namPage;
-    QNetworkAccessManager *p_namIcon;
+    QScriptEngine *p_scriptEngine {};
+    QNetworkAccessManager *p_namPage {};
+    QNetworkAccessManager *p_namIcon {};
 
-    QNetworkReply *p_reply;
+    QNetworkReply *p_reply {};
 
     QString p_name;
     QString p_version;
