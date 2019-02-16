@@ -76,7 +76,7 @@ void tsuManager::loadSettings(libtorrent::settings_pack &settings)
     int downLimit = qtSettings.value("libtorrent/download_rate_limit", 0).toInt();
     int upLimit = qtSettings.value("libtorrent/upload_rate_limit", 0).toInt();
 
-    // from KB/s to B/S
+    // from kB/s (Kilobyte per second: ISO abbreviation is "kB/s") to B/s (Byte per second: ISO abbreviation is "B/s")
     downLimit = downLimit * 1000;
     upLimit = upLimit * 1000;
 
@@ -85,6 +85,17 @@ void tsuManager::loadSettings(libtorrent::settings_pack &settings)
     settings.set_str(libtorrent::settings_pack::user_agent, user_agent.toStdString());
     settings.set_int(libtorrent::settings_pack::download_rate_limit, downLimit); // B/S , 0 unlimited
     settings.set_int(libtorrent::settings_pack::upload_rate_limit, upLimit); // B/S , 0 unlimited
+
+    // set port as specified in settings (default is 6881)
+    uint32_t port_value = qtSettings.value("libtorrent/port", 6881).toUInt();
+    if (port_value > 65535) {
+        // invalid value, use the default
+        port_value = 5881;
+        qInfo() << "Port value set to default " << port_value;
+    }
+    QString port_settings = QString("0.0.0.0:%1").arg(port_value);
+    qInfo() << "Setting listen interfaces with '" << port_settings << "'";
+    settings.set_str(libtorrent::settings_pack::string_types::listen_interfaces, port_settings.toStdString());
 
     // DEFAULTS from picotorrent (and qbittorrent)
     settings.set_str(libtorrent::settings_pack::string_types::dht_bootstrap_nodes,
