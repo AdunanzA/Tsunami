@@ -4,8 +4,8 @@
 
 settingswindow::settingswindow(QWidget *parent) :
     QWidget(parent),
-    settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat),
-    ui(new Ui::settingswindow)
+    ui(new Ui::settingswindow), // warning: may throw exception
+    settings(qApp->property("iniFilePath").toString(), QSettings::IniFormat)
 {
     ui->setupUi(this);
 

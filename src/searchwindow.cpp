@@ -265,14 +265,42 @@ void searchwindow::itemFound(const tsuProvider::searchItem item)
     emit web_itemFound(item);
 }
 
-void searchwindow::finishedSearch(int itemsFound, qint64 elapsed)
+
+void searchwindow::switchSearchButton()
+{
+    if (m_searchButtonStatus == searchwindow::searchButtonStatus_t::cancel) {
+        setSearchButtonToSearch();
+    } else {
+        setSearchButtonToCancel();
+    }
+}
+
+void searchwindow::setSearchButtonToCancel()
+{
+    if (ui && ui->btnSearch) {
+        //: Laber for button in search page when a search operation is in progress and user can abort it
+        ui->btnSearch->setText(tr("CANCEL"));
+        m_searchButtonStatus = searchwindow::searchButtonStatus_t::cancel;
+    }
+}
+
+void searchwindow::setSearchButtonToSearch()
+{
+    if (ui && ui->btnSearch) {
+        //: Laber for button in search page when no search operation is in progress and user can start a new one
+        ui->btnSearch->setText(tr("&Search"));
+        m_searchButtonStatus = searchwindow::searchButtonStatus_t::search;
+    }
+}
+
+void searchwindow::finishedSearch(int itemsFound, qint64 elapsed /* milliseconds */)
 {
     ui->btnSearch->setEnabled(true);
-    ui->btnSearch->setText("Search");
+    setSearchButtonToSearch();
     ui->txtSearch->setEnabled(true);
     ui->tableResults->setSortingEnabled(true);
-    QString msg = QString("%0 results in %1 seconds using %2 providers").arg(itemsFound)
-                            .arg(QDateTime::fromMSecsSinceEpoch(elapsed).toUTC().toString("ss"))
+    QString msg = QString("%0 result(s) in %1 second(s) using %2 provider(s)").arg(itemsFound)
+                            .arg((static_cast<int>(elapsed)/1000))
                             .arg(p_crawler->getProvidersCount());
     ui->lblResultsCount->setText(msg);
     qInfo() << msg;
@@ -347,8 +375,9 @@ void searchwindow::searchRequestFromWeb(const QString textToSearch, const int ca
 
 void searchwindow::on_btnSearch_released()
 {
-    if (ui->btnSearch->text() == "Search") {
-        ui->btnSearch->setText("CANCEL");
+    if (isSearchButton_search()) {
+        setSearchButtonToCancel();
+        m_searchButtonStatus = searchwindow::searchButtonStatus_t::cancel;
         ui->txtSearch->setEnabled(false);
 
         ui->tableResults->clear();
@@ -357,12 +386,20 @@ void searchwindow::on_btnSearch_released()
 
         QString textToSearch = ui->txtSearch->text();
         tsuProvider::categories wantedCategory = tsuProvider::categories::all;// (tsuProvider::categories)ui->cmbCategories->currentData().toInt();
-        if (ui->radioApps->isChecked()) wantedCategory = tsuProvider::categories::apps;
-        if (ui->radioAudio->isChecked()) wantedCategory = tsuProvider::categories::audio;
-        if (ui->radioGames->isChecked()) wantedCategory = tsuProvider::categories::games;
-        if (ui->radioOther->isChecked()) wantedCategory = tsuProvider::categories::other;
-        if (ui->radioPorn->isChecked()) wantedCategory = tsuProvider::categories::porn;
-        if (ui->radioVideo->isChecked()) wantedCategory = tsuProvider::categories::video;
+
+        if (ui->radioApps->isChecked())
+            wantedCategory = tsuProvider::categories::apps;
+        else if (ui->radioAudio->isChecked())
+            wantedCategory = tsuProvider::categories::audio;
+        else if (ui->radioGames->isChecked())
+            wantedCategory = tsuProvider::categories::games;
+        else if (ui->radioOther->isChecked())
+            wantedCategory = tsuProvider::categories::other;
+        else if (ui->radioPorn->isChecked())
+            wantedCategory = tsuProvider::categories::porn;
+        else if (ui->radioVideo->isChecked())
+            wantedCategory = tsuProvider::categories::video;
+
         int resultsWanted = 50;//ui->spinResultsWanted->value();
         tsuProvider::sortRules sort = tsuProvider::sortRules::seeds_d;// (tsuProvider::sortRules)ui->cmbSort->currentData().toInt();
 
@@ -371,7 +408,7 @@ void searchwindow::on_btnSearch_released()
         p_crawler->search(textToSearch, wantedCategory, resultsWanted, sort);
 
     } else {
-        ui->btnSearch->setText("Search");
+        setSearchButtonToSearch();
         ui->btnSearch->setEnabled(false);
         emit cancelSearch();
     }

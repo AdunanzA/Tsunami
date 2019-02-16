@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>@EXECUTABLE@</string>
+	<key>CFBundleName</key>
+	<string>Tsunami</string>
+	<key>CFBundleGetInfoString</key>
+	<string>@FULL_VERSION@, Copyright 2015-2019 Tsunami AdunanzA Project (http://www.adunanza.net)</string>
+	<key>CFBundleIconFile</key>
+	<string>Tsunami.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>net.adunanza.Tsunami</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>@FULL_VERSION@</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@SHORT_VERSION@</string>
+	<key>CFBundleSignature</key>
+	<string>Tsun</string>
+	<key>CFBundleVersion</key>
+	<string>@FULL_VERSION@</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright 2015-2019 Tsunami AdunanzA Project (http://www.adunanza.net)</string>
+	<key>NSMainNibFile</key>
+	<string>NSMainNibFile</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+        <true/>
+</dict>
+</plist>

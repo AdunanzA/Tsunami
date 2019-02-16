@@ -72,7 +72,11 @@ updatemanager::updatemanager(QObject *parent) : QObject(parent)
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(pen);
     painter.setFont(font);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    painter.drawText(p_splash_img.width() - paddingRight - painter.fontMetrics().horizontalAdvance(version), p_splash_img.height() - paddingBottom, version);
+#else
     painter.drawText(p_splash_img.width() - paddingRight - painter.fontMetrics().width(version), p_splash_img.height() - paddingBottom, version);
+#endif
 
     p_splash.setPixmap(p_splash_img);
     p_splash.setWindowFlags(p_splash.windowFlags() | Qt::WindowStaysOnTopHint);

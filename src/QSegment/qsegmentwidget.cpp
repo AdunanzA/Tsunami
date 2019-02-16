@@ -248,8 +248,13 @@ void QSegmentWidget::DrawCenterText(QPainter *painter)
 
     painter->setFont(fontText);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
+    int lenText = painter->fontMetrics().horizontalAdvance(text);
+    int lenSymb = painter->fontMetrics().horizontalAdvance(symbol);
+#else
     int lenText = painter->fontMetrics().width(text);
     int lenSymb = painter->fontMetrics().width(symbol);
+#endif
 
     pen.setWidth(fontBorder);
     pen.setColor(colorBorder);

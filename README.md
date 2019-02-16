@@ -18,29 +18,35 @@ Tsunami is a <a href="https://www.qt.io/">Qt</a> application based on <a href="h
 We are currently setting up the team volunteers who will develop the software. We accept pull request.
 
 ### How to compile:
-<h3>Windows:</h3>
-<ul>
-  <li>Install Qt, Visual Studio 2015 and git</li>
-  <li>Clone the project</li>
-  <li>Download the libraries from <a href="http://tsunami.adunanza.net/updates/libraries.7z">here</a></li>
-  <li>Open the archive you previously downloaded and extract the includes and libraries subdirectories in the project folder</li>
-  <li>Open Tsunami.pro in qtcreator</li>
-  <li>Compile</li>
-  <li>Enjoy!</li>
-</ul>
-<h3>Ubuntu(17.04 or 17.10):</h3>
-<ul>
-  <li>Install Qt, git g++</li>
-  <li>Clone the project;</li>
-  <li>sudo add-apt-repository ppa:ntadej/tano # VLC QT libraries</li>
-  <li>sudo apt-get install libvlc-qt-core2 libvlc-qt-widgets2 libvlc-qt-dbg libvlc-qt-dev</li>
-  <li>sudo apt-get install libttorrent-rasterbar-dev # libtorrent</li>
-  <li>Open Tsunami.pro in qtcreator;</li>
-  <li>Replace this line "DEFINES += TORRENT_NO_DEPRECATE" with this one "#DEFINES += TORRENT_NO_DEPRECATE" (*)</li>
-  <li>Compile</li>
-  <li>Enjoy!</li>
-</ul>
-  
+## Windows:
+- Install *Qt*, *Visual Studio 2015* and *git*
+- Clone the project
+- Download the libraries from [here](http://tsunami.adunanza.net/updates/libraries.7z)
+- Open the archive you previously downloaded and extract the includes and libraries subdirectories in the project folder
+- Open Tsunami.pro in *qt creator*
+- Compile
+- Enjoy!
+
+## Ubuntu(17.04 or 17.10):
+- Install *Qt*, *git*, *g++*
+- Clone the project
+- add *VLC-QT* repository to your system using  
+  ````
+  sudo add-apt-repository ppa:ntadej/tano
+  ````
+- install packages needed for the building process
+  ````
+  sudo apt-get install libvlc-qt-core2 libvlc-qt-widgets2 libvlc-qt-dbg libvlc-qt-dev
+  sudo apt-get install libttorrent-rasterbar-dev
+  ````
+- Open Tsunami.pro in *qt creator*
+- Replace this line **"DEFINES += TORRENT_NO_DEPRECATE"** with this one **"#DEFINES += TORRENT_NO_DEPRECATE"** (*)
+- Compile
+- Enjoy!
+
+## Mac OS X (currently only on x86_64 architecture):
+-  See [Building on Mac OS](platforms/MacOSX/Building_on_Mac_OS_X.md) for details.
+   
 <br>
   
 ### Warning:
