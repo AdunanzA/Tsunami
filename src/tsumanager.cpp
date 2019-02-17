@@ -90,7 +90,7 @@ void tsuManager::loadSettings(libtorrent::settings_pack &settings)
     uint32_t port_value = qtSettings.value("libtorrent/port", 6881).toUInt();
     if (port_value > 65535) {
         // invalid value, use the default
-        port_value = 5881;
+        port_value = 6881;
         qInfo() << "Port value set to default " << port_value;
     }
     QString port_settings = QString("0.0.0.0:%1").arg(port_value);

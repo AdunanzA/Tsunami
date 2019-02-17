@@ -15,6 +15,11 @@ Security - in case of vulnerabilities.
 
 ## [Unreleased]
 
+## [0.7.3] 2019-02-17
+### Fixed
+- Port errors
+- Linux and Mac compilation
+
 ## [0.7.2] 2018-10-07
 ### Added
 - Web Interface
