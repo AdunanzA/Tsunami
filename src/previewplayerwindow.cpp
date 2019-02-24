@@ -64,11 +64,15 @@ PreviewPlayerWindow::~PreviewPlayerWindow()
 
 void PreviewPlayerWindow::on_pushButtonOpenFile_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Video Stream", QDir::currentPath(), "Video Files (*.mkv *.avi *.mp4 *.mov *.wmv)");
-    if(fileName != "")
-    {
+    // Propose download folder as starting path
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open Video Stream"),
+                                                    (!m_downloadPath.isEmpty() ? m_downloadPath : QDir::currentPath()),
+                                                    QString("%1 (*.mkv *.avi *.mp4 *.mov *.wmv)").arg(tr("Video Files")));
+    if (!fileName.isEmpty()) {
         previewPlayer->playFile(fileName);
-        this->updatePlayPauseButton();
+        updatePlayPauseButton();
     }
 }
 
