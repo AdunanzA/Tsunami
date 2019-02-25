@@ -57,7 +57,7 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     Q_UNUSED(widget);
 
     // The following will be used as "starting point" to draw the head text (filename, truncated if needed)
-    static constexpr QPointF head_start_position{8, 16};
+    static const QPointF head_start_position{8, 16};
 
     // http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/
     painter->setClipRect( option->exposedRect );
