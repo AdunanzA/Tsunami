@@ -56,6 +56,9 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    // The following will be used as "starting point" to draw the head text (filename, truncated if needed)
+    static constexpr QPointF head_start_position{8, 16};
+
     // http://thesmithfam.org/blog/2007/02/03/qt-improving-qgraphicsview-performance/
     painter->setClipRect( option->exposedRect );
 
@@ -172,7 +175,20 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     pen.setWidthF(p_fontBorder/2);
     painter->setBrush(p_colorText);
     painter->setPen(pen);
-    pathTitle.addText(8, 16, QFont("Tahoma", 8), p_head);
+
+    // Try to avoid to overlap with the exit symbol
+    // Compute available width space
+    QFont head_font("Tahoma", 8);
+    QFontMetrics head_font_metric(head_font);
+    qreal estimated_width = (p_imageExitPosition.x() - head_start_position.x());
+
+    // Obtain a text to display in place of original head text:
+    // - if available width is enough to display the original text then "head_to_use" will be just a copy of the original text
+    // - otherwise head_to_use will be a string beginning and ending as the original text but shorter as needed to be printed in the available width, and will display "..." in the middle
+    //   For example, instead of "Supercalifragilisticexpialidocious.mp3" the displayed string will be something like "Super....mp3"
+    QString head_to_use = head_font_metric.elidedText(p_head, Qt::TextElideMode::ElideMiddle, static_cast<int>(estimated_width));
+
+    pathTitle.addText(head_start_position, head_font, head_to_use);
     painter->drawPath(pathTitle);
 
     // CIRCULAR PROGRESS BAR
