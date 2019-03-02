@@ -427,8 +427,12 @@ void MainWindow::btnMenuClick() {
     if (btn == ui->btnArchive->objectName())
         ui->stackedWidget->setCurrentWidget(archivePage);
 
-    if (btn == ui->btnStreaming->objectName())
+    if (btn == ui->btnStreaming->objectName()) {
+        if (previewPlayerPage && settingsPage) {
+            previewPlayerPage->setDownloadPath(settingsPage->getDownloadPath());
+        }
         ui->stackedWidget->setCurrentWidget(previewPlayerPage);
+    }
 
     if (btn == ui->btnStatistics->objectName())
         ui->stackedWidget->setCurrentWidget(statisticsPage);
