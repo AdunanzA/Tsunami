@@ -259,7 +259,7 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
         estimated_unit_label_length = QFontMetrics(p_indicatorUnitFont).horizontalAdvance("MiB  "); // 2 trailing space to leave some space from right edge
 #else
-        estimated_unit_label_length = QFontMetrics(p_indicatorUnitFont).horizontalAdvance("MiB  "); // 2 trailing space to leave some space from right edge
+        estimated_unit_label_length = QFontMetrics(p_indicatorUnitFont).width("MiB  "); // 2 trailing space to leave some space from right edge
 #endif
 
     int estimated_value_length = 0;
@@ -267,7 +267,7 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
         #if (QT_VERSION >= QT_VERSION_CHECK(5, 11 , 0))
             estimated_value_length = QFontMetrics(p_indicatorFont).horizontalAdvance("999.9 "); // Probably nobody will try to download files with size > of 999.9 TiB!
         #else
-            estimated_value_length = QFontMetrics(p_indicatorFont).width().horizontalAdvance("999.9 ");
+            estimated_value_length = QFontMetrics(p_indicatorFont).width("999.9 ");
         #endif
     }
 
@@ -308,9 +308,9 @@ void tsuItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     int precise_down_value_length = painter->fontMetrics().horizontalAdvance(sDown_inU + QString(" "));
     int precise_rema_value_length = painter->fontMetrics().horizontalAdvance(sRema_inU + QString(" "));
 #else
-    int precise_size_value_length = painter->fontMetrics().width().horizontalAdvance(sSize_inU + QString(" "));
-    int precise_down_value_length = painter->fontMetrics().width().horizontalAdvance(sDown_inU + QString(" "));
-    int precise_rema_value_length = painter->fontMetrics().width().horizontalAdvance(sRema_inU + QString(" "));
+    int precise_size_value_length = painter->fontMetrics().width(sSize_inU + QString(" "));
+    int precise_down_value_length = painter->fontMetrics().width(sDown_inU + QString(" "));
+    int precise_rema_value_length = painter->fontMetrics().width(sRema_inU + QString(" "));
 #endif
     int precise_x_size_value = x_size_UM - precise_size_value_length;
     int precise_x_down_value = x_size_UM - precise_down_value_length;
