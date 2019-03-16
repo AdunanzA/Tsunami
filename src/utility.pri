@@ -19,7 +19,8 @@ HEADERS += \
     $$PWD/../src/tsugraphicsscene.h \
     $$PWD/../src/updatemanager.h \
     $$PWD/../src/QcGaugeWidget/qcgaugewidget.h \
-    $$PWD/../src/tsutreewidget.h
+    $$PWD/../src/tsutreewidget.h \
+    $$PWD/bytevalue.h
 
 SOURCES += \
     $$PWD/../src/QSegment/qsegmentwidget.cpp \
@@ -41,5 +42,6 @@ SOURCES += \
     $$PWD/../src/tsugraphicsscene.cpp \
     $$PWD/../src/updatemanager.cpp \
     $$PWD/../src/QcGaugeWidget/qcgaugewidget.cpp \
-    $$PWD/../src/tsutreewidget.cpp
+    $$PWD/../src/tsutreewidget.cpp \
+    $$PWD/bytevalue.cpp
 

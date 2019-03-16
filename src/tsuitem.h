@@ -1,6 +1,8 @@
 #ifndef TSUITEM_H
 #define TSUITEM_H
 
+#include <cmath>       // needed for fmod
+
 #include <QDebug>
 #include <QColor>
 #include <QtWidgets>
@@ -9,8 +11,6 @@
 #include <qmath.h>
 
 #include "tsuevents.h"
-
-#include <cmath>       /* fmod */
 
 enum statusEnum {
     undefined,
@@ -24,10 +24,12 @@ enum statusEnum {
     paused
 };
 
-class tsuItem : public QObject, public QGraphicsItem
+
+class tsuItem : public QGraphicsObject // QObject, public QGraphicsItem
 {
     Q_OBJECT
     Q_PROPERTY(QPointF pos READ pos WRITE setPos)
+
 public:
     tsuItem();
     tsuItem(const std::string &head);
@@ -35,14 +37,14 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
     void set_FactorTransform(const qreal & value);
-    qreal get_FactorTransform();
-    QString get_Head();
+    qreal get_FactorTransform() const;
+    const QString& get_Head() const;
 
-    void set_Size(const int & value);
-    void set_Downloaded(const int & value);
-    void set_Uploaded(const int & value);
-    int get_Downloaded();
-    int get_Uploaded();
+    void set_Size(const uint64_t & value);
+    void set_Downloaded(const uint64_t & value);
+    void set_Uploaded(const uint64_t & value);
+    uint64_t get_Downloaded() const;
+    uint64_t get_Uploaded() const;
 
     statusEnum get_Status() const;
     void set_Status(const int &value);
@@ -60,88 +62,84 @@ public:
     static const qreal ItemHeight;
     static const qreal ItemGlowRadius;
 
-    std::string get_Hash() const;
+    const std::string& get_Hash() const;
     void set_Hash(const std::string &value);
 
     void executeItemRemove(bool const &filesToo);
     void executePause();
     void executeResume();
 
-    QString convertSize(const int &size);
-    QString convertSizeUnit(const int &size);
-
-
 public slots:
     void setValue(const tsuEvents::tsuEvent &event);
     void emitCancel();
 
 private:
-    int p_progressValue = 0;
-    QString p_head = QString("");
-    qreal p_factorTransform = 1;
-    bool p_isFadingOut = false;
-    bool p_isFadingIn = false;
+    int p_progressValue {};
+    QString p_head;
+    qreal p_factorTransform {1};
+    bool p_isFadingOut {};
+    bool p_isFadingIn {};
 
-    bool p_isMoving = false;
+    bool p_isMoving {};
 
-    QPixmap p_imageBkg = QPixmap(":/images/tsuitem/bkg.png");
-    QPixmap p_imageBkg2 = QPixmap(":/images/tsuitem/bkg2.png");
-    QPointF p_imageBkg2Position = QPointF(1, 158);
-    QPixmap p_imageExit = QPixmap(":/images/tsuitem/X.png");
+    QPixmap p_imageBkg {":/images/tsuitem/bkg.png"};
+    QPixmap p_imageBkg2 {":/images/tsuitem/bkg2.png"};
+    QPointF p_imageBkg2Position {1, 158};
+    QPixmap p_imageExit {":/images/tsuitem/X.png"};
     QPointF p_imageExitPosition = QPointF(122, 4);
     QPixmap p_imagePause = QPixmap(":/images/tsuitem/pause.png");
     QPointF p_imagePausePosition = QPointF(31, 167);
     QPixmap p_imageResume = QPixmap(":/images/tsuitem/resume.png");
     QPointF p_imageResumePosition = QPointF(46, 167);
 
-    QPixmap p_imageStateD = QPixmap(":/images/tsuitem/state_download.png");
-    QPixmap p_imageStateL = QPixmap(":/images/tsuitem/state_loading.png");
-    QPixmap p_imageStateP = QPixmap(":/images/tsuitem/state_pause.png");
-    QPixmap p_imageStateW = QPixmap(":/images/tsuitem/state_warning.png");
-    QPixmap p_imageStateF = QPixmap(":/images/tsuitem/finished.png");
-    QPixmap p_imageSelected = QPixmap(":/images/tsuitem/selected.png");
+    QPixmap p_imageStateD {":/images/tsuitem/state_download.png"};
+    QPixmap p_imageStateL {":/images/tsuitem/state_loading.png"};
+    QPixmap p_imageStateP {":/images/tsuitem/state_pause.png"};
+    QPixmap p_imageStateW {":/images/tsuitem/state_warning.png"};
+    QPixmap p_imageStateF {":/images/tsuitem/finished.png"};
+    QPixmap p_imageSelected {":/images/tsuitem/selected.png"};
 
-    QPointF p_imageStatePosition = QPointF(1, 158);
-    QPointF p_imageStateFinishedPosition = QPointF(16, 140);
-    QPointF p_imageSelectedPosition = QPointF(99, 148);
+    QPointF p_imageStatePosition {1, 158};
+    QPointF p_imageStateFinishedPosition {16, 140};
+    QPointF p_imageSelectedPosition {99, 148};
 
-    int p_textFontHeight = 12;
-    int p_symbolFontHeight = 7;
-    int p_progress_width = 10;
-    qreal p_shadowDepth = 1.5;
-    qreal p_fontBorder = 0.5;
-    QColor p_colorText = QColor(255, 255, 255);
-    QColor p_colorShadow = QColor(58, 58, 58);
-    QFont p_fontText = QFont("Bebas", p_textFontHeight);
-    QFont p_fontSymbol = QFont("Bebas", p_symbolFontHeight);
-    QFont p_indicatorFont = QFont("Tahoma", 8, QFont::Thin);
-    QFont p_indicatorUnitFont = QFont("Tahoma", 6, QFont::Thin);
+    int p_textFontHeight {12};
+    int p_symbolFontHeight {7};
+    int p_progress_width {10};
+    qreal p_shadowDepth {1.5};
+    qreal p_fontBorder {0.5};
+    QColor p_colorText {255, 255, 255};
+    QColor p_colorShadow {58, 58, 58};
+    QFont p_fontText {"Bebas", p_textFontHeight};
+    QFont p_fontSymbol {"Bebas", p_symbolFontHeight};
+    QFont p_indicatorFont {"Tahoma", 8, QFont::Thin};
+    QFont p_indicatorUnitFont {"Tahoma", 6, QFont::Thin};
 
-    QRectF p_rectProgress = QRectF(45.5, 69, 49.0, 49.0);
+    QRectF p_rectProgress {45.5, 69, 49.0, 49.0};
     QPen p_penProgress;
     QConicalGradient p_gradientProgress;
-    int p_arcLengthApproximation = p_progress_width + p_progress_width / 3;
+    int p_arcLengthApproximation {p_progress_width + p_progress_width / 3};
 
-    QColor p_colorLabel = QColor(127,127,127);
-    QFont p_fontLabel = QFont("Tahoma", 7);
+    QColor p_colorLabel {127,127,127};
+    QFont p_fontLabel {"Tahoma", 7};
 
-    QGraphicsDropShadowEffect *p_itemShadow;
-    QPropertyAnimation *p_itemShadowAnimation;
+    QGraphicsDropShadowEffect *p_itemShadow{};
+    QPropertyAnimation *p_itemShadowAnimation{};
 
     std::string p_hash;
-    int p_size = 0;
-    int p_downloaded = 0;
-    int p_uploaded = 0;
-    int p_rateDownload = 0;
-    int p_rateUpload = 0;
-    int p_numSeeds = 0;
-    int p_numPeers = 0;
-    statusEnum p_status = statusEnum::undefined;
+    uint64_t p_size {};
+    uint64_t p_downloaded{};
+    uint64_t p_uploaded{};
+    int p_rateDownload{};
+    int p_rateUpload{};
+    int p_numSeeds{};
+    int p_numPeers{};
+    statusEnum p_status {statusEnum::undefined};
     QDateTime p_eta;
 
-    bool p_cancelFilesOnDelete = false;
+    bool p_cancelFilesOnDelete {};
 
-    bool p_visible = true;
+    bool p_visible {true};
 
 private slots:
     void fadeInFinished();
@@ -149,7 +147,7 @@ private slots:
 
 protected:
     void createItem();
-    QString remainingTime();
+    QString remainingTime() const;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;

@@ -9,6 +9,8 @@ tsuManager::tsuManager()
     localTsunami = QString("%0/%1").arg(localTsunami).arg("session");
     p_tsunamiSessionFolder = QDir::toNativeSeparators(localTsunami);
 
+    qDebug() << QString("Tsunami session folder is '%0'").arg(p_tsunamiSessionFolder);
+
     // loading libtorrent stats metric indexes
     QHash<QString, int> statsList;
     std::vector<libtorrent::stats_metric> ssm = libtorrent::session_stats_metrics();
@@ -224,9 +226,10 @@ void tsuManager::startManager()
     qDebug("starting");
 
     libtorrent::settings_pack settings;
-    loadSettings(settings);
+    //loadSettings(settings); // we will refresh settings at the end: the following part (loading of session data) may overwrite our settings
     p_session = QSharedPointer<libtorrent::session>::create(settings);
     setNotify();
+
     p_timerUpdate->start(p_timerUpdateInterval);
     p_timerResumeData->start(p_timerResumeDataInterval);
 
@@ -324,6 +327,9 @@ void tsuManager::startManager()
             qDebug() << QString("loaded %0 fastresumes").arg(count);
         }
     }
+
+    // make sure to load torrent related settings saved in Tsunami.ini
+    refreshSettings();
 }
 
 void tsuManager::stopManager()
@@ -661,7 +667,7 @@ void tsuManager::alertsHandler()
                 type = "udp";
             }
 //            qDebug() << QString("listen failed for %0 on port %1").arg(type).arg(lfa->port);
-            qDebug() << QString("listen succeeded for %0 on port %1").arg(type).arg(lfa->endpoint.port());
+            qDebug() << QString("listen failed for %0 on port %1").arg(type).arg(lfa->endpoint.port());
             emit listenerUpdate(type, false);
             break;
         }

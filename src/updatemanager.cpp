@@ -96,6 +96,7 @@ void updatemanager::setAppUrl(QString path)
     p_appDir = path;
 #endif
 
+    // Not sure to have understood well: in this way we overwrite the value determined in previous block ov code...
     p_appDir = path;
     if (p_appDir.right(1) != "/") {
         p_appDir += "/";
