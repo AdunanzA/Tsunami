@@ -162,10 +162,11 @@ int main(int argc, char *argv[])
         qApp->quit();
         QProcess::startDetached(newPath, qApp->arguments());
         return 0;
-    } else {
-        qDebug("showing main window");
-        MainWindow w;
-        w.show();
-        return a.exec();
     }
+
+    qDebug("showing main window");
+    MainWindow w;
+    w.show();
+    return a.exec();
+
 }

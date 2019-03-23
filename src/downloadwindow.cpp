@@ -61,7 +61,7 @@ downloadwindow::~downloadwindow()
     qDebug("downloadwindow destroyed");
 }
 
-QPair<float, float> downloadwindow::getRate()
+QPair<float, float> downloadwindow::getRate() const
 {
     float dRate = 0;
     float uRate = 0;
@@ -330,30 +330,74 @@ void downloadwindow::torrentDeletedFromSession(const std::string &hash)
 
 void downloadwindow::redrawItemsPosition()
 {
+    // just to have some space from left border
+    static const int START_X_OFFSET = static_cast<int>(1*tsuItem::ItemGlowRadius);
+    // just to have some space from top border
+    static const int START_Y_OFFSET = static_cast<int>(1*tsuItem::ItemGlowRadius);
+
 //    qDebug("redrawing tsuCard position");
-    p_itemsPerRow = floor(ui->graphicsView->size().width()/((tsuItem::ItemWidth + tsuItem::ItemGlowRadius) * p_transformFactor));
-    int row = -1;
-    int col = -1;
-    int itemWidth = (tsuItem::ItemGlowRadius + tsuItem::ItemWidth) * p_transformFactor;
-    int itemHeight = (tsuItem::ItemGlowRadius + tsuItem::ItemHeight) * p_transformFactor;
+
+    if (p_tsulist.empty()) {
+        // nothing to do
+        return;
+    }
+
+    int itemWidth = static_cast<int>((tsuItem::ItemGlowRadius + tsuItem::ItemWidth) * p_transformFactor);
+    int itemHeight = static_cast<int>((tsuItem::ItemGlowRadius + tsuItem::ItemHeight) * p_transformFactor);
+
+    int newX {START_X_OFFSET};
+    int newY {START_Y_OFFSET};
+
+    QSize view_size = ui->graphicsView->size();
+    int available_width = (view_size.width() - START_X_OFFSET);
+
+    // for some unknown (well, at least unknown to me) reason the scene rect is "moved" (changes it position) when
+    // doing zoom-in/zoom-out
+    // So try "to re-establish" a scene rect corresponding to the view scene rect (probably people who really know Qt can suggest a better method)
+    p_scene->setSceneRect(ui->graphicsView->sceneRect());
+
     for (int i = 0; i < p_tsulist.count(); i++) {
         tsuItem *ti = p_tsulist[i];
 
-        if (ti->get_Visibility()) {
-            if (col == p_itemsPerRow-1) { row++; col = 0; } else { col++; }
-            int newX = (col*itemWidth)+tsuItem::ItemGlowRadius;
-            int newY = (row*itemHeight)+tsuItem::ItemGlowRadius;
-//            ti->setPos(QPointF(newX, newY));
+        // skip not visible
+        if (!ti->get_Visibility()) {
+            continue;
+        }
 
-            QPropertyAnimation *a = new QPropertyAnimation(ti, "pos");
-            a->setDuration(300);
-            a->setStartValue(QPointF(ti->pos().x(), ti->pos().y()));
-            a->setEndValue(QPoint(newX, newY));
-            a->setEasingCurve(QEasingCurve::Linear);
-            a->start(QPropertyAnimation::DeleteWhenStopped);
 
+        QPropertyAnimation *a = new QPropertyAnimation(ti, "pos");
+        a->setDuration(300);
+        a->setEndValue(QPointF(newX, newY));
+
+        a->setEasingCurve(QEasingCurve::Linear);
+        a->start(QPropertyAnimation::DeleteWhenStopped);
+
+        // if here another object has been drawn in this "row" so decrease available_width
+        available_width -= itemWidth;
+
+        // check if remaining width is enough to draw another object
+        if (available_width < itemWidth) {
+            // not enough room to draw another object in current "row", so advance Y and reset X (like a CR+LF)
+            newY += itemHeight;
+            newX = START_X_OFFSET;
+            available_width = (view_size.width() - START_X_OFFSET);
+        } else {
+            newX += itemWidth;
         }
     }
+
+    // at this point we need to resize the scene: if we redraw items due to a zoom-in
+    // there is the possibility that the current visible area is not enough to show all items, so
+    // probably the vertical scroll bar is needed; instead if we executed zoom-out we could need to
+    // remove the scroll bar
+    // So just resize the scene
+    // If (newX == START_X_OFFSET) then we just "advanced" the Y so newY is the new height,
+    // otherwise we need to use (newY + itemHeight)
+    if (newX != START_X_OFFSET) {
+        newY += itemHeight;
+    }
+    p_scene->setSceneRect(0, 0, view_size.width(), newY);
+
     ui->graphicsView->ensureVisible(QRectF(0, 0, 0, 0));
 }
 
@@ -410,7 +454,7 @@ void downloadwindow::changeEvent(QEvent *e)
 
 void downloadwindow::on_btnZoomIn_released()
 {
-    if (p_transformFactor == 3) return;
+    if (p_transformFactor == 3.0) return;
     p_transformFactor += 0.25;
     foreach (tsuItem* item, p_tsulist) {
         item->set_FactorTransform(p_transformFactor);
@@ -420,7 +464,7 @@ void downloadwindow::on_btnZoomIn_released()
 
 void downloadwindow::on_btnZoomOut_released()
 {
-    if (p_transformFactor == 1) return;
+    if (p_transformFactor == 1.0) return;
     p_transformFactor -= 0.25;
     foreach (tsuItem* item, p_tsulist) {
         item->set_FactorTransform(p_transformFactor);

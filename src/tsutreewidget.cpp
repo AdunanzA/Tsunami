@@ -52,7 +52,13 @@ void tsuTreeWidget::showDirectory(QTreeWidgetItem *item, int column)
 //        if(fileInfo.isFile())
 //        {
 //            child->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-//            child->setText(1, QString("%0%1").arg(convertSize(fileInfo.size())).arg(convertSizeUnit(fileInfo.size())));
+
+//            // remember to include bytevalue.h to use CByteValue::convertToRankValueAndGetStrings_size
+//            QString fsize_inU;
+//            QString fsize_ULabel;
+//            CByteValue::convertToRankValueAndGetStrings_decimal(static_cast<uint64_t>(fileInfo.size()), fsize_inU, fsize_ULabel);
+//
+//            child->setText(1, QString("%0%1").arg(fsize_inU).arg(fsize_ULabel));
 //            child->setIcon(0,*(new QIcon(":/images/file-doc.png")));
 //        }
 
@@ -78,7 +84,7 @@ void tsuTreeWidget::expandDirectory(QTreeWidgetItem *item)
     showDirectory(item, 0);
 }
 
-void tsuTreeWidget::loadDriveStructure(const QString drive)
+void tsuTreeWidget::loadDriveStructure(const QString& drive)
 {
     QTreeWidgetItem* driveItem = new QTreeWidgetItem();
     QIcon *ic = new QIcon(":/images/drive.png");
@@ -115,7 +121,7 @@ void tsuTreeWidget::loadDriveStructure(const QString drive)
     delete(rootDir);
 }
 
-void tsuTreeWidget::addChildren(QTreeWidgetItem *item, QString filePath)
+void tsuTreeWidget::addChildren(QTreeWidgetItem *item, const QString& filePath)
 {
     QDir* rootDir = new QDir(filePath);
     QFileInfoList filesList = rootDir->entryInfoList();
@@ -139,45 +145,4 @@ void tsuTreeWidget::addChildren(QTreeWidgetItem *item, QString filePath)
         }
     }
     delete(rootDir);
-}
-
-QString tsuTreeWidget::convertSize(const int &size)
-{
-    if (size==0) return "0";
-    float num = size;
-    QStringList list;
-    list << "KB" << "MB" << "GB" << "TB";
-
-    QStringListIterator i(list);
-    QString unit("b");
-
-    while(num >= 1000.0 && i.hasNext())
-     {
-        unit = i.next();
-        num /= 1000.0;
-    }
-
-    int length = 1;
-    int x = num;
-    while ( x /= 10 )
-       length++;
-
-    return QString().setNum(num,'f',3-length);
-}
-
-QString tsuTreeWidget::convertSizeUnit(const int &size)
-{
-    float num = size;
-    QStringList list;
-    list << "KB" << "MB" << "GB" << "TB";
-
-    QStringListIterator i(list);
-    QString unit("b");
-
-    while(num >= 1024.0 && i.hasNext())
-     {
-        unit = i.next();
-        num /= 1024.0;
-    }
-    return unit;
 }

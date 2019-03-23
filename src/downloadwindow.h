@@ -28,7 +28,7 @@ public:
     explicit downloadwindow(QWidget *parent = 0);
     ~downloadwindow();
 
-    QPair<float, float> getRate();
+    QPair<float, float> getRate() const;
     void updateVisibility();
 
 public slots:

@@ -18,11 +18,8 @@ public slots:
 private:
   QTreeWidgetItem *p_headerItem;
 
-  void loadDriveStructure(const QString drive);
-  void addChildren(QTreeWidgetItem* item, QString filePath);
-
-  QString convertSize(const int &size);
-  QString convertSizeUnit(const int &size);
+  void loadDriveStructure(const QString& drive);
+  void addChildren(QTreeWidgetItem* item, const QString& filePath);
 };
 
 #endif // TSUTREEWIDGET_H
